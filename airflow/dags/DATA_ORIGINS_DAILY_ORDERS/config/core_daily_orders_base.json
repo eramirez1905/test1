@@ -1,0 +1,11 @@
+[
+    {
+        "step":"Last_Event_Orders_Raw_Data",
+        "description": "Obtiene datos crudos de ordenes generadas NRT y genera por partición ordenes limpias, como base para la generación de las demas entidades de ordenes",
+        "py_spark": "/base/Last_Order_Event_Raw_Data.py",
+        "s3_source_path": "s3a://peyabi.datalake.live/bi-core-tech/raw/nrt/orders/orders",
+        "s3_destination_path": "s3://peyabi.datalake.live/bi-core-tech/raw/orders/last_order_events",
+        "data_history": "2",
+        "enabled": "1"
+    }
+]

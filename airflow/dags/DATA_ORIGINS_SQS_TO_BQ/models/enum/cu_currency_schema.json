@@ -1,0 +1,35 @@
+{
+  "fields": [
+   {
+      "metadata": {},
+      "name": "symbol",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "isDeleted",
+      "nullable": true,
+      "type": "boolean"
+    },
+    {
+      "metadata": {},
+      "name": "isoCode",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "name",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "metadata": {},
+      "name": "id",
+      "nullable": true,
+      "type": "integer"
+    }
+  ],
+  "type": "struct"
+}
