@@ -1,0 +1,204 @@
+{
+  "enum": {
+    "name": "enum",
+    "active": true,
+    "scheduler": "0 6 * * *",
+    "retries": 3,
+    "catchup": false,
+    "start_date":"2020-07-01",
+    "date_str": "{{ ds }}",
+    "date_id": "{{ ds_nodash }}",
+    "model": "enum",
+    "send_slack": false,
+    "spark_script": "common/dataproc_enum.py",
+    "days_back": 3,
+    "source_bucket": "s3a://peyabi.datalake.live",
+    "source_dir": "/bi-core-tech/raw/nrt/entidades/enums/",
+    "target_bucket": "gs://data-origins-temporal",
+    "schema": "en_enum_basic_schema.json",
+    "format": "csv",
+    "pyspark_jobs": [
+      {
+        "type": "raw",
+        "schema": "",
+        "active": false,
+        "name": "contact_type"
+      },
+      {
+        "type": "raw",
+        "schema": "",
+        "active": false,
+        "name": "discount_type"
+      },
+      {
+        "type": "raw",
+        "schema": "",
+        "active": false,
+        "name": "food_category_state"
+      },
+      {
+        "type": "raw",
+        "schema": "",
+        "active": false,
+        "name": "identity_card_behaviour"
+      },
+      {
+        "type": "raw",
+        "schema": "",
+        "active": false,
+        "name": "menu_layout"
+      },
+      {
+        "type": "raw",
+        "schema": "",
+        "active": false,
+        "name": "menu_unavailability_item_type"
+      },
+      {
+        "type": "raw",
+        "schema": "",
+        "active": false,
+        "name": "order_funding_source"
+      },
+      {
+        "type": "raw",
+        "schema": "",
+        "active": false,
+        "name": "order_funding_type"
+      },
+      {
+        "type": "raw",
+        "schema": "",
+        "active": false,
+        "name": "order_state"
+      },
+      {
+        "type": "raw",
+        "schema": "",
+        "active": false,
+        "name": "partner_business_type"
+      },
+      {
+        "type": "raw",
+        "schema": "",
+        "active": false,
+        "name": "partner_delivery_type"
+      },
+      {
+        "type": "raw",
+        "schema": "",
+        "active": false,
+        "name": "partner_stamps_state"
+      },
+      {
+        "type": "raw",
+        "schema": "",
+        "active": false,
+        "name": "partner_state"
+      },
+      {
+        "type": "raw",
+        "schema": "",
+        "active": false,
+        "name": "partner_state"
+      },
+      {
+        "type": "raw",
+        "schema": "",
+        "active": false,
+        "name": "partner_type"
+      },
+      {
+        "type": "raw",
+        "schema": "",
+        "active": false,
+        "name": "payment_mode"
+      },
+      {
+        "type": "raw",
+        "schema": "",
+        "active": false,
+        "name": "payment_provider"
+      },
+      {
+        "type": "raw",
+        "schema": "",
+        "active": false,
+        "name": "platform"
+      },
+      {
+        "type": "raw",
+        "schema": "",
+        "active": false,
+        "name": "prescription_behaviour"
+      },
+      {
+        "type": "raw",
+        "schema": "",
+        "active": false,
+        "name": "reminder_status"
+      },
+      {
+        "type": "raw",
+        "schema": "",
+        "active": false,
+        "name": "review_status"
+      },
+      {
+        "type": "raw",
+        "schema": "",
+        "active": false,
+        "name": "scheduler_variation_category"
+      },
+      {
+        "type": "raw",
+        "schema": "",
+        "active": false,
+        "name": "shopper_type"
+      },
+      {
+        "type": "raw",
+        "schema": "",
+        "active": false,
+        "name": "user_application"
+      },
+      {
+        "type": "raw",
+        "schema": "",
+        "active": false,
+        "name": "user_state"
+      },
+      {
+        "type": "raw",
+        "schema": "",
+        "active": false,
+        "name": "user_type"
+      },
+      {
+        "type": "raw",
+        "schema": "co_country_schema.json",
+        "active": true,
+        "format": "json",
+        "name": "country"
+      },
+      {
+        "type": "raw",
+        "active": false,
+        "schema": "cu_currency_schema.json",
+        "name": "currency"
+      },
+      {
+        "type": "raw",
+        "schema": "mu_measurement_unit_schema.json",
+        "active": false,
+        "name": "measurement_unit"
+      },
+      {
+        "type": "raw",
+        "schema": "pm_payment_method_enable_schema.json",
+        "active": false,
+        "name": "payment_method_enable"
+      }
+    ]
+  }
+}

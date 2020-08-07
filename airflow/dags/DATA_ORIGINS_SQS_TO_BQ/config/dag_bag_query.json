@@ -1,0 +1,167 @@
+{
+  "user": {
+    "name": "user",
+    "active": true,
+    "scheduler": "0 6 * * *",
+    "retries": 3,
+    "catchup": false,
+    "start_date":"2020-07-01",
+    "date_str": "{{ ds }}",
+    "date_id": "{{ ds_nodash }}",
+    "model": "user",
+    "send_slack": false,
+    "sensors": [
+      {
+        "type": "AIRFLOW",
+        "name": "DATA_ORIGINS_SQS_userextlogin_DAG",
+        "active": true
+      },
+      {
+        "type": "AIRFLOW",
+        "name": "DATA_ORIGINS_SQS_user_DAG",
+        "active": true
+      },
+      {
+        "type": "AIRFLOW",
+        "name": "DATA_ORIGINS_SQS_enum_DAG",
+        "active": true
+      }
+    ],
+    "queries": [
+      {
+        "type": "BQ",
+        "module": "user",
+        "name": "user_origin",
+        "active": true
+      },
+      {
+        "type": "BQ",
+        "module": "user",
+        "name": "user_derived",
+        "active": false
+      }
+    ],
+    "triggers": [
+      {
+        "type": "AIRFLOW",
+        "name": "sample",
+        "active": false
+      }
+    ]
+  },
+  "partner": {
+    "name": "partner",
+    "active": true,
+    "scheduler": null,
+    "retries": 3,
+    "catchup": true,
+    "start_date":"2020-08-01",
+    "date_str": "{{ ds }}",
+    "date_id": "{{ ds_nodash }}",
+    "model": "partner",
+    "send_slack": false,
+    "sensors": [
+      {
+        "type": "AIRFLOW",
+        "name": "DATA_ORIGINS_SQS_partner_DAG",
+        "active": false
+      }
+    ],
+    "queries": [
+      {
+        "type": "BQ",
+        "module": "partner",
+        "name": "partner_origin",
+        "active": true,
+        "depend_on": [
+          "partner_tag_origin",
+          "partner_channel_origin"
+        ]
+      },
+      {
+        "type": "BQ",
+        "module": "partner",
+        "name": "partner_tag_origin",
+        "active": true
+      },
+      {
+        "type": "BQ",
+        "module": "partner",
+        "name": "partner_areas_origin",
+        "active": true
+      },
+      {
+        "type": "BQ",
+        "module": "partner",
+        "name": "partner_channel_origin",
+        "active": true
+      },
+      {
+        "type": "BQ",
+        "module": "partner",
+        "name": "partner_food_category_origin",
+        "active": true
+      },
+      {
+        "type": "BQ",
+        "module": "partner",
+        "name": "partner_payment_method_origin",
+        "active": true
+      }
+    ],
+    "triggers": [
+      {
+        "type": "DAG",
+        "name": "sample",
+        "active": false
+      }
+    ]
+  },
+  "country": {
+    "name": "country",
+    "active": true,
+    "scheduler": "0 6 * * *",
+    "retries": 3,
+    "catchup": false,
+    "start_date":"2020-07-01",
+    "date_str": "{{ ds }}",
+    "date_id": "{{ ds_nodash }}",
+    "model": "country",
+    "send_slack": false,
+    "sensors": [
+      {
+        "type": "AIRFLOW",
+        "name": "DATA_ORIGINS_SQS_enum_DAG",
+        "active": true
+      }
+    ],
+    "queries": [
+      {
+        "type": "BQ",
+        "module": "country",
+        "name": "country_origin",
+        "active": true
+      },
+      {
+        "type": "BQ",
+        "module": "country",
+        "name": "country_details_origin",
+        "conn_id": "bigquery_sa_gsheet",
+        "active": true
+      },
+      {
+        "type": "BQ",
+        "module": "country",
+        "name": "country_platform_origin",
+        "active": true
+      }
+    ],
+    "triggers": [
+      {
+        "type": "AIRFLOW",
+        "name": "sample",
+        "active": false
+      }
+    ]
+  }
+}

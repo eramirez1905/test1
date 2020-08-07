@@ -1,0 +1,65 @@
+[
+    {
+        "step":"Generate_Fact_Orders_data",
+        "description": "Genera Fact_orders_data a partir de datos de ordenes limpias",
+        "py_spark": "/py/1_Generate_Fact_Order_Data.py",
+        "s3_source_path": "s3://peyabi.datalake.live/bi-core-tech/raw/orders/cleaned_orders",
+        "s3_destination_path": "s3://peyabi.datalake.live/bi-core-tech/refined/spark_fact_orders_data",
+        "data_history": "3",
+        "enabled": "1"
+    },
+    {
+        "step":"Generate_Fact_Orders_Discounts",
+        "description": "Genera Fact_Orders_Discounts a partir de datos de ordenes limpias",
+        "py_spark": "/py/2_Generate_Fact_Orders_Discounts.py",
+        "s3_source_path": "s3://peyabi.datalake.live/bi-core-tech/raw/orders/cleaned_orders",
+        "s3_destination_path": "s3://peyabi.datalake.live/bi-core-tech/refined/spark_fact_orders_discounts",
+        "data_history": "3",
+        "enabled": "1"
+    },
+    {
+        "step":"Generate_Fact_Orders_Details",
+        "description": "Genera Fact_Orders_Details a partir de datos de ordenes limpias",
+        "py_spark": "/py/3_Generate_Fact_Orders_Details.py",
+        "s3_source_path": "s3://peyabi.datalake.live/bi-core-tech/raw/orders/cleaned_orders",
+        "s3_destination_path": "s3://peyabi.datalake.live/bi-core-tech/refined/spark_fact_orders_details",
+        "data_history": "3",
+        "enabled": "1"
+    },
+    {
+        "step":"Generate_Fact_Orders_Details_Options",
+        "description": "Genera Fact_Orders_Details_Options a partir de datos de ordenes limpias",
+        "py_spark": "/py/4_Generate_Fact_Orders_Details_Options.py",
+        "s3_source_path": "s3://peyabi.datalake.live/bi-core-tech/raw/orders/cleaned_orders",
+        "s3_destination_path": "s3://peyabi.datalake.live/bi-core-tech/refined/spark_fact_orders_details_options",
+        "data_history": "3",
+        "enabled": "1"
+    },
+    {
+        "step":"Generate_Fact_Orders",
+        "description": "Genera Fact_Orders a partir de datos de ordenes limpias",
+        "py_spark": "/py/5_Generate_Fact_Orders.py",
+        "s3_source_path": "s3://peyabi.datalake.live/bi-core-tech/raw/orders/cleaned_orders",
+        "s3_destination_path": "s3://peyabi.datalake.live/bi-core-tech/refined/spark_fact_orders",
+        "data_history": "3",
+        "enabled": "1"
+    },
+    {
+        "step":"Generate_Fail_Rate_Owner_Inhouse_Owner",
+        "description": "Genera Fail_Rate_Owner_Inhouse_Owner a partir de datos de ordenes limpias",
+        "py_spark": "/py/6_Generate_Fail_Rate_Owner_Inhouse_Owner.py",
+        "s3_source_path": "s3://peyabi.datalake.live/bi-core-tech/refined/spark_fact_orders",
+        "s3_destination_path": "s3://peyabi.datalake.live/bi-core-tech/refined/spark_Fail_Rate_Owner_Inhouse_Owner",
+        "data_history": "3",
+        "enabled": "1"
+    },
+    {
+        "step":"Generate_Fact_Orders",
+        "description": "Genera Fact_Orders a partir de datos de ordenes limpias",
+        "py_spark": "/py/5_Generate_Fact_Orders.py",
+        "s3_source_path": "s3://peyabi.datalake.live/bi-core-tech/raw/orders/last_order_events",
+        "s3_destination_path": "s3://peyabi.datalake.live/bi-core-tech/refined/upsert_fact_orders",
+        "enabled": "0"
+    }
+
+]

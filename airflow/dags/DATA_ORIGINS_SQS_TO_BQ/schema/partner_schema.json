@@ -1,0 +1,602 @@
+[
+  {
+    "name": "restaurant_id",
+    "type": "bigint",
+    "description": "Unique identifier of the Partner, defined by PedidosYa"
+  },
+  {
+    "name": "restaurant_name",
+    "type": "string",
+    "description": "Partners short name, also known as fantasy name"
+  },
+  {
+    "name": "restaurant_state_id",
+    "type": "int",
+    "description": "Identifier of current partner state"
+  },
+  {
+    "name": "restaurant_type_id",
+    "type": "int",
+    "description": "Identifier of current partner type, for example if partner data is PROFILE, DELIVERY or BRANCH"
+  },
+  {
+    "name": "area_id",
+    "type": "bigint",
+    "description": "Unique identifier of the geographic area in which the partner is located"
+  },
+  {
+    "name": "country_id",
+    "type": "bigint",
+    "description": "Identifier of the country in which the partner is located"
+  },
+  {
+    "name": "registered_date_id",
+    "type": "int",
+    "description": "Registration date id of partner into PedidosYa, numeric format YYYYMMDD"
+  },
+  {
+    "name": "is_vip",
+    "type": "boolean",
+    "description": "Is true when the partner currently has a VIP contract"
+  },
+  {
+    "name": "is_gold_vip",
+    "type": "boolean",
+    "description": "Is true when the partner currently has a Gold Vip contract"
+  },
+  {
+    "name": "is_important_account",
+    "type": "boolean",
+    "description": "Is true when the partner is defined as an important account in PedidosYa"
+  },
+  {
+    "name": "registered_date",
+    "type": "timestamp",
+    "description": "Registration date of partner into PedidosYa"
+  },
+  {
+    "name": "created_date_id",
+    "type": "int",
+    "description": "Creation date id of the partner in PedidosYa, numeric format YYYYMMDD"
+  },
+  {
+    "name": "created_date",
+    "type": "timestamp",
+    "description": "Creation date of the partner in PedidosYa"
+  },
+  {
+    "name": "last_order_date",
+    "type": "timestamp",
+    "description": "Datetime of the last order generated for partner"
+  },
+  {
+    "name": "first_order_date",
+    "type": "timestamp",
+    "description": "Datetime of the first order generated for partner"
+  },
+  {
+    "name": "rut",
+    "type": "string",
+    "description": "Tax registation number of the partner"
+  },
+  {
+    "name": "has_online_payment",
+    "type": "boolean",
+    "description": "Is TRUE if the partner has currently set up the online payment method"
+  },
+  {
+    "name": "has_stamps",
+    "type": "boolean",
+    "description": "Is yes if the partner has currently set up the stamps campaigns"
+  },
+  {
+    "name": "has_pos",
+    "type": "boolean",
+    "description": "Is yes if the partner has currently set up pos to use in payment method"
+  },
+  {
+    "name": "restaurant_street",
+    "type": "string",
+    "description": "Name of the street where the partner is currently located"
+  },
+  {
+    "name": "restaurant_door_number",
+    "type": "string",
+    "description": "Door number of the building where the partner is currently located"
+  },
+  {
+    "name": "restaurant_phone",
+    "type": "string",
+    "description": "Current Partner Phone Numbers"
+  },
+  {
+    "name": "restaurant_owner_contact_name",
+    "type": "string",
+    "description": "Current Partner owner contact name"
+  },
+  {
+    "name": "restaurant_owner_contact_last_name",
+    "type": "string",
+    "description": "Current Partner owner contact last name"
+  },
+  {
+    "name": "restaurant_owner_contact_phones",
+    "type": "string",
+    "description": "Current Partner owner phones of contact"
+  },
+  {
+    "name": "reception_system_name",
+    "type": "string",
+    "description": "Name of the main reception system in which the order data was received"
+  },
+  {
+    "name": "commission",
+    "type": "decimal(19,2)",
+    "description": "It is the commission percentage defined for the restaurant in his billing information (contract)"
+  },
+  {
+    "name": "max_shipping_amount",
+    "type": "decimal(19,2)",
+    "description": "Represents the maximum shipment value between the shipping amount of the partner in each of its delivery zones"
+  },
+  {
+    "name": "min_delivery_amount",
+    "type": "decimal(19,2)",
+    "description": "Represents the minimum order value requeried to place an order between the delivery amount of the partner in each of its delivery zones"
+  },
+  {
+    "name": "publicity_cost",
+    "type": "decimal(19,2)",
+    "description": "It is the amount related to publicity assigned to the business (contract)"
+  },
+  {
+    "name": "automation_cost",
+    "type": "decimal(19,2)",
+    "description": "It is the amount related to automation assigned to the business (contract)"
+  },
+  {
+    "name": "avg_rating",
+    "type": "decimal(19,2)",
+    "description": "It is the average of the general ratings of the partner"
+  },
+  {
+    "name": "main_cousine",
+    "type": "string",
+    "description": "Main dish of the partner yesterday"
+  },
+  {
+    "name": "qty_comments",
+    "type": "bigint",
+    "description": "Number of valid reviews for the partner since its first day in PedidosYa"
+  },
+  {
+    "name": "is_talent",
+    "type": "boolean",
+    "description": "Is TRUE if partner is Talent in BO. This partners appear higher on the search results"
+  },
+  {
+    "name": "has_banner",
+    "type": "boolean",
+    "description": "Is TRUE if the menu of the partner has a personalised banner on top"
+  },
+  {
+    "name": "has_discount",
+    "type": "boolean",
+    "description": "Is TRUE if the partner had weekly discounts available on BO yesterday"
+  },
+  {
+    "name": "delivery_time",
+    "type": "string",
+    "description": "Represents the expected delivery time calculated for the partner for yesterday"
+  },
+  {
+    "name": "max_delivery_amount",
+    "type": "decimal(19,2)",
+    "description": "Represents the maximum minimum order value requeried to place an order between the delivery amount of the partner in each of its delivery zones"
+  },
+  {
+    "name": "min_shipping_amount",
+    "type": "decimal(19,2)",
+    "description": "Represents the minimum shipment value between the shipping amount of the partner in each of its delivery zones"
+  },
+  {
+    "name": "qty_zones",
+    "type": "int",
+    "description": "Number of active delivery zones"
+  },
+  {
+    "name": "is_express",
+    "type": "boolean",
+    "description": "Is TRUE if the partner is tagged with DELIVERY EXPRESS in BO"
+  },
+  {
+    "name": "is_debtor",
+    "type": "boolean",
+    "description": "Defines if the partner is debtor"
+  },
+  {
+    "name": "contract_number",
+    "type": "int",
+    "description": "It is the contract number of the partner or of the comercial group"
+  },
+  {
+    "name": "has_mov",
+    "type": "boolean",
+    "description": "Is TRUE if the variable min_delivery_amount is greater than 0"
+  },
+  {
+    "name": "qty_current_gold_vip",
+    "type": "bigint",
+    "description": "Qty gold vip contracts currently enabled"
+  },
+  {
+    "name": "has_featured_product",
+    "type": "boolean",
+    "description": "Is TRUE when the partner currently has a Feature Product contract enabled"
+  },
+  {
+    "name": "qty_current_featured_product",
+    "type": "bigint",
+    "description": "Qty feature products contracts currently enabled"
+  },
+  {
+    "name": "is_logistic",
+    "type": "boolean",
+    "description": "Is TRUE if the partner currently delivers with PedidosYa Logistics"
+  },
+  {
+    "name": "account_owner",
+    "type": "string",
+    "description": "Name of account owner of partner, defined by sales team and obtained from Salesforce data"
+  },
+  {
+    "name": "address_id",
+    "type": "bigint",
+    "description": "Identifier of address in which the partner is located"
+  },
+  {
+    "name": "avg_speed",
+    "type": "decimal(19,2)",
+    "description": "It is the average of the speed ratings of the business"
+  },
+  {
+    "name": "is_premium",
+    "type": "boolean",
+    "description": "Is TRUE if the business is tagged with DELIVERY PREMIUM in BO"
+  },
+  {
+    "name": "main_cousine_category_id",
+    "type": "int",
+    "description": "Identifier of yesterdays main dish of the partner"
+  },
+  {
+    "name": "previous_state_id",
+    "type": "int",
+    "description": "Identifier of state of the partner on the day before yesterday"
+  },
+  {
+    "name": "change_state_date_id",
+    "type": "int",
+    "description": "Identifier of the date of the last change of state of the partner"
+  },
+  {
+    "name": "link",
+    "type": "string",
+    "description": "Contains de suffix to create the link to access to the partner home page in PedidosYa"
+  },
+  {
+    "name": "logo",
+    "type": "string",
+    "description": "Contains the name of the file of the logo of the partner"
+  },
+  {
+    "name": "reception_system_enabled",
+    "type": "boolean",
+    "description": "Is TRUE if the partner has active the order reception system"
+  },
+  {
+    "name": "is_day",
+    "type": "boolean",
+    "description": "Is TRUE if the partner is open at least a day at noon"
+  },
+  {
+    "name": "is_night",
+    "type": "boolean",
+    "description": "Is TRUE if the partner is open at least a day at night"
+  },
+  {
+    "name": "city_id",
+    "type": "bigint",
+    "description": "Identifer of the city in which de partner is located"
+  },
+  {
+    "name": "disabled_reason",
+    "type": "string",
+    "description": "Reason why the partner was disabled (old)"
+  },
+  {
+    "name": "avg_food",
+    "type": "decimal(19,2)",
+    "description": "It is the average of the food ratings of the partner"
+  },
+  {
+    "name": "avg_service",
+    "type": "decimal(19,2)",
+    "description": "It is the average of the general service rating of the partner"
+  },
+  {
+    "name": "has_custom_photo_menu",
+    "type": "boolean",
+    "description": "Is TRUE if at least one of the products of the menu of the partner has custom photo, this means that the products has at least one photo taken by our photographers (not count the stock images)"
+  },
+  {
+    "name": "disabled_motive",
+    "type": "string",
+    "description": "Motive why the partner was disabled"
+  },
+  {
+    "name": "has_shipping_amount",
+    "type": "boolean",
+    "description": "Is TRUE if at least one of the partners delivery zones has shippment amount distinct to 0"
+  },
+  {
+    "name": "orders_reception_system_id",
+    "type": "bigint",
+    "description": "Identifier of the reception system of the restaurant"
+  },
+  {
+    "name": "orders_secondary_reception_system_id",
+    "type": "bigint",
+    "description": "Identifier of the secondary reception system of the restaurant"
+  },
+  {
+    "name": "logistics_commission",
+    "type": "decimal(19,2)",
+    "description": "It is the commission by logistic concept"
+  },
+  {
+    "name": "has_restaurant_portal",
+    "type": "boolean",
+    "description": "is TRUE if the partner has access to partner portal"
+  },
+  {
+    "name": "dispatch_current_month",
+    "type": "boolean",
+    "description": "Is TRUE if from all orders CONFIRMED on the current month, at least one of them has dispatch date"
+  },
+  {
+    "name": "sap_id",
+    "type": "string",
+    "description": "Unique identifier of the partner in SAP"
+  },
+  {
+    "name": "commission_restaurant",
+    "type": "decimal(19,2)",
+    "description": "Percentage commission of the partner"
+  },
+  {
+    "name": "first_date_online",
+    "type": "date",
+    "description": "First day online of the partner"
+  },
+  {
+    "name": "delivery_type",
+    "type": "int",
+    "description": "Identifier of the partners delivery type (1=delivery, 2=pick up, 3= all)"
+  },
+  {
+    "name": "email",
+    "type": "string",
+    "description": "Current principal mail address of the partner"
+  },
+  {
+    "name": "business_type",
+    "type": "int",
+    "description": "Current business type of the partner"
+  },
+  {
+    "name": "business_name",
+    "type": "string",
+    "description": "Current business name of the partner"
+  },
+  {
+    "name": "billing_info_id",
+    "type": "bigint",
+    "description": "Billing informarion identifier assigned to the partner"
+  },
+  {
+    "name": "is_online",
+    "type": "boolean",
+    "description": "Is TRUE if the partner is active (variable is_active) or his state is ONLINE or UPDATING (yesterday)"
+  },
+  {
+    "name": "is_new_online",
+    "type": "boolean",
+    "description": "Is TRUE if the partner was online for the first time yesterday"
+  },
+  {
+    "name": "is_offline",
+    "type": "boolean",
+    "description": "Is TRUE when the partner is not PENDING and is not ONLINE"
+  },
+  {
+    "name": "accepts_vouchers",
+    "type": "boolean",
+    "description": "Is TRUE if the partner accepts vouchers (from BO)"
+  },
+  {
+    "name": "is_active",
+    "type": "boolean",
+    "description": "Is TRUE if the partner has orders CONFIRMED or REJECTED yesterday"
+  },
+  {
+    "name": "is_pending",
+    "type": "boolean",
+    "description": "Is TRUE if the state of the partner is PENDING"
+  },
+  {
+    "name": "is_new_online_logistic",
+    "type": "boolean",
+    "description": "Is TRUE if the partner was online for the first time yesterday and it uses PedidosYa logistics"
+  },
+  {
+    "name": "is_chain",
+    "type": "boolean",
+    "description": "Is TRUE if the partner is part of a comercial brand (from BO)"
+  },
+  {
+    "name": "is_new_registered",
+    "type": "boolean",
+    "description": "Is TRUE if the partner is a new partner in the system"
+  },
+  {
+    "name": "url_site",
+    "type": "string",
+    "description": "Complete URL of the partners home page in PedidosYa"
+  },
+  {
+    "name": "salesforce_id",
+    "type": "string",
+    "description": "Unique identifier of Partner in SALESFORCE"
+  },
+  {
+    "name": "centralized_reception_partner_id",
+    "type": "bigint",
+    "description": "Centralized partner identificator. This identificator allows the centralization of the reception system of different partners. "
+  },
+  {
+    "name": "affected_by_porygon_events",
+    "type": "boolean",
+    "description": "Is TRUE if the partner is set up so that its delivery zones vary depending on some rules determined by the logistics Team (due to the zone estimated delay - qty_orders vs qty_riders_available)"
+  },
+  {
+    "name": "affected_by_porygon_optimizations",
+    "type": "boolean",
+    "description": "Is TRUE if the partner is set up so that its delivery zones rings adapt on an optimized way after one of the zones changed its size due to lack of riders. If it is FALSE, the rings remain the same even one of them changed it size."
+  },
+  {
+    "name": "public_phone",
+    "type": "string",
+    "description": "Visible phone to the client from BO"
+  },
+  {
+    "name": "automatic_phone",
+    "type": "string",
+    "description": "Automatic phone from BO"
+  },
+  {
+    "name": "last_updated",
+    "type": "timestamp",
+    "description": "Last update from BO"
+  },
+  {
+    "name": "qty_products",
+    "type": "int",
+    "description": "Qty products in BO (all products and not only active ones)"
+  },
+  {
+    "name": "qty_picts",
+    "type": "int",
+    "description": "Qty products that have photos in BO (all products and not only active ones)"
+  },
+  {
+    "name": "parallel_reception_system",
+    "type": "boolean",
+    "description": "Is TURE if the partner has more than one reception system that work on parallel"
+  },
+  {
+    "name": "qty_custom_picts",
+    "type": "int",
+    "description": "Qty products of the menu of the partner that have custom photo, this means that it has a photo taken by our photographers (not count the stock images)"
+  },
+  {
+    "name": "accepts_and_supports_vouchers",
+    "type": "boolean",
+    "description": "Is TRUE if the partner accepts and its reception system supports vouchers"
+  },
+  {
+    "name": "qty_picts_portal",
+    "type": "int",
+    "description": "Qty active products that have photos in partner portal"
+  },
+  {
+    "name": "menu_id",
+    "type": "bigint",
+    "description": "Identifier of the current menu of the partner"
+  },
+  {
+    "name": "declines_but_supports_vouchers",
+    "type": "boolean",
+    "description": "Is TRUE if the partner declines vouchers but its reception system supports them"
+  },
+  {
+    "name": "concept_id",
+    "type": "bigint",
+    "description": "Identifer of concept (when applies)"
+  },
+  {
+    "name": "kitchen_id",
+    "type": "bigint",
+    "description": "Identifer of kitchen (when applies)"
+  },
+  {
+    "name": "is_darkstore",
+    "type": "boolean",
+    "description": "Is TRUE if the partner is a darkstore"
+  },
+  {
+    "name": "business_category_id",
+    "type": "bigint",
+    "description": "Sub-category within the business type of the partner"
+  },
+  {
+    "name": "avg_main_cuisine_product_price",
+    "type": "decimal(19,2)",
+    "description": "AVG price of all the products on the menu that are from the main cuisine of the partner (yesterday)"
+  },
+  {
+    "name": "accepts_pre_order",
+    "type": "boolean",
+    "description": "Is TRUE if the partner accepts pre orders"
+  },
+  {
+    "name": "requires_proof_of_delivery",
+    "type": "boolean",
+    "description": "Is TRUE if the user is asked to sign (confirm he received it) once he receives the order "
+  },
+  {
+    "name": "qty_products_portal",
+    "type": "int",
+    "description": "Qty active products in partner portal"
+  },
+  {
+    "name": "last_heartbeat_primary_rs",
+    "type": "timestamp",
+    "description": "Date of last heartbeat of primary reception system "
+  },
+  {
+    "name": "last_heartbeat_secondary_rs",
+    "type": "timestamp",
+    "description": "Date of last heartbeat of secondary reception system "
+  },
+  {
+    "name": "identity_card_behaviour",
+    "type": "int",
+    "description": "Indicate if partner needs user identification to delivered"
+  },
+  {
+    "name": "single_commission",
+    "type": "boolean",
+    "description": "Is TRUE if the partner has single commission in BO"
+  },
+  {
+    "name": "shopper_type_id",
+    "type": "int",
+    "description": "Shopper type identifier"
+  },
+  {
+    "name": "audi_load_date",
+    "type": "timestamp",
+    "description": "Autogenerated with the exact moment of registration of row into table. (datetime UTC−3 (UYT))"
+  }
+]
