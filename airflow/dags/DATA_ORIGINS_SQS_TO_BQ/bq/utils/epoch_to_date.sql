@@ -1,1 +1,0 @@
-cast(TIMESTAMP_SECONDS(cast(message_timestamp/1000 as int64)) as date)
