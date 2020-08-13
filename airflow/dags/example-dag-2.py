@@ -80,7 +80,7 @@ with models.DAG(
         # the recommended solution is to increase the amount of nodes in order
         # to satisfy the computing requirements. Alternatively, launching pods
         # into a custom namespace will stop fighting over resources.
-        namespace='default',
+        namespace='airflow',
         # Docker image specified. Defaults to hub.docker.com, but any fully
         # qualified URLs will point to a custom repository. Supports private
         # gcr.io images if the Composer Environment is under the same
@@ -93,7 +93,7 @@ with models.DAG(
     kubenetes_template_ex = kubernetes_pod_operator.KubernetesPodOperator(
         task_id='ex-kube-templates',
         name='ex-kube-templates',
-        namespace='default',
+        namespace='airflow',
         image='bash',
         # All parameters below are able to be templated with jinja -- cmds,
         # arguments, env_vars, and config_file. For more information visit:
@@ -122,7 +122,7 @@ with models.DAG(
     kubernetes_secret_vars_ex = kubernetes_pod_operator.KubernetesPodOperator(
         task_id='ex-kube-secrets',
         name='ex-kube-secrets',
-        namespace='default',
+        namespace='airflow',
         image='ubuntu',
         startup_timeout_seconds=300,
         # The secrets to pass to Pod, the Pod will fail to create if the
@@ -138,7 +138,7 @@ with models.DAG(
     kubernetes_affinity_ex = kubernetes_pod_operator.KubernetesPodOperator(
         task_id='ex-pod-affinity',
         name='ex-pod-affinity',
-        namespace='default',
+        namespace='airflow',
         image='perl',
         cmds=['perl'],
         arguments=['-Mbignum=bpi', '-wle', 'print bpi(2000)'],
@@ -180,7 +180,7 @@ with models.DAG(
     kubernetes_full_pod = kubernetes_pod_operator.KubernetesPodOperator(
         task_id='ex-all-configs',
         name='pi',
-        namespace='default',
+        namespace='airflow',
         image='perl',
         # Entrypoint of the container, if not specified the Docker container's
         # entrypoint is used. The cmds parameter is templated.
