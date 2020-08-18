@@ -1,6 +1,7 @@
 from airflow import DAG
 from datetime import datetime, timedelta
 from airflow.contrib.operators.gcp_container_operator import GKEPodOperator
+from airflow.operators.dummy_operator import DummyOperator
 
 
 default_args = {
