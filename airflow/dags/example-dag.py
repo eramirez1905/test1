@@ -1,8 +1,7 @@
 from airflow import DAG
 from datetime import datetime, timedelta
-from airflow.contrib.operators.gcp_container_operator import GKEPodOperator
+from airflow.contrib.operators.kubernetes_pod_operator import KubernetesPodOperator
 from airflow.operators.dummy_operator import DummyOperator
-
 
 default_args = {
     'owner': 'airflow',
@@ -15,18 +14,21 @@ default_args = {
     'retry_delay': timedelta(minutes=5)
 }
 
-
 dag = DAG(
-    'testing_GKEPodOperator', default_args=default_args, schedule_interval=timedelta(minutes=10))
+    'kubernetes_sample', default_args=default_args, schedule_interval=timedelta(minutes=10))
 
 start = DummyOperator(task_id='run_this_first', dag=dag)
 
-operator = GKEPodOperator(task_id='data-task',
-                          project_id='peya-data-pocs',
-                          location='us-central1-a',
-                          cluster_name='spinnaker-1',
-                          name='task-name',
-                          namespace='airflow',
-                          image='gcr.io/peya-data-pocs/data-analysts-toolkit@sha256:da37ac9704179e28f17336f187ba3ddee4005883d736801f5201283fe5e4e62c')
+passing = KubernetesPodOperator(namespace='airflow',
+                          image="gcr.io/peya-data-pocs/data-analysts-toolkit@sha256:da37ac9704179e28f17336f187ba3ddee4005883d736801f5201283fe5e4e62c",
+                        #   cmds=["python","-c"],
+                        #   arguments=["print('hello world')"],
+                          labels={"foo": "bar"},
+                          name="passing-test",
+                          task_id="passing-task",
+                          get_logs=True,
+                          dag=dag,
+                          in_cluster=True
+                          )
 
-operator.set_upstream(start)
+passing.set_upstream(start)
