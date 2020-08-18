@@ -2,6 +2,7 @@ from airflow import DAG
 from datetime import datetime, timedelta
 from airflow.contrib.operators.gcp_container_operator import GKEPodOperator
 
+
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
@@ -12,6 +13,8 @@ default_args = {
     'retries': 1,
     'retry_delay': timedelta(minutes=5)
 }
+
+start = DummyOperator(task_id='run_this_first', dag=dag)
 
 dag = DAG(
     'testing_GKEPodOperator', default_args=default_args, schedule_interval=timedelta(minutes=10))
