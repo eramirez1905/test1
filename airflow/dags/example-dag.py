@@ -15,10 +15,11 @@ default_args = {
     'retry_delay': timedelta(minutes=5)
 }
 
-start = DummyOperator(task_id='run_this_first', dag=dag)
 
 dag = DAG(
     'testing_GKEPodOperator', default_args=default_args, schedule_interval=timedelta(minutes=10))
+
+start = DummyOperator(task_id='run_this_first', dag=dag)
 
 operator = GKEPodOperator(task_id='data-task',
                           project_id='peya-data-pocs',
