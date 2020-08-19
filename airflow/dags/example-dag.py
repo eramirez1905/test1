@@ -13,33 +13,18 @@ default_args = {
     'retry_delay': timedelta(minutes=5),
 }
 
-namespace = conf.get('kubernetes', 'NAMESPACE')
-
-# This will detect the default namespace locally and read the
-# environment namespace when deployed to Astronomer.
-if namespace =='airflow':
-    in_cluster=False
-    config_file=None
-
 dag = DAG('example_kubernetes_pod',
           schedule_interval='@once',
           default_args=default_args)
 
-# This is where we define our desired resources.
-compute_resources = \
-  {'request_cpu': '800m',
-  'request_memory': '3Gi',
-  'limit_cpu': '800m',
-  'limit_memory': '3Gi'}
-
 with dag:
     k = KubernetesPodOperator(
-        namespace=namespace,
+        namespace="airflow",
         image="hello-world",
         labels={"foo": "bar"},
         name="airflow-test-pod",
         task_id="task-one",
-        in_cluster=in_cluster, # if set to true, will look in the cluster, if false, looks for file
-        config_file=config_file,
+        in_cluster=False, # if set to true, will look in the cluster, if false, looks for file
+        config_file=None,
         is_delete_operator_pod=True,
         get_logs=True)
