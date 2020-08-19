@@ -13,14 +13,14 @@ default_args = {
     'retry_delay': timedelta(minutes=5),
 }
 
-dag = DAG('example_kubernetes_pod',
+dag = DAG('test_kubernetes_pod',
           schedule_interval='@once',
           default_args=default_args)
 
 with dag:
     k = KubernetesPodOperator(
         namespace="airflow",
-        image="hello-world",
+        image="ubuntu",
         labels={"foo": "bar"},
         name="airflow-test-pod",
         task_id="task-one",
