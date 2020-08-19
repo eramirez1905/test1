@@ -15,8 +15,6 @@ default_args = {
     'retry_delay': timedelta(minutes=5)
 }
 
-dag = DAG(
-    'kubernetes_sample', default_args=default_args, schedule_interval=timedelta(minutes=10))
 
 
 passing = KubernetesPodOperator(namespace='airflow',
@@ -27,7 +25,6 @@ passing = KubernetesPodOperator(namespace='airflow',
                           name="passing-test",
                           task_id="passing-task",
                           get_logs=True,
-                          dag=dag
                           )
 
 failing = KubernetesPodOperator(namespace='airflow',
@@ -38,5 +35,4 @@ failing = KubernetesPodOperator(namespace='airflow',
                           name="fail",
                           task_id="failing-task",
                           get_logs=True,
-                          dag=dag
                           )
