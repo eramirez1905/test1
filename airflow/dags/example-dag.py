@@ -1,34 +1,96 @@
-from airflow import DAG
-from datetime import datetime, timedelta
+from airflow.contrib.operators import KubernetesOperator
 from airflow.contrib.operators.kubernetes_pod_operator import KubernetesPodOperator
-from airflow.operators.dummy_operator import DummyOperator
+from airflow.contrib.kubernetes.secret import Secret
 
-default_args = {
-    'owner': 'airflow',
-    'depends_on_past': False,
-    'start_date': datetime.utcnow(),
-    'email': ['airflow@example.com'],
-    'email_on_failure': False,
-    'email_on_retry': False,
-    'retries': 1,
-    'retry_delay': timedelta(minutes=5)
+secret_file = Secret('volume', '/etc/sql_conn', 'airflow-secrets', 'sql_alchemy_conn')
+secret_env  = Secret('env', 'SQL_CONN', 'airflow-secrets', 'sql_alchemy_conn')
+secret_all_keys  = Secret('env', None, 'airflow-secrets-2')
+volume_mount = VolumeMount('test-volume',
+                            mount_path='/root/mount_file',
+                            sub_path=None,
+                            read_only=True)
+
+configmaps = ['test-configmap-1', 'test-configmap-2']
+
+volume_config= {
+    'persistentVolumeClaim':
+      {
+        'claimName': 'test-volume'
+      }
+    }
+volume = Volume(name='test-volume', configs=volume_config)
+
+affinity = {
+    'nodeAffinity': {
+      'preferredDuringSchedulingIgnoredDuringExecution': [
+        {
+          "weight": 1,
+          "preference": {
+            "matchExpressions": {
+              "key": "disktype",
+              "operator": "In",
+              "values": ["ssd"]
+            }
+          }
+        }
+      ]
+    },
+    "podAffinity": {
+      "requiredDuringSchedulingIgnoredDuringExecution": [
+        {
+          "labelSelector": {
+            "matchExpressions": [
+              {
+                "key": "security",
+                "operator": "In",
+                "values": ["S1"]
+              }
+            ]
+          },
+          "topologyKey": "failure-domain.beta.kubernetes.io/zone"
+        }
+      ]
+    },
+    "podAntiAffinity": {
+      "requiredDuringSchedulingIgnoredDuringExecution": [
+        {
+          "labelSelector": {
+            "matchExpressions": [
+              {
+                "key": "security",
+                "operator": "In",
+                "values": ["S2"]
+              }
+            ]
+          },
+          "topologyKey": "kubernetes.io/hostname"
+        }
+      ]
+    }
 }
 
-dag = DAG(
-    'kubernetes_sample', default_args=default_args, schedule_interval=timedelta(minutes=10))
+tolerations = [
+    {
+        'key': "key",
+        'operator': 'Equal',
+        'value': 'value'
+     }
+]
 
-start = DummyOperator(task_id='run_this_first', dag=dag)
-
-passing = KubernetesPodOperator(namespace='airflow',
-                          image="gcr.io/peya-data-pocs/data-analysts-toolkit@sha256:da37ac9704179e28f17336f187ba3ddee4005883d736801f5201283fe5e4e62c",
-                        #   cmds=["python","-c"],
-                        #   arguments=["print('hello world')"],
+k = KubernetesPodOperator(namespace='default',
+                          image="ubuntu:16.04",
+                          cmds=["bash", "-cx"],
+                          arguments=["echo", "10"],
                           labels={"foo": "bar"},
-                          name="passing-test",
-                          task_id="passing-task",
-                          get_logs=True,
-                          dag=dag,
-                          in_cluster=True
+                          secrets=[secret_file, secret_env, secret_all_keys],
+                          volumes=[volume],
+                          volume_mounts=[volume_mount]
+                          name="test",
+                          task_id="task",
+                          affinity=affinity,
+                          is_delete_operator_pod=True,
+                          hostnetwork=False,
+                          tolerations=tolerations,
+                          configmaps=configmaps,
+                          get_logs=True
                           )
-
-passing.set_upstream(start)
