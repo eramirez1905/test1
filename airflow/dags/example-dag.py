@@ -18,10 +18,7 @@ namespace = conf.get('kubernetes', 'NAMESPACE')
 # This will detect the default namespace locally and read the
 # environment namespace when deployed to Astronomer.
 if namespace =='airflow':
-    config_file = '/usr/local/airflow/include/.kube/config'
     in_cluster=False
-else:
-    in_cluster=True
     config_file=None
 
 dag = DAG('example_kubernetes_pod',
@@ -44,6 +41,5 @@ with dag:
         task_id="task-one",
         in_cluster=in_cluster, # if set to true, will look in the cluster, if false, looks for file
         config_file=config_file,
-        resources=compute_resources,
         is_delete_operator_pod=True,
         get_logs=True)
