@@ -1,27 +1,75 @@
-from airflow import DAG
-from datetime import datetime, timedelta
+from airflow.contrib.operators import KubernetesOperator
 from airflow.contrib.operators.kubernetes_pod_operator import KubernetesPodOperator
-from airflow import configuration as conf
+from airflow.contrib.kubernetes.secret import Secret
 
-default_args = {
-    'owner': 'airflow',
-    'depends_on_past': False,
-    'start_date': datetime(2019, 1, 1),
-    'email_on_failure': False,
-    'email_on_retry': False,
-    'retries': 1,
-    'retry_delay': timedelta(minutes=5),
+affinity = {
+    'nodeAffinity': {
+      'preferredDuringSchedulingIgnoredDuringExecution': [
+        {
+          "weight": 1,
+          "preference": {
+            "matchExpressions": {
+              "key": "disktype",
+              "operator": "In",
+              "values": ["ssd"]
+            }
+          }
+        }
+      ]
+    },
+    "podAffinity": {
+      "requiredDuringSchedulingIgnoredDuringExecution": [
+        {
+          "labelSelector": {
+            "matchExpressions": [
+              {
+                "key": "security",
+                "operator": "In",
+                "values": ["S1"]
+              }
+            ]
+          },
+          "topologyKey": "failure-domain.beta.kubernetes.io/zone"
+        }
+      ]
+    },
+    "podAntiAffinity": {
+      "requiredDuringSchedulingIgnoredDuringExecution": [
+        {
+          "labelSelector": {
+            "matchExpressions": [
+              {
+                "key": "security",
+                "operator": "In",
+                "values": ["S2"]
+              }
+            ]
+          },
+          "topologyKey": "kubernetes.io/hostname"
+        }
+      ]
+    }
 }
 
-dag = DAG('test_kubernetes_pod',
-          schedule_interval='@once',
-          default_args=default_args)
+tolerations = [
+    {
+        'key': "key",
+        'operator': 'Equal',
+        'value': 'value'
+     }
+]
 
-with dag:
-    k = KubernetesPodOperator(
-        namespace="airflow",
-        image="ubuntu",
-        labels={"foo": "bar"},
-        name="airflow-test-pod",
-        task_id="task-one",
-        get_logs=True)
+k = KubernetesPodOperator(namespace='default',
+                          image="ubuntu:16.04",
+                          cmds=["bash", "-cx"],
+                          arguments=["echo", "10"],
+                          labels={"foo": "bar"},
+                          name="test",
+                          task_id="task",
+                          affinity=affinity,
+                          is_delete_operator_pod=False,
+                          hostnetwork=False,
+                          tolerations=tolerations,
+                          configmaps=None,
+                          get_logs=True
+                          )
