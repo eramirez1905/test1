@@ -24,7 +24,4 @@ with dag:
         labels={"foo": "bar"},
         name="airflow-test-pod",
         task_id="task-one",
-        in_cluster=False, # if set to true, will look in the cluster, if false, looks for file
-        config_file=None,
-        is_delete_operator_pod=True,
         get_logs=True)
