@@ -6,7 +6,7 @@ from airflow import configuration as conf
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
-    'start_date': datetime(2019, 1, 1),
+    'start_date': datetime(2020, 8, 20),
     'email_on_failure': False,
     'email_on_retry': False,
     'retries': 1,
