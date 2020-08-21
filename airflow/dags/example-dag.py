@@ -28,13 +28,10 @@ compute_resources = \
 
 with dag:
     k = KubernetesPodOperator(
-        namespace=namespace,
+        namespace="airflow",
         image="hello-world",
         labels={"foo": "bar"},
         name="airflow-test-pod",
         task_id="task-one",
-        in_cluster=True, # if set to true, will look in the cluster, if false, looks for file
-        config_file=None,
-        resources=compute_resources,
         is_delete_operator_pod=True,
         get_logs=True)
