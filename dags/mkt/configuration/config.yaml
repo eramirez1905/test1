@@ -1,0 +1,160 @@
+teams:
+  mkt-data:
+    members:
+      - U1YJMPCPJ # Enrica Pasqua
+      - USRLP0ZLP # Jakub Godlewski
+      - UB04BPJ4D # Tomas Stibrany
+      - UQY6H473K # Daniel Mohns
+      - UQ5NU02P2 # Peterson Oliveira
+  mkt-ads:
+    members:
+      - UHW9JRQGM # Johanna Goergen
+      - U0YN2622D # Jose Martin
+
+adjust_exports:
+  s3:
+    aws_conn_id: aws_mkt_ads
+    mkt_exports_bucket: dh-mkt-adjust
+    dwh_exports_bucket: dhh-adjust
+    dwh_exports_prefix: mkt-data
+    mkt_archive_bucket: dh-mkt-adjust-archive
+
+slack:
+  channel: ''
+  channel_errors: ''
+  has_mentions: false
+
+business-unit:
+  name: "mkt"
+
+gcs_staging: &gcs_staging
+  bucket_name: 'fulfilment-dwh-staging-import'
+
+# DAG configurations
+dags: {}
+
+# See BigQueryCheckMetadataExecutionOperator to why it is set to production
+bigquery_check_metadata_execution:
+  project_id: 'fulfillment-dwh-production'
+
+bigquery:
+  <<: *gcs_staging
+  project_id: 'fulfillment-dwh-staging'
+  staging_project_id: 'fulfillment-dwh-staging'
+  dataset:
+    staging: staging_mkt
+    raw: raw_mkt
+    dl: dl_mkt
+    hl: hl_mkt
+    cl: cl_mkt
+    curated_data_filtered: curated_data_filtered_mkt
+    curated_data_shared: curated_data_shared_mkt
+    acl: acl_mkt
+  create_views: false
+
+dwh_merge_layer_databases:
+  dwh_il:
+    app_version: '2'
+    project_name: 'dwh_imports'
+    is_regional: false
+    source: Redshift
+    source_format: parquet
+    start_date: "2020-09-22"
+    tables:
+      - name: dim_countries
+        cleanup_enabled: true
+        pk_columns: [source_id]
+        deduplicate_order_by_column: source_id
+        filter_import_by_date: false
+        keep_last_import_only: true
+        keep_last_import_only_partition_by_pk: true
+        enable_historical_data_in_hl: false
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: false
+        raw_layer:
+          created_at_column: null
+          updated_at_column: null
+        redshift:
+          redshift_conn_id: redshift_dwh
+          schema: dwh_il
+          table_name: dim_countries
+          columns: ['*']
+          unload_options: []
+          execution_timeout: 30
+        s3:
+          aws_conn: aws_mkt_s3_export
+          bucket: mkt-export-to-bq-dev
+          prefix: from_dwh_mkt
+  dwh_bl:
+    app_version: '2'
+    project_name: 'dwh_imports'
+    is_regional: false
+    source: Redshift
+    source_format: parquet
+    start_date: "2020-09-25"
+    tables:
+      - name: marketing_orders
+        cleanup_enabled: true
+        pk_columns: [row_hash]
+        deduplicate_order_by_column: _ingested_at
+        partition_by_date: false
+        filter_import_by_date: false
+        keep_last_import_only: true
+        keep_last_import_only_partition_by_pk: true
+        enable_historical_data_in_hl: false
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: false
+        raw_layer:
+          created_at_column: null
+          updated_at_column: null
+        redshift:
+          redshift_conn_id: redshift_dwh
+          schema: dwh_bl
+          table_name: marketing_orders
+          columns:
+            - >
+              md5(md5(coalesce(source_id::text, '''')) ||
+                md5(coalesce(order_date::text, '''')) ||
+                md5(coalesce(platform::text, '''')) ||
+                md5(coalesce(platform_type::text, '''')) ||
+                md5(coalesce(dataset::text, '''')) ||
+                md5(coalesce(channel_subchannel::text, '''')) ||
+                md5(coalesce(source::text, '''')) ||
+                md5(coalesce(medium::text, '''')) ||
+                md5(coalesce(campaign::text, ''''))
+              ) AS row_hash
+            - "*"
+          unload_options: []
+          execution_timeout: 30
+        s3:
+          aws_conn: aws_mkt_s3_export
+          bucket: mkt-export-to-bq-dev
+          prefix: from_dwh_mkt
+
+dwh_imports_curated_data:
+  dwh_il:
+    ui_color: '#2a3177'
+    tables:
+      - name: entities
+        dependencies_dl:
+          - dwh_il_dim_countries
+      - name: countries
+        dependencies_dl:
+          - dwh_il_dim_countries
+  dwh_bl:
+    ui_color: '#2a3177'
+    tables:
+      - name: marketing_orders
+        create_shared_view: true
+        filter_by_country: false
+        filter_by_entity: true
+        entity_id_column: entity_code
+        columns:
+          - '*'
+        dependencies_dl:
+          - dwh_bl_marketing_orders
+
+google_cloud_platform: {}
+google_dataset_iam: {}

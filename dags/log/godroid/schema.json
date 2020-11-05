@@ -1,0 +1,104 @@
+[
+  {
+    "mode": "NULLABLE",
+    "name": "countryCode",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "id",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "isActive",
+    "type": "BOOLEAN"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "locale",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "privateUuid",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "timezone",
+    "type": "STRING"
+  },
+  {
+    "mode": "REPEATED",
+    "name": "vendors",
+    "type": "record",
+    "fields": [
+      {
+        "mode": "NULLABLE",
+        "name": "deliveryPlatform",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "deliveryPlatform_delete_me",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "deliveryProvider",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "externalCode",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "externalId",
+        "type": "INTEGER"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "name",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "vendor_id",
+        "type": "STRING"
+      }
+    ]
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "region",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "_ingested_at",
+    "type": "TIMESTAMP"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "created_at",
+    "type": "TIMESTAMP"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "updated_at",
+    "type": "TIMESTAMP"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "created_date",
+    "type": "DATE"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "merge_layer_run_from",
+    "type": "TIMESTAMP"
+  }
+]

@@ -1,0 +1,7 @@
+slack:
+  channel: ''
+  channel_errors: ''
+  channel_cost_monitoring:
+    name: ''
+    id: ''
+  has_mentions: false

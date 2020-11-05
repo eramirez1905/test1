@@ -1,0 +1,57 @@
+{
+  "entries": [
+    {"url":"s3://pandora-dwh.bi-private.pandora.com/bq_logistics/bl_global_ccn_cc_traffic_dataset/bl_global_ccn_cc_traffic_dataset.csv_0000_part_00", "meta": { "content_length": 759729508, "record_count": 3371437 }},
+    {"url":"s3://pandora-dwh.bi-private.pandora.com/bq_logistics/bl_global_ccn_cc_traffic_dataset/bl_global_ccn_cc_traffic_dataset.csv_0001_part_00", "meta": { "content_length": 759717313, "record_count": 3371437 }},
+    {"url":"s3://pandora-dwh.bi-private.pandora.com/bq_logistics/bl_global_ccn_cc_traffic_dataset/bl_global_ccn_cc_traffic_dataset.csv_0002_part_00", "meta": { "content_length": 759759389, "record_count": 3371437 }},
+    {"url":"s3://pandora-dwh.bi-private.pandora.com/bq_logistics/bl_global_ccn_cc_traffic_dataset/bl_global_ccn_cc_traffic_dataset.csv_0003_part_00", "meta": { "content_length": 759762921, "record_count": 3371436 }},
+    {"url":"s3://pandora-dwh.bi-private.pandora.com/bq_logistics/bl_global_ccn_cc_traffic_dataset/bl_global_ccn_cc_traffic_dataset.csv_0004_part_00", "meta": { "content_length": 759727444, "record_count": 3371437 }},
+    {"url":"s3://pandora-dwh.bi-private.pandora.com/bq_logistics/bl_global_ccn_cc_traffic_dataset/bl_global_ccn_cc_traffic_dataset.csv_0005_part_00", "meta": { "content_length": 759703137, "record_count": 3371438 }},
+    {"url":"s3://pandora-dwh.bi-private.pandora.com/bq_logistics/bl_global_ccn_cc_traffic_dataset/bl_global_ccn_cc_traffic_dataset.csv_0006_part_00", "meta": { "content_length": 759722846, "record_count": 3371438 }},
+    {"url":"s3://pandora-dwh.bi-private.pandora.com/bq_logistics/bl_global_ccn_cc_traffic_dataset/bl_global_ccn_cc_traffic_dataset.csv_0007_part_00", "meta": { "content_length": 759728601, "record_count": 3371436 }}
+  ],
+  "schema": {
+    "elements": [
+      {"name": "dh_source_id", "type": { "base": "integer" }},
+      {"name": "log_country_code", "type": { "base": "character varying", "max_length": 10 }},
+      {"name": "global_entity_id", "type": { "base": "character varying", "max_length": 20 }},
+      {"name": "country_iso", "type": { "base": "character", "max_length": 2 }},
+      {"name": "country", "type": { "base": "character varying", "max_length": 200 }},
+      {"name": "language_code", "type": { "base": "character varying", "max_length": 256 }},
+      {"name": "language", "type": { "base": "character varying", "max_length": 256 }},
+      {"name": "main_language", "type": { "base": "character varying", "max_length": 80 }},
+      {"name": "brand", "type": { "base": "character varying", "max_length": 80 }},
+      {"name": "contact_center", "type": { "base": "character varying", "max_length": 80 }},
+      {"name": "dispatch_center", "type": { "base": "character varying", "max_length": 80 }},
+      {"name": "cs_ps_location_country_iso", "type": { "base": "character", "max_length": 2 }},
+      {"name": "dp_location_country_iso", "type": { "base": "character", "max_length": 2 }},
+      {"name": "iso_date", "type": { "base": "date" }},
+      {"name": "start_time", "type": { "base": "numeric", "max_precision": 15, "max_scale": 4 }},
+      {"name": "start_datetime", "type": { "base": "timestamp without time zone" }},
+      {"name": "end_datetime", "type": { "base": "timestamp without time zone" }},
+      {"name": "location_timezone", "type": { "base": "character varying", "max_length": 80 }},
+      {"name": "cs_ps_timezone", "type": { "base": "character varying", "max_length": 80 }},
+      {"name": "dp_timezone", "type": { "base": "character varying", "max_length": 80 }},
+      {"name": "ps_in_call_interval_actuals", "type": { "base": "bigint" }},
+      {"name": "ps_out_call_interval_actuals", "type": { "base": "bigint" }},
+      {"name": "cs_in_chat_interval_actuals", "type": { "base": "bigint" }},
+      {"name": "dp_in_chat_interval_actuals", "type": { "base": "bigint" }},
+      {"name": "cs_in_emai_interval_actuals", "type": { "base": "bigint" }},
+      {"name": "cs_in_some_interval_actuals", "type": { "base": "bigint" }},
+      {"name": "ps_in_emai_interval_actuals", "type": { "base": "bigint" }},
+      {"name": "dp_in_issu_interval_actuals", "type": { "base": "bigint" }},
+      {"name": "hc_cs_in_chat_daily_actuals", "type": { "base": "bigint" }},
+      {"name": "hc_cs_in_emai_daily_actuals", "type": { "base": "bigint" }},
+      {"name": "hc_successful_sessions_daily", "type": { "base": "bigint" }},
+      {"name": "management_entity_group", "type": { "base": "character varying", "max_length": 80 }},
+      {"name": "region", "type": { "base": "character varying", "max_length": 80 }}
+    ]
+  },
+  "meta": {
+    "content_length": 6077851159,
+    "record_count": 26971496
+  },
+  "author": {
+    "name": "Amazon Redshift",
+    "version": "1.0.0"
+  }
+}

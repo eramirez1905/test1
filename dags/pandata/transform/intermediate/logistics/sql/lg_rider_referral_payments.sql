@@ -1,0 +1,37 @@
+SELECT
+  `{project_id}`.pandata_intermediate.LG_UUID(details.payment_id, rider_referral_payments.country_code) AS uuid,
+  details.payment_id AS id,
+  `{project_id}`.pandata_intermediate.LG_UUID(rider_referral_payments.rider_id, rider_referral_payments.country_code) AS lg_rider_uuid,
+  rider_referral_payments.rider_id AS lg_rider_id,
+  `{project_id}`.pandata_intermediate.LG_UUID(
+    `{project_id}`.pandata_intermediate.EXCLUDE_T2_CITY(rider_referral_payments.country_code, rider_referral_payments.city_id),
+    rider_referral_payments.country_code
+  ) AS lg_city_uuid,
+  `{project_id}`.pandata_intermediate.EXCLUDE_T2_CITY(rider_referral_payments.country_code, rider_referral_payments.city_id) AS lg_city_id,
+  `{project_id}`.pandata_intermediate.LG_UUID(rider_referral_payments.contract_id, rider_referral_payments.country_code) AS lg_contract_uuid,
+  rider_referral_payments.contract_id AS lg_contract_id,
+  `{project_id}`.pandata_intermediate.LG_UUID(details.referrer_id, rider_referral_payments.country_code) AS referrer_lg_rider_uuid,
+  details.referrer_id AS referrer_lg_rider_id,
+  `{project_id}`.pandata_intermediate.LG_UUID(details.referee_id, rider_referral_payments.country_code) AS referee_lg_rider_uuid,
+  details.referee_id AS referee_lg_rider_id,
+  `{project_id}`.pandata_intermediate.LG_UUID(details.payment_cycle_id, rider_referral_payments.country_code) AS lg_payment_cycle_uuid,
+  details.payment_cycle_id AS lg_payment_cycle_id,
+
+  rider_referral_payments.region,
+  `{project_id}`.pandata_intermediate.EXCLUDE_T2(rider_referral_payments.country_code) AS country_code,
+  rider_referral_payments.city_name,
+  rider_referral_payments.rider_name,
+  rider_referral_payments.contract_type,
+  rider_referral_payments.vehicle_type,
+  details.status,
+  details.total AS paid_local,
+  details.unit_amount AS payment_type_unit_amount,
+  rider_referral_payments.timezone,
+  details.payment_cycle_start_date AS payment_cycle_start_at_utc,
+  details.payment_cycle_end_date AS payment_cycle_end_at_utc,
+  details.paid_period_start AS paid_period_start_at_utc,
+  details.paid_period_end AS paid_period_end_at_utc,
+  details.created_at AS created_at_utc,
+  rider_referral_payments.created_date AS created_date_utc,
+FROM `fulfillment-dwh-production.curated_data_shared.rider_referral_payments` AS rider_referral_payments
+CROSS JOIN UNNEST(rider_referral_payments.payment_details) AS details

@@ -1,0 +1,26 @@
+curated_data:
+  datahub:
+    ui_color: '#e81abe'
+    bigquery_conn_id:
+      tables: 'bigquery_logistics'
+      reports: 'bigquery_default'
+    tables:
+      - name: streaming_shared
+        create_shared_view: true
+        filter_by_entity: false
+        is_stream: true
+        time_partitioning: created_date
+        require_partition_filter: true
+        cluster_fields: ~
+        columns:
+          - country_code
+          - created_date
+          - timezone
+          - rider_id
+          - received_at
+          - device
+      - name: streaming_non_shared
+        is_stream: true
+        time_partitioning: created_date
+        require_partition_filter: true
+        cluster_fields: [region, order_id]

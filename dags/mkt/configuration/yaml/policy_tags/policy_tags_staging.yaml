@@ -1,0 +1,15 @@
+# Policy tags hardcoded,
+# list fetched using https://cloud.google.com/data-catalog/docs/reference/rest/v1beta1/projects.locations.taxonomies.policyTags/list
+policy_tags:
+  - name: projects/fulfillment-dwh-staging/locations/us/taxonomies/2424367705306853562/policyTags/3352317218599192073
+    display_name: High
+    description: Highly sensitive data
+  - name: projects/fulfillment-dwh-staging/locations/us/taxonomies/2424367705306853562/policyTags/5058014474188488723
+    display_name: Medium
+    description: Somewhat sensitive data
+    child_policy_tags:
+      - projects/fulfillment-dwh-staging/locations/us/taxonomies/2424367705306853562/policyTags/4276815434084361614
+  - name: projects/fulfillment-dwh-staging/locations/us/taxonomies/2424367705306853562/policyTags/4276815434084361614
+    display_name: Private data
+    description: Private data
+    parent_policy_tag: projects/fulfillment-dwh-staging/locations/us/taxonomies/2424367705306853562/policyTags/5058014474188488723

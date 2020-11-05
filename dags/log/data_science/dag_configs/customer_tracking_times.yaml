@@ -1,0 +1,19 @@
+model_name: "tracking-time-model"
+image: '683110685365.dkr.ecr.eu-west-1.amazonaws.com/tracking-time-models'
+steps:
+    - "query-global-data"
+    - "process-country-data"
+    - "train-country-model"
+    - "validate-country-model"
+    - "merge-region-models"
+    - "validate-region-models"
+start_date: "2020-06-08"
+spark_cluster:
+    start_before: "process-country-data"
+    end_after: "process-country-data"
+schedules:
+    ap: '0 15 * * 1'
+    eu: '0 09 * * 1'
+    us: '0 18 * * 1'
+    kr: '0 22 * * 1'
+version: 3

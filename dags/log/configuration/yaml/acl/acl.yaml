@@ -1,0 +1,802 @@
+# ACL for shared views
+# Example:
+#acl:
+#  - name: PedidosYa
+#    domain: pedidosya.com # this is the catch-all domain, all users that belong to this domain
+#                          # will have access to all the countries defined below
+#                          # `domain` can be `null`, in this case the permissions are granted
+#                          # based on the contents of `users`
+#    countries: [ar, bo, cl, cr, pa, uy]       # Required: Filter rows by country_code
+#                                                If it is null (`~`) no filters are applied (all entities)
+#    entities: [PY_AR]                         # Required: Filter rows by entity_id if `filter_by_entity` is true
+#                                                If it is null (`~`) no filters are applied (all entities)
+#    users:                                    # Optional field
+#      - group: bi_logistics@pedidosya.com     # `group` is a google group
+#      - email: riccardo.bini@deliveryhero.com # `email` overrides the configuration of the venture
+#        countries: [de]                       # `countries` is optional, if omitted the countries of the venture will be used
+#                                              # If `countries` is defined it overrides the countries of the venture
+acl:
+  - name: Logistics
+    domain: null
+    countries: ~
+    entities: ~
+    users:
+      - email: riccardo.bini@deliveryhero.com
+  - name: DH Global
+    domain: null
+    countries: ~
+    entities: ~
+    users:
+      - email: alistair.hart@deliveryhero.com
+      - email: brian.leonard@deliveryhero.com
+      - email: richard.dean@deliveryhero.com
+      - email: kevin.viraud@deliveryhero.com
+      - email: dh-dw-googledata@deliveryhero.com
+      - email: sara.turrina@deliveryhero.com
+      - email: nader.kawkabany@deliveryhero.com
+      - email: karolina.nehls@deliveryhero.com
+
+      # International Data Science Team
+      - email: developer-service-access@dhh---data-science.iam.gserviceaccount.com
+      - email: aws-server-access@dhh---data-science.iam.gserviceaccount.com
+      - email: michael.clarkson@deliveryhero.com
+      - email: michael.mayer@deliveryhero.com
+
+      # Pricing team
+      - email: michal.wawrzkiewicz@deliveryhero.com
+
+      # data chef / Datachef
+      - email: mariia.naida@deliveryhero.com
+      - email: chandan.routray@deliveryhero.com
+      - email: mykola.bilozerov@deliveryhero.com
+      - email: logistics-source@datachef-production.iam.gserviceaccount.com
+      - email: benjamin.feifke@deliveryhero.com
+      - email: kateryna.khotkevych@deliveryhero.com
+      - email: denis.geidman@deliveryhero.com
+      - email: lucas.dresl@deliveryhero.com
+
+  - name: DH Data Science
+    domain: null
+    countries: [hu]
+    entities:
+      - NP_HU
+    users:
+      - email: mariangela.liuzzi@deliveryhero.com
+  - name: DH Marketing
+    domain: null
+    countries: ~
+    entities: ~
+    users:
+      - email: gautam.reddi@deliveryhero.com
+      - email: tomas.stibrany@deliveryhero.com
+      - email: enrica.pasqua@deliveryhero.com
+      - email: thiago.medeiros@deliveryhero.com
+      - email: luis.dasilva@deliveryhero.com
+      - email: nicolas.guenon@deliveryhero.com
+      - email: hamed.allaei@deliveryhero.com
+      - email: daniela.craciun@deliveryhero.com
+      - email: stefan.meilof@deliveryhero.com
+  - name: DH Rider Marketing
+    domain: null
+    countries: ~
+    entities: ~
+    users:
+      - email: nicolas.cunin@deliveryhero.com
+      - email: paula.diaz@deliveryhero.com
+      - email: maria.montserrat.martinez@deliveryhero.com
+      - email: pelin.incel@deliveryhero.com
+      - email: mohamad.saleh@deliveryhero.com
+  - name: Pandora DWH
+    domain: null
+    countries: ~
+    entities: ~
+    users:
+      - email: etl@foodora.com
+      - email: service-account-3@foodoraanalyticspremium.iam.gserviceaccount.com
+      - email: elvira.bekyrova@deliveryhero.com
+  - name: Pandora Product
+    domain: null
+    countries: ~
+    entities: ~
+    users:
+      - email: artur.yatsenko@deliveryhero.com
+      - email: matteo.fava@deliveryhero.com
+      - email: sudheesh.rao@deliveryhero.com
+      - email: anna.fedoseeva@deliveryhero.com
+      - email: alexandra.karathanou@deliveryhero.com
+      - email: omar.galicia@deliveryhero.com
+      - email: cian.cullinan@deliveryhero.com
+      - email: yiannis.moschonas@deliveryhero.com
+      - email: emin.karabal@deliveryhero.com
+      - email: aleksandra.kocot@deliveryhero.com
+      - email: sandra.hanna@deliveryhero.com
+      - email: federica.coscia@deliveryhero.com
+      - email: ana.casado@deliveryhero.com
+      - email: nedal.moslmany@deliveryhero.com
+      - email: nader.elsharkawy@deliveryhero.com
+      - email: airflow-local-development@dhh-digital-analytics-dwh-stg.iam.gserviceaccount.com
+      - email: airflow-service-account@dhh-digital-analytics-dwh.iam.gserviceaccount.com
+      - email: pandora-ab-tests@foodoraanalyticspremium.iam.gserviceaccount.com
+  - name: Pandora Vendor Management
+    domain: null
+    countries: [at, au, bd, bg, ca, cz, de, fi, fr, hk, hu, it, kh, la, mm, my, nl, 'no', ph, pk, ro, se, sg, t2, th, tw, jp]
+    entities:
+      - FO_AT
+      - FO_AU
+      - FO_CA
+      - FO_DE
+      - FO_FI
+      - FO_FR
+      - FO_IT
+      - FO_NL
+      - FO_NO
+      - FO_SE
+      - FP_BD
+      - FP_BG
+      - FP_HK
+      - FP_KH
+      - FP_LA
+      - FP_MM
+      - FP_MY
+      - FP_PH
+      - FP_PK
+      - ODR_MY
+      - ODR_PK
+      - ODR_PH
+      - ODR_HK
+      - ODR_TH
+      - ODR_TW
+      - ODR_SG
+      - FP_RO
+      - FP_SG
+      - BK_SG
+      - FP_TH
+      - FP_TW
+      - DJ_CZ
+      - NP_HU
+      - AR_HU
+      - PH_MY
+      - KFC_MY
+      - FP_JP
+    users:
+      - email: roberto.ceci@deliveryhero.com
+      - email: mahdi.shams@deliveryhero.com
+      - email: jorge.cardenas@deliveryhero.com
+      - email: ricardo.souza@deliveryhero.com
+      - email: peter.kell@deliveryhero.com
+      - email: neha.singh@deliveryhero.com
+      - email: mizuki.kakei@deliveryhero.com
+      - email: beliz.kirali@deliveryhero.com
+      - email: vendor-service-logistics-updat@pd-backend-274508.iam.gserviceaccount.com
+      - email: prod-vendor-service-logistics@pd-backend-274508.iam.gserviceaccount.com
+  - name: Global Payments Analytics Team
+    domain: null
+    countries: ~
+    entities: ~
+    users:
+      - email: ana.alexe@deliveryhero.com
+      - email: melike.mester@deliveryhero.com
+      - email: lucas.braga@deliveryhero.com
+      - email: nazzareno.turatti@deliveryhero.com
+      - email: natassja.ferraz@deliveryhero.com
+      - email: bigquery-python-connector@globalpaymentsanalytics.iam.gserviceaccount.com
+  - name: Global Pricing Team
+    domain: null
+    countries: ~
+    entities: ~
+    users:
+      - email: laurent.broering@deliveryhero.com
+  - name: Fintech Team
+    domain: null
+    countries: [kw, sa, bh, ae, a2, om, qa, jo, eg]
+    entities:
+      - TB_KW
+      - TB_SA
+      - TB_BH
+      - TB_AE
+      - TB_OM
+      - TB_QA
+      - TB_JO
+      - HF_EG
+      - ODR_KW
+      - ODR_JO
+      - ODR_OM
+      - ODR_AE
+      - ODR_BH
+      - ODR_QA
+      - ODR_EG
+    users:
+      - email: fintech@fintechbilling.iam.gserviceaccount.com
+  - name: Mjam
+    domain: deliveryhero.at
+    countries: [at, a3, a4]
+    entities:
+      - FO_AT
+      - MJM_AT
+    users:
+      - group: bi@deliveryhero.at
+  - name: Pandora Tech - Customer Feedback Squad
+    domain: null
+    countries: [ar, bo, cl, co, cr, ec, pa, pe, uy]
+    entities:
+      - AP_PA
+      - CD_CO
+      - CD_EC
+      - CD_PE
+      - PY_AR
+      - PY_BO
+      - PY_CL
+      - PY_CR
+      - PY_UY
+    users:
+      - email: stefano.cavallari@deliveryhero.com
+      - email: alexey.shabanov@deliveryhero.com
+      - email: tuna.vargi@deliveryhero.com
+      - email: kamyar.ghasemlou@deliveryhero.com
+  - name: Pandora - Post Order
+    domain: null
+    countries: [ro]
+    entities:
+      - FP_RO
+    users:
+      - email: dmitry.bolgov@deliveryhero.com
+      - email: adegoke.obasa@deliveryhero.com
+      - email: temp-rider-order@pd-backend-274508.iam.gserviceaccount.com
+      - email: rider-name-on-order-prod-eu@pd-backend-274508.iam.gserviceaccount.com
+      - email: rider-name-on-order-staging-eu@pd-backend-274508.iam.gserviceaccount.com
+  - name: Foodpanda APAC
+    domain: foodpanda.com
+    countries: [bd, hk, my, ph, pk, sg, t2, th, tw, bn, mm, la, kh, jp]
+    entities:
+      - FP_BD
+      - FP_HK
+      - FP_MY
+      - FP_PH
+      - FP_PK
+      - FP_SG
+      - FP_TH
+      - FP_TW
+      - FP_BN
+      - FP_KH
+      - FP_LA
+      - FP_MM
+      - FO_HK
+      - ODR_MY
+      - ODR_PK
+      - ODR_PH
+      - ODR_HK
+      - ODR_TH
+      - ODR_TW
+      - ODR_SG
+      - BK_SG
+      - FP_JP
+      - PH_MY
+      - KFC_MY
+    users:
+      - group: data_members@foodpanda.com
+      - group: data_advanced_users@foodpanda.com
+      - email: datahub-airflow-deployment@dhh---analytics-apac-admin.iam.gserviceaccount.com
+      - email: datahub-airflow-production@dhh---analytics-apac-admin.iam.gserviceaccount.com
+      - email: datahub-airflow-staging@dhh---analytics-apac-admin.iam.gserviceaccount.com
+      - email: pandata-airflow-deployment@dhh---analytics-apac-admin.iam.gserviceaccount.com
+      - email: pandata-airflow-development@dhh---analytics-apac-admin.iam.gserviceaccount.com
+      - email: pandata-airflow-production@dhh---analytics-apac-admin.iam.gserviceaccount.com
+      - email: pandata-airflow-staging@dhh---analytics-apac-admin.iam.gserviceaccount.com
+  - name: Foodpanda APAC - HK
+    domain: foodpanda.hk
+    countries: [bd, hk, my, ph, pk, sg, t2, th, tw, bn, mm, la, kh, jp]
+    entities:
+      - FP_BD
+      - FP_HK
+      - FP_MY
+      - FP_PH
+      - FP_PK
+      - FP_SG
+      - FP_TH
+      - FP_TW
+      - FP_BN
+      - FP_KH
+      - FP_LA
+      - FP_MM
+      - FO_HK
+      - ODR_MY
+      - ODR_PK
+      - ODR_PH
+      - ODR_HK
+      - ODR_TH
+      - ODR_TW
+      - ODR_SG
+      - BK_SG
+      - FP_JP
+      - PH_MY
+      - KFC_MY
+    users:
+      - group: bi_analyst@foodpanda.hk
+  - name: Foodpanda APAC - TW
+    domain: foodpanda.tw
+    countries: [bd, hk, my, ph, pk, sg, t2, th, tw, bn, mm, la, kh, jp]
+    entities:
+      - FP_BD
+      - FP_HK
+      - FP_MY
+      - FP_PH
+      - FP_PK
+      - FP_SG
+      - FP_TH
+      - FP_TW
+      - FP_BN
+      - FP_KH
+      - FP_LA
+      - FP_MM
+      - FO_HK
+      - ODR_MY
+      - ODR_PK
+      - ODR_PH
+      - ODR_HK
+      - ODR_TH
+      - ODR_TW
+      - ODR_SG
+      - BK_SG
+      - FP_JP
+      - PH_MY
+      - KFC_MY
+    users:
+      - group: bi@foodpanda.tw
+  - name: Foodpanda APAC - TH
+    domain: foodpanda.co.th
+    countries: [bd, hk, my, ph, pk, sg, t2, th, tw, bn, mm, la, kh, jp]
+    entities:
+      - FP_BD
+      - FP_HK
+      - FP_MY
+      - FP_PH
+      - FP_PK
+      - FP_SG
+      - FP_TH
+      - FP_TW
+      - FP_BN
+      - FP_KH
+      - FP_LA
+      - FP_MM
+      - FO_HK
+      - ODR_MY
+      - ODR_PK
+      - ODR_PH
+      - ODR_HK
+      - ODR_TH
+      - ODR_TW
+      - ODR_SG
+      - BK_SG
+      - FP_JP
+      - PH_MY
+      - KFC_MY
+    users:
+      - group: bi_th@foodpanda.co.th
+  - name: Foodpanda APAC - MY
+    domain: foodpanda.my
+    countries: [bd, hk, my, ph, pk, sg, t2, th, tw, bn, mm, la, kh, jp]
+    entities:
+      - FP_BD
+      - FP_HK
+      - FP_MY
+      - FP_PH
+      - FP_PK
+      - FP_SG
+      - FP_TH
+      - FP_TW
+      - FP_BN
+      - FP_KH
+      - FP_LA
+      - FP_MM
+      - FO_HK
+      - ODR_MY
+      - ODR_PK
+      - ODR_PH
+      - ODR_HK
+      - ODR_TH
+      - ODR_TW
+      - ODR_SG
+      - BK_SG
+      - FP_JP
+      - PH_MY
+      - KFC_MY
+    users:
+      - group: bi_analysts@foodpanda.my
+  - name: Foodpanda APAC - PH
+    domain: foodpanda.ph
+    countries: [bd, hk, my, ph, pk, sg, t2, th, tw, bn, mm, la, kh, jp]
+    entities:
+      - FP_BD
+      - FP_HK
+      - FP_MY
+      - FP_PH
+      - FP_PK
+      - FP_SG
+      - FP_TH
+      - FP_TW
+      - FP_BN
+      - FP_KH
+      - FP_LA
+      - FP_MM
+      - FO_HK
+      - ODR_MY
+      - ODR_PK
+      - ODR_PH
+      - ODR_HK
+      - ODR_TH
+      - ODR_TW
+      - ODR_SG
+      - BK_SG
+      - FP_JP
+      - PH_MY
+      - KFC_MY
+    users:
+      - group: business_intelligence@foodpanda.ph
+  - name: Foodpanda APAC - PK
+    domain: foodpanda.pk
+    countries: [bd, hk, my, ph, pk, sg, t2, th, tw, bn, mm, la, kh, jp]
+    entities:
+      - FP_BD
+      - FP_HK
+      - FP_MY
+      - FP_PH
+      - FP_PK
+      - FP_SG
+      - FP_TH
+      - FP_TW
+      - FP_BN
+      - FP_KH
+      - FP_LA
+      - FP_MM
+      - FO_HK
+      - ODR_MY
+      - ODR_PK
+      - ODR_PH
+      - ODR_HK
+      - ODR_TH
+      - ODR_TW
+      - ODR_SG
+      - BK_SG
+      - FP_JP
+      - PH_MY
+      - KFC_MY
+    users:
+      - group: bi_analysts@foodpanda.pk
+  - name: Foodpanda APAC - BD
+    domain: foodpanda.com.bd
+    countries: [bd, hk, my, ph, pk, sg, t2, th, tw, bn, mm, la, kh, jp]
+    entities:
+      - FP_BD
+      - FP_HK
+      - FP_MY
+      - FP_PH
+      - FP_PK
+      - FP_SG
+      - FP_TH
+      - FP_TW
+      - FP_BN
+      - FP_KH
+      - FP_LA
+      - FP_MM
+      - FO_HK
+      - ODR_MY
+      - ODR_PK
+      - ODR_PH
+      - ODR_HK
+      - ODR_TH
+      - ODR_TW
+      - ODR_SG
+      - BK_SG
+      - FP_JP
+      - PH_MY
+      - KFC_MY
+    users:
+      - group: bi_bd@foodpanda.com.bd
+  - name: Foodpanda APAC - SG
+    domain: foodpanda.sg
+    countries: [bd, hk, my, ph, pk, sg, t2, th, tw, bn, mm, la, kh, jp]
+    entities:
+      - FP_BD
+      - FP_HK
+      - FP_MY
+      - FP_PH
+      - FP_PK
+      - FP_SG
+      - FP_TH
+      - FP_TW
+      - FP_BN
+      - FP_KH
+      - FP_LA
+      - FP_MM
+      - FO_HK
+      - ODR_MY
+      - ODR_PK
+      - ODR_PH
+      - ODR_HK
+      - ODR_TH
+      - ODR_TW
+      - ODR_SG
+      - BK_SG
+      - FP_JP
+      - PH_MY
+      - KFC_MY
+    users:
+      - group: bi@foodpanda.sg
+  - name: PedidosYa
+    domain: pedidosya.com
+    countries: [ar, bo, cl, co, cr, ec, pa, ds_pa, pe, uy, do, py, ds_bo, ds_cl]
+    entities:
+      - AP_PA
+      - CD_CO
+      - CD_EC
+      - CD_PE
+      - PY_AR
+      - PY_BO
+      - PY_CL
+      - PY_CR
+      - PY_UY
+      - PY_DO
+      - PY_PY
+      - PY_HN
+      - PY_VE
+    users:
+      - group: bi_logistics@pedidosya.com
+      - group: squad-ncr@pedidosya.com
+      - email: peya-airflow@bpy---pedidosya.iam.gserviceaccount.com
+  - name: PedidosYa Analytics Factory Team
+    domain: null
+    countries: [ uy ]
+    entities:
+      - PY_UY
+    users:
+      - email: analyt-factory@peya-data-analyt-factory-stg.iam.gserviceaccount.com
+  - name: PedidosYa - clickdelivery.com
+    domain: clickdelivery.com
+    countries: [ar, bo, cl, co, pa, ds_pa, py, uy, ds_bo, ds_cl]
+    entities:
+      - AP_PA
+      - CD_CO
+      - PY_AR
+      - PY_BO
+      - PY_CL
+      - PY_UY
+      - PY_PY
+    users:
+      - group: bi_logistics@clickdelivery.com
+  - name: DameJidlo
+    domain: damejidlo.cz
+    countries: [cz]
+    entities:
+      - DJ_CZ
+    users:
+      - group: bi@damejidlo.cz
+      - group: bi-logistics@damejidlo.cz
+      - email: keboola-connection-bigquery@damejidlo-cz-bigquery.iam.gserviceaccount.com
+  - name: Yemeksepeti
+    domain: yemeksepeti.com
+    countries: [tr, t3]
+    entities:
+      - YS_TR
+    users:
+      - group: bq_ys_gr@yemeksepeti.com
+  - name: Hungerstation
+    domain: hungerstation.com
+    countries: [sa, b2]
+    entities:
+      - HS_BH
+      - HS_SA
+    users:
+      - group: hurrier.bigquery.access@hungerstation.com
+      - group: bi@hungerstation.com
+      - email: hurrier-bigquery@hungerstation-production.iam.gserviceaccount.com
+  - name: Carriage
+    domain: trycarriage.com
+    countries: [sa, ae, bh, qa, q2, kw]
+    entities:
+      - CG_SA
+      - CG_AE
+      - CG_BH
+      - CG_QA
+      - CG_KW
+    users:
+      - group: global.bi@trycarriage.com
+  - name: Carriage - Q2
+    domain: null
+    countries: [ae, bh, eg, jo, kw, k3, dp-kw, om, qa, s2, a2, q2]
+    entities:
+      - HF_EG
+      - TB_AE
+      - TB_BH
+      - TB_JO
+      - TB_KW
+      - TB_OM
+      - TB_QA
+      - TB_SA
+      - CG_AE
+      - CG_BH
+      - CG_EG
+      - CG_KW
+      - CG_QA
+      - CG_SA
+      - ZO_AE
+      - ODR_EG
+      - ODR_QA
+      - ODR_AE
+      - ODR_OM
+      - ODR_BH
+      - ODR_JO
+      - ODR_KW
+    users:
+      - email: assem.ammar@talabat.com
+  - name: NetPincer
+    domain: netpincer.com
+    countries: [hu]
+    entities:
+      - NP_HU
+      - AR_HU
+    users:
+      - group: bi@netpincer.com
+      - email: big-query-np@big-query-project-242710.iam.gserviceaccount.com
+  - name: Talabat
+    domain: talabat.com
+    countries: [ae, bh, eg, jo, kw, k3, dp-kw, om, qa, s2, a2]
+    entities:
+      - HF_EG
+      - TB_AE
+      - TB_BH
+      - TB_JO
+      - TB_KW
+      - TB_OM
+      - TB_QA
+      - TB_SA
+      - CG_AE
+      - CG_BH
+      - CG_EG
+      - CG_KW
+      - CG_QA
+      - CG_SA
+      - ZO_AE
+      - ODR_EG
+      - ODR_QA
+      - ODR_AE
+      - ODR_OM
+      - ODR_BH
+      - ODR_JO
+      - ODR_KW
+    users:
+      - group: bi@talabat.com
+      - group: product.analytics@talabat.com
+      - group: logistics-performance@talabat.com
+      - group: product.team@talabat.com
+      - group: billingsupport@talabat.com
+      - email: talabat-lookers@datafridge-talabat-224614.iam.gserviceaccount.com
+      - group: billingsupport@talabat.com
+      - group: ot.squad@talabat.com
+  - name: eFood go
+    domain: e-food.gr
+    countries: [ba, gr, hr, rs, me]
+    entities:
+      - EF_GR
+      - PZ_HR
+      - DN_RS
+      - DN_BA
+      - DN_ME
+    users:
+      - group: bi@e-food.gr
+      - email: supervisor-prod@custom-manifest-113615.iam.gserviceaccount.com
+      - email: supervisor-new@custom-manifest-113615.iam.gserviceaccount.com
+  - name: SAP team
+    domain: ~
+    countries: [pk, sg, tw, la, ar, jp]
+    entities:
+      - FP_PK
+      - ODR_PK
+      - FP_SG
+      - BK_SG
+      - FP_TW
+      - FP_LA
+      - PY_AR
+      - FP_JP
+    users:
+      - email: dhfs-integration-01@dhfs-fica-pk-riders.iam.gserviceaccount.com
+      - email: sapcpi-bucket-account@dhfs-fica-pk-riders.iam.gserviceaccount.com
+      - email: alex.belle@deliveryhero.com
+      - email: niclas.hoye@deliveryhero.com
+      - email: andrey.vlasenko@deliveryhero.com
+      - email: jelle.de@deliveryhero.com
+      - email: michael.giese.ext@deliveryhero.com
+  - name: DH Korea - YoGiYo
+    domain: deliveryhero.co.kr
+    countries: [kr]
+    entities:
+      - YO_KR
+    users:
+      - group: ops_pl_pm@deliveryhero.co.kr
+      - group: ops_pl_planning@deliveryhero.co.kr
+      - group: offline@deliveryhero.co.kr
+      - group: data@deliveryhero.co.kr
+      - group: ops_pl_strategy@deliveryhero.co.kr
+      - group: ops_csc_planning@deliveryhero.co.kr
+      - email: rgpkorea-service-account@rgpkorea-datalake.iam.gserviceaccount.com
+      - email: bq-dp-data-auth@rgpkorea-datalake.iam.gserviceaccount.com
+  - name: Global Call Center
+    domain: null
+    countries: ~
+    entities: ~
+    users:
+      - email: andrew.fiorillo@deliveryhero.com
+      - email: sofiane.lamrous@deliveryhero.com
+      - email: daniel.lutscher@deliveryhero.com
+      - email: david.mcgrath@deliveryhero.com
+
+  - name: Foodpanda EU - BG
+    domain: foodpanda.bg
+    countries: [bg]
+    entities:
+      - FP_BG
+    users:
+      - group: bg_bi@foodpanda.bg
+
+  - name: Foodpanda EU - RO
+    domain: foodpanda.ro
+    countries: [ro]
+    entities:
+      - FP_RO
+    users:
+      - group: bi@foodpanda.ro
+
+  - name: Foodora EU - Finland
+    domain: deliveryhero.fi
+    countries: [fi]
+    entities:
+      - FO_FI
+      - PO_FI
+    users:
+      - group: foodora_bi@deliveryhero.fi
+
+  - name: Foodora EU - Sweden
+    domain: foodora.se
+    countries: [se]
+    entities:
+      - FO_SE
+      - OP_SE
+      - HG_SE
+    users:
+      - group: foodora_bi@foodora.se
+
+  - name: Foodora EU - Norway
+    domain: foodora.no
+    countries: ['no']
+    entities:
+      - FO_NO
+    users:
+      - group: foodora_bi@foodora.no
+
+  - name: Foodora EU - Nordics
+    domain: foodora.se
+    countries: ['no', 'se', 'fi']
+    entities:
+      - FO_NO
+      - FO_SE
+      - OP_SE
+      - HG_SE
+      - FO_FI
+      - PO_FI
+    users:
+      - email: andreas.ryberg@foodora.se
+
+  - name: Data Catalog - Pauza
+    domain: pauza.hr
+    countries: [hr]
+    entities:
+      - PZ_HR
+    users:
+      - email: t.posel@pauza.hr
+
+  - name: PedidosYa - Panama
+    domain: appetito24.com
+    countries: [pa, ds_pa]
+    entities:
+      - AP_PA
+    users:
+      - group: bi_logistics@appetito24.com

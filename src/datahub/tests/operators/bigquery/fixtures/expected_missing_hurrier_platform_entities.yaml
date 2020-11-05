@@ -1,0 +1,40 @@
+entities:
+  - entity_id: FO_DE
+    country_code: [de]
+    country_iso: DE
+    common_name: Germany
+    display_name: FD - Germany
+    currency_code: EUR
+    is_active: true
+    region: Europe
+    hurrier_platforms:
+      - Foodora
+      - foodora
+      - FO_DE
+    rps_platforms:
+      - FO_DE
+  - entity_id: LH_DE
+    country_code: [de]
+    country_iso: DE
+    common_name: Germany
+    display_name: Lieferheld
+    currency_code: EUR
+    is_active: true
+    region: Europe
+    hurrier_platforms:
+      - LH_DE
+    rps_platforms:
+      - LH_DE
+  - entity_id: PDE_DE
+    country_code: [de]
+    country_iso: DE
+    common_name: Germany
+    display_name: Pizza.de
+    currency_code: EUR
+    is_active: true
+    region: Europe
+    hurrier_platforms:
+      - pizza_de
+      - PDE_DE
+    rps_platforms:
+      - PDE_DE

@@ -1,0 +1,826 @@
+spark_main_class: &spark_main_class
+  main_class: com.deliveryhero.datahub.spark.jobs.dmart.raw.ExtractReadReplicasToBigQueryJob
+
+dataproc:
+  subnetwork: 'https://www.googleapis.com/compute/v1/projects/fulfillment-dwh-staging/regions/europe-west1/subnetworks/staging-subnet-dmart-dataproc-test'
+  export_cloud_sql:
+    <<: *spark_main_class
+  export_cloud_sql_backfill:
+    <<: *spark_main_class
+
+databricks:
+  export_read_replica:
+    <<: *spark_main_class
+  export_read_replica_backfill:
+    <<: *spark_main_class
+
+raw_layer_backfill:
+  countries: ~         # List of countries to filter the import.
+                       # Empty array means all countries.
+                       # Null value disable the import for not regional applications.
+  regions: ~           # List of regions to filter the import.
+                       # Empty array means all regions.
+                       # Null value disable the import for regional applications.
+  from_date: ~         # Datetime format: %Y-%m-%d %H:%M:%S
+  to_date: ~           # Datetime format: %Y-%m-%d %H:%M:%S
+
+dwh_merge_layer_databases:
+  catalog:
+    is_regional: false
+    source: CLOUD_SQL
+    credentials:
+      username: datahub_dmart
+      password: JDBC_DMART_PASSWORD
+    tables:
+      - name: barcode
+        partition_by_date: false
+        filter_import_by_date: false
+        enable_historical_data_in_hl: false
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: true
+      - name: brand
+        partition_by_date: false
+        filter_import_by_date: false
+        enable_historical_data_in_hl: false
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: true
+      - name: campaign
+        raw_layer:
+          created_at_column: creation_date
+          updated_at_column: updated_date
+      - name: category
+        partition_by_date: false
+        filter_import_by_date: false
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: true
+        raw_layer:
+          created_at_column: creation_date
+          updated_at_column: updated_date
+      - name: chain
+        raw_layer:
+          created_at_column: creation_date
+          updated_at_column: updated_date
+      - name: chain_category
+        raw_layer:
+          created_at_column: creation_date
+          updated_at_column: creation_date
+      - name: chain_product
+        raw_layer:
+          created_at_column: creation_date
+          updated_at_column: updated_date
+      - name: chain_product_chain_category
+        pk_columns: [country_code, chain_product_id, chain_category_id]
+        partition_by_date: false
+        filter_import_by_date: false
+        enable_historical_data_in_hl: false
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: true
+      - name: master_product
+        raw_layer:
+          created_at_column: creation_date
+          updated_at_column: updated_date
+      - name: master_product_barcode
+        pk_columns: [country_code, master_product_id, barcode_id]
+        partition_by_date: false
+        filter_import_by_date: false
+        enable_historical_data_in_hl: false
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: true
+      - name: phinxlog
+        pk_columns: [country_code, version]
+        partition_by_date: false
+        filter_import_by_date: false
+        enable_historical_data_in_hl: false
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: true
+      - name: platform
+        raw_layer:
+          created_at_column: creation_date
+          updated_at_column: updated_date
+      - name: platform_chain
+        pk_columns: [country_code, platform_id, chain_id]
+        partition_by_date: false
+        filter_import_by_date: false
+        enable_historical_data_in_hl: false
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: true
+      - name: platform_vendor
+        pk_columns: [country_code, platform_id, vendor_id]
+        partition_by_date: false
+        filter_import_by_date: false
+        enable_historical_data_in_hl: false
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: true
+      - name: principal
+        partition_by_date: false
+        filter_import_by_date: false
+        enable_historical_data_in_hl: false
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: true
+      - name: sync_lock
+        pk_columns: [country_code, entity, entity_id]
+        raw_layer:
+          created_at_column: creation_date
+          updated_at_column: creation_date
+      - name: tag
+        partition_by_date: false
+        filter_import_by_date: false
+        enable_historical_data_in_hl: false
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: true
+      - name: vendor
+        raw_layer:
+          created_at_column: creation_date
+          updated_at_column: updated_date
+      - name: vendor_product
+        partition_by_date: false
+        raw_layer:
+          created_at_column: creation_date
+          updated_at_column: updated_date
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: true
+      - name: vendor_product_category
+        pk_columns: [country_code, vendor_product_id, category_id]
+        partition_by_date: false
+        filter_import_by_date: false
+        enable_historical_data_in_hl: false
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: true
+      - name: vendor_product_price
+        raw_layer:
+          created_at_column: creation_date
+          updated_at_column: updated_date
+      - name: vendor_product_tag
+        pk_columns: [country_code, vendor_product_id, tag_id]
+        filter_import_by_date: false
+        enable_historical_data_in_hl: false
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: true
+
+  odoo:
+    is_regional: false
+    source: CLOUD_SQL
+    credentials:
+      username: datahub_dmart
+      password: JDBC_DMART_PASSWORD
+    tables:
+      - name: product_barcode
+        raw_layer:
+          created_at_column: create_date
+          updated_at_column: write_date
+      - name: product_pricelist
+        raw_layer:
+          created_at_column: create_date
+          updated_at_column: write_date
+      - name: product_product
+        raw_layer:
+          created_at_column: create_date
+          updated_at_column: write_date
+      - name: product_supplierinfo
+        raw_layer:
+          created_at_column: create_date
+          updated_at_column: write_date
+      - name: product_template
+        raw_layer:
+          created_at_column: create_date
+          updated_at_column: write_date
+      - name: res_currency
+        raw_layer:
+          created_at_column: create_date
+          updated_at_column: write_date
+      - name: res_partner
+        raw_layer:
+          created_at_column: create_date
+          updated_at_column: write_date
+      - name: sale_order
+        raw_layer:
+          created_at_column: create_date
+          updated_at_column: write_date
+      - name: sale_order_line
+        raw_layer:
+          created_at_column: create_date
+          updated_at_column: write_date
+      - name: stock_move
+        raw_layer:
+          created_at_column: create_date
+          updated_at_column: write_date
+      - name: stock_picking
+        raw_layer:
+          created_at_column: create_date
+          updated_at_column: write_date
+      - name: stock_picking_type
+        raw_layer:
+          created_at_column: create_date
+          updated_at_column: write_date
+      - name: stock_warehouse
+        raw_layer:
+          created_at_column: create_date
+          updated_at_column: write_date
+      - name: account_invoice
+        raw_layer:
+          created_at_column: create_date
+          updated_at_column: write_date
+      - name: product_category
+        raw_layer:
+          created_at_column: create_date
+          updated_at_column: write_date
+      - name: product_price_history
+        raw_layer:
+          created_at_column: create_date
+          updated_at_column: write_date
+      - name: purchase_order
+        raw_layer:
+          created_at_column: create_date
+          updated_at_column: write_date
+      - name: purchase_order_line
+        raw_layer:
+          created_at_column: create_date
+          updated_at_column: write_date
+      - name: res_country
+        raw_layer:
+          created_at_column: create_date
+          updated_at_column: write_date
+      - name: res_country_state
+        raw_layer:
+          created_at_column: create_date
+          updated_at_column: write_date
+      - name: res_users
+        raw_layer:
+          created_at_column: create_date
+          updated_at_column: write_date
+      - name: stock_on_hand_qty
+        raw_layer:
+          created_at_column: create_date
+          updated_at_column: write_date
+      - name: stock_quant
+        raw_layer:
+          created_at_column: create_date
+          updated_at_column: write_date
+      - name: uom_uom
+        raw_layer:
+          created_at_column: create_date
+          updated_at_column: write_date
+      - name: account_tax
+        raw_layer:
+          created_at_column: create_date
+          updated_at_column: write_date
+      - name: stock_move_line
+        raw_layer:
+          created_at_column: create_date
+          updated_at_column: write_date
+      - name: res_company
+        raw_layer:
+          created_at_column: create_date
+          updated_at_column: write_date
+      - name: stock_invoice
+        raw_layer:
+          created_at_column: create_date
+          updated_at_column: write_date
+      - name: purchase_order_stock_picking_rel
+        pk_columns: [country_code, purchase_order_id, stock_picking_id]
+        partition_by_date: false
+        filter_import_by_date: false
+        enable_historical_data_in_hl: false
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: true
+      - name: ir_translation
+        pk_columns: [country_code, id]
+        partition_by_date: false
+        filter_import_by_date: false
+        enable_historical_data_in_hl: false
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: true
+      - name: account_tax_sale_order_line_rel
+        pk_columns: [country_code, sale_order_line_id, account_tax_id]
+        partition_by_date: false
+        filter_import_by_date: false
+        enable_historical_data_in_hl: false
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: true
+      - name: product_attribute
+        raw_layer:
+          created_at_column: create_date
+          updated_at_column: write_date
+      - name: product_attribute_value
+        raw_layer:
+          created_at_column: create_date
+          updated_at_column: write_date
+      - name: product_template_attribute_line
+        raw_layer:
+          created_at_column: create_date
+          updated_at_column: write_date
+      - name: darkstores_purchase_order_line_finance_report
+        pk_columns: [id]
+        partition_by_date: false
+        filter_import_by_date: false
+        enable_historical_data_in_hl: false
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: true
+      - name: darkstores_product_report
+        pk_columns: [id]
+        partition_by_date: false
+        filter_import_by_date: false
+        enable_historical_data_in_hl: false
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: true
+  inventory_management_tool:
+    is_regional: true
+    source: RDS
+    credentials:
+      username: datahub_dmart
+      password: JDBC_DMART_PELICAN_PASSWORD
+    tables:
+      - name: events_pelican
+        sharding_column: region
+        pk_columns: [region, id]
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: created_at
+      - name: movements
+        sharding_column: region
+        pk_columns: [region, id]
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: created_at
+      - name: product_expiry_dates
+        sharding_column: region
+        pk_columns: [region, product_id, expiry_date]
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: created_at
+      - name: product_vendors
+        sharding_column: region
+        pk_columns: [region, id]
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: updated_at
+      - name: products
+        sharding_column: region
+        pk_columns: [region, id]
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: updated_at
+      - name: warehouse_vendors
+        sharding_column: region
+        pk_columns: [region, id]
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: updated_at
+      - name: warehouses
+        sharding_column: region
+        pk_columns: [region, id]
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: updated_at
+  supplier_portal:
+    is_regional: false
+    source: CLOUD_SQL
+    credentials:
+      username: datahub_dmart
+      password: JDBC_DMART_PASSWORD
+    tables:
+      - name: cities
+        partition_by_date: false
+        filter_import_by_date: false
+        enable_historical_data_in_hl: false
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: true
+      - name: countries
+        partition_by_date: false
+        filter_import_by_date: false
+        enable_historical_data_in_hl: false
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: true
+      - name: discounts
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: updated_at
+      - name: price_change_requests
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: created_at
+      - name: prices
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: updated_at
+      - name: prices_history
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: created_at
+      - name: supplier_products
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: updated_at
+      - name: suppliers
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: updated_at
+      - name: discounts_history
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: created_at
+      - name: future_discounts
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: created_at
+      - name: future_prices
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: created_at
+
+  pelican:
+    is_regional: true
+    source: RDS
+    credentials:
+      username: datahub_dmart
+      password: JDBC_DMART_PELICAN_PASSWORD
+    tables:
+      - name: brand
+        sharding_column: region
+        pk_columns: [region, id]
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: updated_at
+      - name: city
+        sharding_column: region
+        pk_columns: [region, id]
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: updated_at
+      - name: country
+        sharding_column: region
+        pk_columns: [region, id]
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: updated_at
+      - name: cycle_count_events
+        sharding_column: region
+        pk_columns: [region, id]
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: created_at
+      - name: cycle_count_product
+        sharding_column: region
+        pk_columns: [region, id]
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: updated_at
+      - name: cycle_counts
+        sharding_column: region
+        pk_columns: [region, id]
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: updated_at
+      - name: ge_invoice_template
+        sharding_column: region
+        pk_columns: [region, id]
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: updated_at
+      - name: order_chat_transcript
+        sharding_column: region
+        pk_columns: [region, id]
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: created_at
+      - name: product_problem
+        sharding_column: region
+        pk_columns: [region, id]
+        partition_by_date: false
+        filter_import_by_date: false
+        enable_historical_data_in_hl: false
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: true
+      - name: purchase_order_events
+        sharding_column: region
+        pk_columns: [region, id]
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: created_at
+      - name: purchase_order_product
+        sharding_column: region
+        pk_columns: [region, id]
+        partition_by_date: false
+        filter_import_by_date: false
+        enable_historical_data_in_hl: false
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: true
+      - name: purchase_orders
+        sharding_column: region
+        pk_columns: [region, id]
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: updated_at
+      - name: return
+        sharding_column: region
+        pk_columns: [region, id]
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: created_at
+      - name: return_product
+        sharding_column: region
+        pk_columns: [region, id]
+        partition_by_date: false
+        filter_import_by_date: false
+        enable_historical_data_in_hl: false
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: true
+      - name: shopper
+        sharding_column: region
+        pk_columns: [region, id]
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: updated_at
+      - name: vendor
+        sharding_column: region
+        pk_columns: [region, id]
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: updated_at
+      - name: vendor_group
+        sharding_column: region
+        pk_columns: [region, vendor_group_id, vendor_id]
+        partition_by_date: false
+        filter_import_by_date: false
+        enable_historical_data_in_hl: false
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: true
+      - name: vendor_shopper
+        sharding_column: region
+        pk_columns: [region, vendor_id, shopper_id]
+        partition_by_date: false
+        filter_import_by_date: false
+        enable_historical_data_in_hl: false
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: true
+      - name: orders
+        sharding_column: region
+        pk_columns: [region, id]
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: updated_at
+      - name: order_events
+        sharding_column: region
+        pk_columns: [region, id]
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: created_at
+      - name: global_entity
+        sharding_column: region
+        pk_columns: [region, id]
+      - name: product
+        sharding_column: region
+        pk_columns: [region, id]
+        partition_by_date: false
+        filter_import_by_date: false
+        enable_historical_data_in_hl: false
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: true
+  # Demand-planner db
+  purchase_tool:
+    is_regional: false
+    source: CLOUD_SQL
+    credentials:
+      username: datahub_dmart
+      password: JDBC_DMART_PASSWORD
+    tables:
+      - name: demand_status
+        namespace: engine
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: modified_at
+      - name: product
+        namespace: engine
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: modified_at
+      - name: product_availability
+        namespace: engine
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: modified_at
+      - name: product_category
+        namespace: engine
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: modified_at
+      - name: product_category_root
+        namespace: engine
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: modified_at
+      - name: store
+        namespace: engine
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: modified_at
+      - name: queue_item
+        namespace: purchase
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: modified_at
+      - name: queue_item_line
+        namespace: purchase
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: modified_at
+      - name: purchase_order
+        namespace: purchase
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: modified_at
+      - name: return_line
+        namespace: purchase
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: modified_at
+      - name: purchase_order_line
+        namespace: purchase
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: modified_at
+      - name: return_status
+        namespace: purchase
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: modified_at
+      - name: return
+        namespace: purchase
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: modified_at
+      - name: purchase_order_status
+        namespace: purchase
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: modified_at
+      - name: vendor
+        namespace: wac
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: created_at
+      - name: product_wac_history
+        namespace: wac
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: modified_at
+      - name: product
+        namespace: wac
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: created_at
+
+  invoice_generator:
+    is_regional: false
+    source: CLOUD_SQL
+    credentials:
+      username: datahub_dmart
+      password: JDBC_DMART_PASSWORD
+    tables:
+      - name: invoices
+        pk_columns: [country_code, id]
+        partition_by_date: false
+        filter_import_by_date: false
+        enable_historical_data_in_hl: false
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: true
+
+  djini:
+    is_regional: false
+    source: CLOUD_SQL
+    credentials:
+      username: datahub_dmart
+      password: JDBC_DMART_PASSWORD
+    tables:
+      - name: vendors
+        namespace: app_data
+        pk_columns: [country_code, vendor_id, global_entity_id]
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: modified_at
+      - name: campaigns
+        namespace: app_data
+        pk_columns: [country_code, global_id]
+        raw_layer:
+          created_at_column: creation_date
+          updated_at_column: updated_date
+      - name: campaign_vendors
+        namespace: app_data
+        pk_columns: [country_code, vendor_id, campaign_id, global_entity_id]
+        partition_by_date: false
+        filter_import_by_date: false
+        enable_historical_data_in_hl: false
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: true
+      - name: campaign_banners
+        namespace: app_data
+        pk_columns: [country_code, campaign_id]
+        partition_by_date: false
+        filter_import_by_date: false
+        enable_historical_data_in_hl: false
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: true
+      - name: campaign_triggers
+        namespace: app_data
+        pk_columns: [country_code, product_id, campaign_id, global_entity_id]
+        partition_by_date: false
+        filter_import_by_date: false
+        enable_historical_data_in_hl: false
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: true
+      - name: campaign_benefits
+        namespace: app_data
+        pk_columns: [country_code, product_id, campaign_id, global_entity_id]
+        partition_by_date: false
+        filter_import_by_date: false
+        enable_historical_data_in_hl: false
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: true
+      - name: order_campaigns
+        namespace: app_data
+        pk_columns: [country_code, order_id, campaign_id, product_id]
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: modified_at
+      - name: orders
+        namespace: app_data
+        pk_columns: [country_code, order_id]
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: modified_at
+  data_fridge:
+    is_regional: true
+    source: 'big_query'
+    job_config:
+      export_read_replica:
+        enabled: false
+      copy_staging_to_raw_layer:
+        enabled: false
+    tables:
+      - name: product_stream
+        pk_columns: []
+        cleanup_enabled: false
+        partition_by_date: false
+        authorize_view: true
+        time_partitioning: created_date
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: false
+        source_table: datafridge-production.dh_fridge_prod_us_bigquery_dataset_for_darkstores.dh_fridge_product_stream_prod_darkstores
+        raw_layer:
+          created_at_column: timestamp
+      - name: vendor_delivery_area_stream
+        pk_columns: []
+        cleanup_enabled: false
+        partition_by_date: false
+        authorize_view: true
+        time_partitioning: created_date
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: false
+        source_table: datafridge-production.dh_fridge_prod_us_bigquery_dataset_for_darkstores.dh_fridge_vendor_delivery_area_stream_prod_darkstores
+        raw_layer:
+          created_at_column: timestamp
+      - name: vendor_stream
+        pk_columns: []
+        cleanup_enabled: false
+        partition_by_date: false
+        authorize_view: true
+        time_partitioning: created_date
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: false
+        source_table: datafridge-production.dh_fridge_prod_us_bigquery_dataset_for_darkstores.dh_fridge_vendor_stream_prod_darkstores
+        raw_layer:
+          created_at_column: timestamp
