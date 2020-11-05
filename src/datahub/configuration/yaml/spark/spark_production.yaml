@@ -1,0 +1,9 @@
+databricks:
+  export_read_replica:
+    enabled: true
+
+dataproc:
+  project_id: 'fulfillment-dwh-production'
+  storage_bucket: 'fulfilment-dwh-production-data'
+  export_cloud_sql:
+    enabled: true

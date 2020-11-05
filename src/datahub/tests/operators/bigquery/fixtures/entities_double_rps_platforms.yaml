@@ -1,0 +1,42 @@
+entities:
+  - entity_id: FO_DE
+    country_code: [de]
+    country_iso: DE
+    common_name: Germany
+    display_name: FD - Germany
+    currency_code: EUR
+    is_active: true
+    region: Europe
+    rps_platforms:
+      - Foodora
+      - foodora
+  - entity_id: LH_DE
+    country_code: [de]
+    country_iso: DE
+    common_name: Germany
+    display_name: Lieferheld
+    currency_code: EUR
+    is_active: true
+    region: Europe
+    rps_platforms:
+      - Lieferheld
+  - entity_id: PDE_DE
+    country_code: [de]
+    country_iso: DE
+    common_name: Germany
+    display_name: Pizza.de
+    currency_code: EUR
+    is_active: true
+    region: Europe
+    rps_platforms:
+      - pizza_de
+  - entity_id: PDE_DE_DO
+    country_code: [de]
+    country_iso: DE
+    common_name: Germany
+    display_name: Pizza.de Dowant
+    currency_code: EUR
+    is_active: true
+    region: Europe
+    rps_platforms:
+      - pizza_de

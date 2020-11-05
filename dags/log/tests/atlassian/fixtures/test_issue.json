@@ -1,0 +1,96 @@
+{
+  "expand": "renderedFields,names,schema,operations,editmeta,changelog,versionedRepresentations",
+  "fields": {
+    "subtasks": [],
+    "created": "2020-02-28T15:42:04.533+0100",
+    "updated": null,
+    "lastViewed": null,
+    "resolutiondate": null,
+    "project": {
+      "self": "https://jira.deliveryhero.com/rest/api/2/project/26100",
+      "id": "26100",
+      "key": "LOGDEP",
+      "name": "Logistics Data Engineering Pipeline",
+      "projectTypeKey": "software",
+      "avatarUrls": {
+        "48x48": "https://jira.deliveryhero.com/secure/projectavatar?pid=26100&avatarId=32305",
+        "24x24": "https://jira.deliveryhero.com/secure/projectavatar?size=small&pid=26100&avatarId=32305",
+        "16x16": "https://jira.deliveryhero.com/secure/projectavatar?size=xsmall&pid=26100&avatarId=32305",
+        "32x32": "https://jira.deliveryhero.com/secure/projectavatar?size=medium&pid=26100&avatarId=32305"
+      }
+    },
+    "worklog": {
+      "startAt": 0,
+      "maxResults": 20,
+      "total": 1,
+      "worklogs": [
+        {
+          "self": "https://jira.deliveryhero.com/rest/api/2/issue/263449/worklog/287394",
+          "author": {
+            "self": "https://jira.deliveryhero.com/rest/api/2/user?username=divyanshu.bansal",
+            "name": "divyanshu.bansal",
+            "key": "divyanshu.bansal",
+            "emailAddress": "divyanshu.bansal@deliveryhero.com",
+            "avatarUrls": {
+              "48x48": "https://jira.deliveryhero.com/secure/useravatar?ownerId=divyanshu.bansal&avatarId=31621",
+              "24x24": "https://jira.deliveryhero.com/secure/useravatar?size=small&ownerId=divyanshu.bansal&avatarId=31621",
+              "16x16": "https://jira.deliveryhero.com/secure/useravatar?size=xsmall&ownerId=divyanshu.bansal&avatarId=31621",
+              "32x32": "https://jira.deliveryhero.com/secure/useravatar?size=medium&ownerId=divyanshu.bansal&avatarId=31621"
+            },
+            "displayName": "Divyanshu Bansal",
+            "active": false,
+            "timeZone": "Europe/Berlin"
+          },
+          "updateAuthor": {
+            "self": "https://jira.deliveryhero.com/rest/api/2/user?username=divyanshu.bansal",
+            "name": "divyanshu.bansal",
+            "key": "divyanshu.bansal",
+            "emailAddress": "divyanshu.bansal@deliveryhero.com",
+            "avatarUrls": {
+              "48x48": "https://jira.deliveryhero.com/secure/useravatar?ownerId=divyanshu.bansal&avatarId=31621",
+              "24x24": "https://jira.deliveryhero.com/secure/useravatar?size=small&ownerId=divyanshu.bansal&avatarId=31621",
+              "16x16": "https://jira.deliveryhero.com/secure/useravatar?size=xsmall&ownerId=divyanshu.bansal&avatarId=31621",
+              "32x32": "https://jira.deliveryhero.com/secure/useravatar?size=medium&ownerId=divyanshu.bansal&avatarId=31621"
+            },
+            "displayName": "Divyanshu Bansal",
+            "active": false,
+            "timeZone": "Europe/Berlin"
+          },
+          "comment": "",
+          "created": "2018-06-11T18:05:41.913+0200",
+          "updated": "2018-06-11T18:05:41.913+0200",
+          "started": "2018-06-11T18:05:00.000+0200",
+          "timeSpent": "30m",
+          "timeSpentSeconds": 1800,
+          "id": "287394",
+          "issueId": "263449"
+        }
+      ]
+    },
+    "timetracking": {
+      "remainingEstimate": "0m",
+      "timeSpent": "30m",
+      "remainingEstimateSeconds": 0,
+      "timeSpentSeconds": 1800
+    },
+    "watches": {
+      "self": "https://jira.deliveryhero.com/rest/api/2/issue/LOGDEP-1084/watchers",
+      "watchCount": 0,
+      "isWatching": false
+    },
+    "assignee": {
+      "displayName": "Divyanshu Bansal",
+      "name": "7a0e7c4afdd74ffcafce7a3a6d8d3c2d",
+      "key": "JIRAUSER73930",
+      "timeZone": "Europe/Berlin",
+      "active": true,
+      "emailAddress": "divyanshu.bansal@deliveryhero.com",
+      "self": "https://jira.deliveryhero.com/rest/api/2/user?username=7a0e7c4afdd74ffcafce7a3a6d8d3c2d"
+    },
+    "components": [],
+    "timeoriginalestimate": null
+  },
+  "self": "https://jira.deliveryhero.com/rest/api/2/issue/536394",
+  "id": "536394",
+  "key": "LOGDEP-1084"
+}

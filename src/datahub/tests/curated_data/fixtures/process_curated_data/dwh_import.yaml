@@ -1,0 +1,31 @@
+bigquery:
+  project_id: 'fulfillment-dwh-test'
+  staging_project_id: 'fulfillment-dwh-test'
+  dataset:
+    staging: staging
+    raw: raw
+    dl: dl
+    hl: hl
+    cl: cl
+    acl: acl
+    curated_data_filtered: curated_data_filtered
+    curated_data_shared: curated_data_shared
+  create_views: false
+
+dwh_merge_layer_databases:
+  hurrier:
+    is_regional: false
+    source: RDS
+    credentials:
+      username: foodora
+      password: JDBC_LOG_PASSWORD
+    tables:
+      - name: cities
+  iam:
+    is_regional: true
+    source: RDS
+    credentials:
+      username: foodora
+      password: JDBC_LOG_PASSWORD
+    tables:
+      - name: countries

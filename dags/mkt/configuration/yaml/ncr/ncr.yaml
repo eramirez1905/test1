@@ -1,0 +1,102 @@
+ncr:
+  airflow_redshift_connection: "redshift_dwh"
+  ncr_schema: "mkt_ncr_dev"
+  ncr_s3_bucket: "mkt-ncr-dev"
+  ncr_s3_conn_id: "s3_mkt_ncr_dev"
+  crm_vendor_feed_bucket: "mkt-productsup-output"
+  ncr_midas_conn_id: "postgres_ncr_midas"
+  ncr_brands: &ncr_brands
+    "tb":
+      brand_common_name: "talabat"
+      il_schema: "dwh_il_tb"
+      crm_schema: "mkt_crm_tb"
+      dwh_company_id: 25
+      source_ids: [42, 43, 44, 45, 46, 47, 116]
+      source_codes: ["TB_AE", "TB_BH", "TB_KW", "TB_OM", "TB_QA", "TB_SA", "TB_JO"]
+      dwh_jenkins_crm_feed_job_name: "mkt_crm_feed_tb_v2"
+      dwh_jenkins_braze_fetcher_job_name: "mkt_appboy_fetcher_user_data_tb_daily"
+      schedule_interval: "0 8 * * *"
+      dag_start_date: "2020-07-17"
+      version: 1
+      crm_vendor_feed_key: "crm_vendors_feed/talabat/DH_Talabat_CRM_feed_EN.csv"
+      braze_conn_id: "braze_tb_dev"
+      braze_api_campaign_ids:
+        engagement:
+          [
+            "585c8c55-cf43-4f00-951b-580fd5e5c641",  # 2009XX_AE_TAL_NCR_Acquisition_Restd_Android
+            "f7592fff-8a3d-4d71-8a7f-967f5e28b080",  # 2009XX_AE_TAL_NCR_Acquisition_Restd_IOS
+            "5cace880-9ead-43ee-81a8-9b80ecd6afde",  # 2009XX_BH_TAL_NCR_Acquisition_Restd_Android
+            "5ac4525e-8656-4f7d-9120-257423b25493",  # 2009XX_BH_TAL_NCR_Acquisition_Restd_IOS
+            "a384089d-e34a-4de1-b4ff-6423db7e3016",  # 2009XX_EG_TAL_NCR_Acquisition_Restd_Android
+            "3b5a42de-26c6-486b-b9fb-f1d601c515d5",  # 2009XX_EG_TAL_NCR_Acquisition_Restd_IOS
+            "bd0987cf-e948-4f7e-98c2-e457a2d7ff6d",  # 2009XX_JO_TAL_NCR_Acquisition_Restd_Android
+            "886165fe-ab81-47a9-b9f2-e717af4a78b6",  # 2009XX_JO_TAL_NCR_Acquisition_Restd_IOS
+            "9c44c135-4b8e-4041-b3b1-c8c8b58c2aa2",  # 2009XX_KW_TAL_NCR_Acquisition_Restd_Android
+            "17284d62-1b83-47c3-889b-dac817741814",  # 2009XX_KW_TAL_NCR_Acquisition_Restd_IOS
+            "6cadb0df-7d37-4048-85d9-b9f9f0deab56",  # 2009XX_OM_TAL_NCR_Acquisition_Restd_Android
+            "6d5ed9bb-0db2-48fe-a540-5440f557a508",  # 2009XX_OM_TAL_NCR_Acquisition_Restd_IOS
+            "f3ab76cc-10eb-4aa0-bd84-8176cf2232c9",  # 2009XX_QA_TAL_NCR_Acquisition_Restd_Android
+            "4935ad7b-4eb0-40bf-a8e2-2a03076a643c",  # 2009XX_QA_TAL_NCR_Acquisition_Restd_IOS
+          ]
+        winback:
+          [
+            "f63b87cd-41aa-4b6e-8299-5bff1aeb9ff2",  # 2009XX_AE_TAL_NCR_Engagement_Restd_Android
+            "c0b7f093-9910-45ab-b671-0c9bf940d6ca",  # 2009XX_AE_TAL_NCR_Engagement_Restd_iOS
+            "8d942067-a136-4d02-866f-cdbf3f4c19a0",  # 2009XX_BH_TAL_NCR_Engagement_Restd_Android
+            "84a85bb1-bfac-4cd4-b851-ee938d819e7b",  # 2009XX_BH_TAL_NCR_Engagement_Restd_iOS
+            "994b63fa-d352-4a5a-b00b-71610e3e8686",  # 2009XX_EG_TAL_NCR_Engagement_Restd_Android
+            "b169df21-f8ba-4661-a3d0-8521f2aa2e4e",  # 2009XX_EG_TAL_NCR_Engagement_Restd_iOS
+            "6c03897b-8732-43a4-b9e1-8de0568e5b11",  # 2009XX_JO_TAL_NCR_Engagement_Restd_Android
+            "4e65e9fc-1cc6-47a9-add2-0e5f7ab978df",  # 2009XX_JO_TAL_NCR_Engagement_Restd_iOS
+            "07eab317-b76f-47da-9435-46e1c2590e93",  # 2009XX_KW_TAL_NCR_Engagement_Restd_Android
+            "2d7dd09f-818e-45f0-975c-6fe665f6996e",  # 2009XX_KW_TAL_NCR_Engagement_Restd_iOS
+            "14bb991b-ba9d-4364-8574-999faa2c84b7",  # 2009XX_OM_TAL_NCR_Engagement_Restd_Android
+            "64cd8b79-7520-46a3-a15a-ecba381d2a3a",  # 2009XX_OM_TAL_NCR_Engagement_Restd_iOS
+            "796f6cc9-21ef-4445-8fc7-3f9df20ba3c8",  # 2009XX_QA_TAL_NCR_Engagement_Restd_Android
+            "77b3d3ac-d2b5-4a8b-b761-bb8b3e6d8a11",  # 2009XX_QA_TAL_NCR_Engagement_Restd_iOS
+          ]
+        acquisition:
+          [
+            "2f0290bc-674c-451f-9255-121e3a296c21",  # 2009XX_AE_TAL_NCR_Winback_Restd_Android
+            "58ad91b8-ed65-4ba7-840b-a1438eb41af6",  # 2009XX_AE_TAL_NCR_Winback_Restd_IOS
+            "e6c95f2d-d8af-4c77-a593-1521de7c825d",  # 2009XX_BH_TAL_NCR_Winback_Restd_Android
+            "9c2ce458-5fbb-40d9-be27-e78a5bb8f0d5",  # 2009XX_BH_TAL_NCR_Winback_Restd_IOS
+            "2ebdf1fa-85ea-409b-82e1-c184862fff45",  # 2009XX_EG_TAL_NCR_Winback_Restd_Android
+            "58c654dc-a306-4906-8f99-3f6161ec47d1",  # 2009XX_EG_TAL_NCR_Winback_Restd_IOS
+            "c562e0aa-571a-4c9e-a87f-311880e6c4ee",  # 2009XX_JO_TAL_NCR_Winback_Restd_Android
+            "6d87bd84-4e18-4e06-97b4-3f752c900337",  # 2009XX_JO_TAL_NCR_Winback_Restd_IOS
+            "124d6bc6-33c2-4c1f-859d-24cb0d975be7",  # 2009XX_KW_TAL_NCR_Winback_Restd_Android
+            "2ecc8b34-7056-42e2-a140-20ccc17fb7a6",  # 2009XX_KW_TAL_NCR_Winback_Restd_IOS
+            "d362f74f-94d2-41bd-bbac-7c76c3ff79c8",  # 2009XX_OM_TAL_NCR_Winback_Restd_Android
+            "09e67a2e-2fe2-4f9f-8a1c-de5ff3b434fe",  # 2009XX_OM_TAL_NCR_Winback_Restd_IOS
+            "943c6cfc-5b07-46c7-8498-f58813db716a",  # 2009XX_QA_TAL_NCR_Winback_Restd_Android
+            "4fd7396f-e77b-4426-9bd6-fca3fa5a85c0",  # 2009XX_QA_TAL_NCR_Winback_Restd_IOS
+          ]
+
+ncr_curated_data:
+  ncr:
+    ui_color: '#2a3177'
+    tables:
+      - name: ncr_braze_campaigns
+        create_shared_view: True
+        filter_by_entity: True
+        entity_id_column: entity_id
+        filter_by_country: False
+        policy_tags:
+          - column: braze_external_id
+            tag: Private data
+        columns:
+          - braze_external_id
+          - midas_booking_id
+          - source_id
+          - entity_id
+          - customer_id
+          - ncr_package_type
+          - ncr_vendor_id
+          - ncr_publish_date
+          - campaign_name
+          - last_received
+          - in_control
+          - opened_notification
+        template_params:
+          ncr_brands: *ncr_brands

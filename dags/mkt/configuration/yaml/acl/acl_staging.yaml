@@ -1,0 +1,7 @@
+acl:
+  - name: test-permissions
+    domain: null
+    countries: [ae]
+    entities: [TB_AE]
+    users:
+      - email: test-datahub-acl-permissions@mkt-tech.iam.gserviceaccount.com

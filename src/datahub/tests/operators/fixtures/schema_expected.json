@@ -1,0 +1,167 @@
+[
+  {
+    "type": "INT64",
+    "name": "dh_source_id",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "log_country_code",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "global_entity_id",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "country_iso",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "country",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "language_code",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "language",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "main_language",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "brand",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "contact_center",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "dispatch_center",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "cs_ps_location_country_iso",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "dp_location_country_iso",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "DATE",
+    "name": "iso_date",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "NUMERIC",
+    "name": "start_time",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "TIMESTAMP",
+    "name": "start_datetime",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "TIMESTAMP",
+    "name": "end_datetime",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "location_timezone",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "cs_ps_timezone",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "dp_timezone",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "INT64",
+    "name": "ps_in_call_interval_actuals",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "INT64",
+    "name": "ps_out_call_interval_actuals",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "INT64",
+    "name": "cs_in_chat_interval_actuals",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "INT64",
+    "name": "dp_in_chat_interval_actuals",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "INT64",
+    "name": "cs_in_emai_interval_actuals",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "INT64",
+    "name": "cs_in_some_interval_actuals",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "INT64",
+    "name": "ps_in_emai_interval_actuals",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "INT64",
+    "name": "dp_in_issu_interval_actuals",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "INT64",
+    "name": "hc_cs_in_chat_daily_actuals",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "INT64",
+    "name": "hc_cs_in_emai_daily_actuals",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "INT64",
+    "name": "hc_successful_sessions_daily",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "management_entity_group",
+    "mode": "NULLABLE"
+  },
+  {
+    "type": "STRING",
+    "name": "region",
+    "mode": "NULLABLE"
+  }
+]
