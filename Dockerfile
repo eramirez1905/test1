@@ -38,7 +38,7 @@ COPY requirements.txt ${AIRFLOW_HOME}/requirements.txt
 RUN pip install --user -r "${AIRFLOW_HOME}/requirements.txt" \
   && rm -rf /home/airflow/.cache
 
-COPY --chown=airflow docker${AIRFLOW_HOME}/airflow/
+COPY --chown=airflow docker/airflow ${AIRFLOW_HOME}/
 COPY --chown=airflow dags ${AIRFLOW_HOME}/dags
 COPY --chown=airflow src/datahub ${AIRFLOW_HOME}/src/datahub
 COPY docker/rootdir /
