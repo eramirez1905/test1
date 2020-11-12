@@ -1,0 +1,27 @@
+from configs.constructors.table import RawBigQueryTable, RawDataProcBigQueryTable
+
+BILLING_TABLES = (
+    RawBigQueryTable(name="bill_run"),
+    RawBigQueryTable(name="billing_record"),
+    RawBigQueryTable(name="client"),
+    RawBigQueryTable(name="client_tax"),
+    RawBigQueryTable(name="commission"),
+    RawBigQueryTable(name="commission_tier"),
+    RawBigQueryTable(name="company_settings"),
+    RawBigQueryTable(name="contact"),
+    RawBigQueryTable(name="country_settings"),
+    RawBigQueryTable(name="email_template"),
+    RawBigQueryTable(name="empty_invoices"),
+    RawBigQueryTable(name="invoice_fee"),
+    RawBigQueryTable(name="invoice_order_data"),
+    RawBigQueryTable(name="invoice_status_history"),
+    RawBigQueryTable(name="invoice_tax"),
+    RawBigQueryTable(name="joker"),
+    RawBigQueryTable(name="migration_versions"),
+    RawBigQueryTable(name="sequence"),
+    RawBigQueryTable(name="tax"),
+    RawBigQueryTable(name="user"),
+    RawBigQueryTable(name="vendor"),
+    RawDataProcBigQueryTable(name="fee"),
+    RawDataProcBigQueryTable(name="invoice"),
+)

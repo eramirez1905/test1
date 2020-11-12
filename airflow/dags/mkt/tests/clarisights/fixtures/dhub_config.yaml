@@ -1,0 +1,83 @@
+dwh_merge_layer_databases:
+  apple:
+    app_version: '1'
+    project_name: 'clarisights'
+    is_regional: false
+    source: S3
+    source_format: csv
+    start_date: "2020-06-03"
+    tables:
+      - name: core_account
+        cleanup_enabled: true
+        pk_columns: [account_object_id]
+        deduplicate_order_by_column: created_at
+        filter_import_by_date: false
+        partition_by_date: true
+        raw_layer:
+          updated_at_column: null
+        s3:
+          aws_conn: cs_s3_conn
+          bucket: mkt-partners-adwyze
+          extra_columns: [CAST(created_at AS DATE) AS created_date]
+          prefix: >
+            {%- raw -%}
+            from_clarisights/delivery_hero/apple/v3/core_account/{{ next_ds }}
+            {%- endraw -%}
+          schema_fields:
+            - {name: account_object_id, type: INTEGER}
+            - {name: source_id, type: INTEGER}
+            - {name: created_at, type: TIMESTAMP}
+      - name: stats_account
+        cleanup_enabled: true
+        pk_columns: [account_object_id, date]
+        deduplicate_order_by_column: created_at
+        filter_import_by_date: false
+        partition_by_date: true
+        raw_layer:
+          updated_at_column: null
+        s3:
+          aws_conn: cs_s3_conn
+          bucket: mkt-partners-adwyze
+          extra_columns: null
+          prefix: >
+            {%- raw -%}
+            from_clarisights/delivery_hero/apple/v3/stats_account/{{ next_ds }}
+            {%- endraw -%}
+          schema_fields:
+            - {name: Cost, type: NUMERIC}
+            - {name: Impressions, type: INTEGER}
+            - {name: account_object_id, type: INTEGER}
+        time_partitioning: created_at
+      - name: core_campaign
+        cleanup_enabled: true
+        pk_columns: [campaign_object_id]
+        deduplicate_order_by_column: created_at
+        filter_import_by_date: false
+        partition_by_date: true
+        raw_layer:
+          updated_at_column: null
+        s3:
+          aws_conn: cs_s3_conn
+          bucket: mkt-partners-adwyze
+          extra_columns: [CAST(created_at AS DATE) AS created_date]
+          prefix: >
+            {%- raw -%}
+            from_clarisights/delivery_hero/apple/v3/core_campaign/{{ next_ds }}
+            {%- endraw -%}
+      - name: stats_campaign
+        cleanup_enabled: true
+        pk_columns: [campaign_object_id, date]
+        deduplicate_order_by_column: created_at
+        filter_import_by_date: false
+        partition_by_date: true
+        raw_layer:
+          updated_at_column: null
+        s3:
+          aws_conn: cs_s3_conn
+          bucket: mkt-partners-adwyze
+          extra_columns: null
+          prefix: >
+            {%- raw -%}
+            from_clarisights/delivery_hero/apple/v3/stats_campaign/{{ next_ds }}
+            {%- endraw -%}
+        time_partitioning: created_at
