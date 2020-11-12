@@ -42,4 +42,3 @@ COPY --chown=airflow docker/airflow ${AIRFLOW_HOME}/
 COPY --chown=airflow dags ${AIRFLOW_HOME}/dags
 COPY --chown=airflow src/datahub ${AIRFLOW_HOME}/src/datahub
 COPY docker/rootdir /
-

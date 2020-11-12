@@ -1,0 +1,43 @@
+version: '3.5'
+
+networks:
+  dwh:
+    name: dwh
+
+services:
+  scheduler:
+    build: .
+    image: datahub-airflow
+    container_name: airflow-scheduler
+    hostname: scheduler
+    command: scheduler
+    volumes:
+      - ./docker/airflow/config:/opt/airflow/config:cached
+      - ./docker/airflow/airflow.cfg:/opt/airflow/airflow.cfg:cached
+      - ./docker/airflow/webserver_config.py:/opt/airflow/webserver_config.py:cached
+      - ./docker/rootdir/entrypoint:/entrypoint:cached
+      - ./bin:/opt/airflow/bin:cached
+      - ./dags:/opt/airflow/dags:cached
+      - ./src:/opt/airflow/src:cached
+      - ./tests:/opt/airflow/tests:cached
+      - ./logs:/opt/airflow/logs:cached
+      - ./.flake8:/opt/airflow/.flake8:cached
+      - ~/.aws:/home/airflow/.aws:cached
+      - ~/.config:/home/airflow/.config:cached
+    env_file:
+      - .env
+    environment:
+      AIRFLOW_CONN_DATABRICKS_DEFAULT: databricks://dbc-d78d06da-7f8d.cloud.databricks.com?token=${DATABRICKS_TOKEN:-}
+      AIRFLOW__KUBERNETES__DAGS_VOLUME_HOST: ${AIRFLOW_PATH:-./}/dags
+      AIRFLOW__KUBERNETES__LOGS_VOLUME_HOST: ${AIRFLOW_PATH:-./}/logs
+      AIRFLOW__WEBSERVER__RBAC: ${AIRFLOW__WEBSERVER__RBAC:-False}
+      AIRFLOW_BUSINESS_UNIT: ${AIRFLOW_BUSINESS_UNIT}
+      PYTHONPATH: /opt/airflow/src
+    networks:
+      - dwh
+    external_links:
+      - airflow-mysql:mysql
+    sysctls:
+      - net.ipv4.tcp_keepalive_time=200
+      - net.ipv4.tcp_keepalive_intvl=200
+      - net.ipv4.tcp_keepalive_probes=5
