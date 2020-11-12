@@ -47,6 +47,8 @@
 # This is the actual Airflow image - much smaller than the build one. We copy
 # installed Airflow and all it's dependencies from the build image to make it smaller.
 ##############################################################################################
+ARG PYTHON_BASE_IMAGE="python:3.6-slim-buster"
+
 FROM ${PYTHON_BASE_IMAGE} as main
 SHELL ["/bin/bash", "-o", "pipefail", "-e", "-u", "-x", "-c"]
 
