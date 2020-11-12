@@ -1,0 +1,40 @@
+gcs_production: &gcs_production
+  bucket_name: 'fulfilment-dwh-production-import'
+
+freshdesk:
+  <<: *gcs_production
+
+soti:
+  <<: *gcs_production
+  node_selectors:
+    app: simulator
+  tolerations:
+    - effect: NoSchedule
+      key: app
+      value: simulator
+      operator: Equal
+
+go_droid_api:
+  <<: *gcs_production
+
+braze:
+  project_id: "fulfillment-dwh-production"
+  node_selectors:
+    app: simulator
+  tolerations:
+    - effect: NoSchedule
+      key: app
+      value: simulator
+      operator: Equal
+
+salesforce:
+  <<: *gcs_production
+
+rps_korean_team_dataset:
+  project_id: 'fulfillment-dwh-production'
+
+roadrunner:
+  s3_bucket_name: 's3://dwh-production-airflow-data/roadrunner/'
+
+jira:
+  <<: *gcs_production

@@ -1,0 +1,12 @@
+slack:
+  channel: '#dh-datahub-central-dwh'
+  channel_errors: '#dh-datahub-central-dwh-alerts'
+
+# TODO Please update the GCS bucket to use the one owned by the business unit
+gcs_production: &gcs_production
+  bucket_name: 'fulfilment-dwh-production-import'
+
+bigquery:
+  <<: *gcs_production
+  project_id: 'fulfillment-dwh-production'
+  create_views: true

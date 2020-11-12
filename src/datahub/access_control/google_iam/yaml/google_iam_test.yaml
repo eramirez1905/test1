@@ -1,0 +1,18 @@
+google_cloud_platform:
+  fulfillment-dwh-staging:
+    role_members:
+      - name: databricks@fulfillment-dwh-staging.iam.gserviceaccount.com
+        roles:
+          - roles/bigquery.admin
+          - roles/bigquery.dataEditor
+        type: serviceAccount
+      - name: tech.logisticsdata@deliveryhero.com
+        roles:
+          - roles/bigquery.dataEditor
+          - roles/bigquery.user
+          - roles/storage.admin
+        type: group
+      - name: riccardo.bini@deliveryhero.com
+        roles:
+          - roles/bigquery.dataEditor
+        type: user
