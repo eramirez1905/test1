@@ -34,11 +34,11 @@ RUN curl -o /tmp/aws-iam-authenticator https://amazon-eks.s3.us-west-2.amazonaws
 
 USER airflow
 
-COPY requirements.txt /opt/airflow/requirements.txt
-RUN pip install --user -r "/opt/airflow/requirements.txt" \
+COPY requirements.txt ${AIRFLOW_HOME}/requirements.txt
+RUN pip install --user -r "${AIRFLOW_HOME}/requirements.txt" \
   && rm -rf /home/airflow/.cache
 
-COPY --chown=airflow docker/airflow /opt/airflow/
-COPY --chown=airflow dags /opt/airflow/dags
-COPY --chown=airflow src/datahub /opt/airflow/src/datahub
+COPY --chown=airflow docker${AIRFLOW_HOME}/airflow/
+COPY --chown=airflow dags ${AIRFLOW_HOME}/dags
+COPY --chown=airflow src/datahub ${AIRFLOW_HOME}/src/datahub
 COPY docker/rootdir /
