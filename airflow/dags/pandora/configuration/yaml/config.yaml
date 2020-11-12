@@ -1,0 +1,49 @@
+teams: []
+
+slack:
+  channel: ''
+  channel_errors: ''
+  channel_cost_monitoring:
+    name: ''
+    id: ''
+  has_mentions: false
+
+#opsgenie:
+#  responders:
+#    - name: 'Fulfillment-Data'
+#      type: 'team'
+#  visibleTo:
+#    - name: 'Fulfillment-Data'
+#      type: 'team'
+# For more information: https://docs.opsgenie.com/docs/python-sdk-alert
+#                       https://docs.opsgenie.com/docs/alert-api#section-create-alert
+#                       https://docs.opsgenie.com/docs/python-sdk-alert#add-details-custom-properties-to-alert
+opsgenie: {}
+
+business-unit:
+  name: "pandora"
+
+# DAG configurations
+dags: {}
+
+gcs_staging: &gcs_staging
+  bucket_name: 'pd-bi-datahub'
+
+# See BigQueryCheckMetadataExecutionOperator to why it is set to production
+bigquery_check_metadata_execution:
+  project_id: 'fulfillment-dwh-production'
+
+bigquery:
+  <<: *gcs_staging
+  project_id: 'fulfillment-dwh-staging'
+  staging_project_id: 'fulfillment-dwh-staging'
+  dataset:
+    staging: staging_pandora
+    raw: raw_pandora
+    dl: dl_pandora
+    hl: hl_pandora
+    cl: cl_pandora
+    acl: acl_pandora
+    curated_data_filtered: curated_data_filtered_pandora
+    curated_data_shared: curated_data_shared_pandora
+  create_views: true # TODO: to set to false once all new tables views have been created

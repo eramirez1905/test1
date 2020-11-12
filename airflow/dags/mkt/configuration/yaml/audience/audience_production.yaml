@@ -1,0 +1,19 @@
+audience:
+  airflow_aws_conn_id: "s3_mkt_audience"
+  audience_schema: "mkt_audience"
+  audience_brands:
+    "fp":
+      braze_conn_id: "braze_foodpanda"
+      mparticle_conn_id: "mparticle_foodpanda"
+    "py":
+      braze_conn_id: "braze_pedidosya"
+      mparticle_conn_id: "mparticle_pedidosya"
+    "tb":
+      braze_conn_id: "braze_talabat"
+      mparticle_conn_id: "mparticle_talabat"
+  mparticle:
+    unload_s3_bucket: "mkt-audience"
+    push_sample_data: false
+  braze:
+    unload_s3_bucket: "mkt-audience"
+    push_sample_data: false

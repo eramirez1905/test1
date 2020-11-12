@@ -1,0 +1,313 @@
+contact_center:
+  regions:
+    cc-eu:
+      aws_region: eu-west-1
+      environments:
+        - cc-st
+  countries:
+    # apac
+    - TW
+    - JO
+    - AR
+  incident_types:
+    - cs_in_chat
+    - cs_in_emai
+    - dp_in_chat
+  sqs:
+    cc-eu: https://sqs.eu-west-1.amazonaws.com./193473891312/cc-staging-eu_job_run_created_forecast_api_queue
+
+regions:
+  eu:
+    aws_region: eu-west-1
+    countries:
+      - a2 # Talabat, groceries, UAE
+      - a4 # MJAM, 3PL 'Parham', Austria
+      - ae
+      - at
+      - b2 # HungerStation, Bahrain
+      - bg
+      - bh
+      - cz
+      - eg
+      - fi
+      - gr
+      - hr
+      - hu
+      - jo
+      - kw
+      - "no"
+      - om
+      - qa
+      - q2
+      - ro
+      - rs
+      - sa
+      - se
+      - tr
+      - t3 # Yemeksepeti Banabi, groceries, Turkey
+      - cy
+      - ba
+      - k4 # Talabat, groceries (pickers), Kuwait
+      - me
+
+  us:
+    aws_region: us-east-1
+    countries:
+      - ar
+      - bo
+      - cl
+      - co
+      - pa
+      - uy
+      - do
+      - py
+
+  ap:
+    aws_region: ap-southeast-1
+    countries:
+      - bd
+      - hk
+      - my
+      - ph
+      - pk
+      - sg
+      - th
+      - tw
+      - la
+      - kh
+      - mm
+      - jp
+
+  kr:
+    aws_region: ap-northeast-2
+    countries:
+      - kr
+
+order-forecast:
+  sqs:
+    eu: https://sqs.eu-west-1.amazonaws.com./487596255802/staging-eu_job_run_created_forecast_api_queue
+    ap: https://sqs.eu-west-1.amazonaws.com./487596255802/staging-eu_job_run_created_forecast_api_queue
+    us: https://sqs.eu-west-1.amazonaws.com./487596255802/staging-eu_job_run_created_forecast_api_queue
+    kr: https://sqs.eu-west-1.amazonaws.com./487596255802/staging-eu_job_run_created_forecast_api_queue
+  maximum_gb_billed: 256
+  env_vars:
+    COUNTRY_CODE: 'eu'
+    AWS_REGION: 'eu-west-1'
+    AWS_DEFAULT_REGION: 'eu-west-1'
+    SENTRY_ENDPOINT: 'skip'
+  resources:
+    request_cpu: "5000m"
+    limit_cpu: "5000m"
+    request_memory: "8000Mi"
+    limit_memory: "8000Mi"
+  node_profile: batch-node
+
+order-forecast-experimental:
+  models:
+    - model_name: stacked_regression
+      forecast_horizon: 50
+
+incident-forecast-experimental:
+  models:
+    - model_name: random_forest
+
+dmart-order-forecast:
+  maximum_gb_billed: 256
+  env_vars:
+    AWS_DEFAULT_REGION: 'eu-west-1'
+    SENTRY_ENDPOINT: 'skip'
+  resources:
+    request_cpu: "5000m"
+    limit_cpu: "5000m"
+    request_memory: "8000Mi"
+    limit_memory: "8000Mi"
+  node_profile: batch-node
+  regions:
+    ap:
+      aws_region: eu-west-1
+      sqs: https://sqs.eu-west-1.amazonaws.com./487596255802/staging-eu_job_run_created_forecast_api_queue
+      countries:
+        - dp-sg
+
+tracking-time:
+  resources:
+    request_cpu: "4000m"
+    limit_cpu: "4000m"
+    request_memory: "12000Mi"
+    limit_memory: "12000Mi"
+
+breaks-forecasting:
+  resources:
+    request_cpu: "4000m"
+    limit_cpu: "4000m"
+    request_memory: "12000Mi"
+    limit_memory: "12000Mi"
+
+location-update-models:
+  resources:
+    request_cpu: "400m"
+    limit_cpu: "1000m"
+    request_memory: "600Mi"
+    limit_memory: "1600Mi"
+
+hurrier-delay-resources:
+  resources:
+    request_cpu: "1000m"
+    limit_cpu: "1000m"
+    request_memory: "4000Mi"
+    limit_memory: "4000Mi"
+
+utr-prediction-models:
+  resources:
+    request_cpu: "700m"
+    limit_cpu: "1200m"
+    request_memory: "3000Mi"
+    limit_memory: "3000Mi"
+
+gsheets:
+  rider_params_internal:
+    spreadsheet_id: '1n6UuLs2skFRqs3eY9jldHD8ni-FmCynCIyoKM-i4bAk'
+    spreadsheet_range: 'A'
+    table_to_truncate: 'gdoc.rider_scoring_params'
+    schema_to_insert: 'gdoc'
+    table_to_insert: 'rider_scoring_params'
+
+scoring-countries:
+  - ar
+  - bo
+  - ca
+  - cl
+  - co
+  - pa
+  - do
+  - py
+  - uy
+  - bg
+  - cz
+  - se
+  - fi
+  - 'no'
+  - hu
+  - hr
+  - gr
+  - rs
+  - at
+  - ro
+  - bh
+  - eg
+  - om
+  - jo
+
+gcs_staging: &gcs_staging
+  bucket_name: 'fulfilment-dwh-staging-import'
+
+location-updates:
+  <<: *gcs_staging
+  project_id: "fulfillment-dwh-staging"
+  s3_bucket: "batch-ingestion-bucket-stg"
+
+rider-scoring:
+  regions:
+    eu:
+      countries:
+        - se
+  base_url_suffix: -st
+  production: false
+
+pools:
+  export_read_replica:
+    name: export_read_replica
+    slots: 10
+    description: "Pool for export_read_replica in import-dwh-read-replica DAG operators"
+  export_read_replica_backfill:
+    name: export_read_replica_backfill
+    slots: 10
+    description: "Pool for export_read_replica_backfill in import-dwh-backfill-raw-layer DAG operators"
+  export_read_replica_misc:
+    name: export_read_replica_misc
+    slots: 100
+    description: "Pool for miscellaneous tasks in import-dwh-read-replica DAG"
+  process_order_forecast:
+    name: process_order_forecast
+    slots: 2
+    description: "Pool to process order forecast, split up in country sub DAGs operators"
+  monitor_order_forecast:
+    name: monitor_order_forecast
+    slots: 2
+    description: "Pool for monitoring the order forecasting"
+  prep_time:
+    name: prep_time
+    slots: 1
+    description: "Pool for training the prep time algorithm"
+  prep_time_spark:
+    name: prep_time_spark
+    slots: 5
+    description: "Pool for processing the input data with spark"
+  predict_utrs:
+    name: predict_utrs
+    slots: 2
+    description: "Pool to process and predict utr assumptions for order forecasting and staffing"
+  no_show_forecast:
+    name: no_show_forecast
+    slots: 4
+    description: "Pool to create no show forecast for staffing"
+  hurrier_delay_model:
+    name: hurrier_delay_model
+    slots: 12
+    description: "Pool to train hurrier delay model weekly"
+  staffing_assignments:
+    name: staffing_assignments
+    slots: 1
+    description: "Pool to limit gurobi assignments job to 1 at a time"
+  forecast_run_models:
+    name: forecast_run_models
+    slots: 24
+    description: "Pool to not start too many forecast pods at the same time."
+  incident_forecast_run_models:
+    name: incident_forecast_run_models
+    slots: 24
+    description: "Pool to not start too many incident forecast pods at the same time."
+  driving_time:
+    name: driving_time
+    slots: 2
+    description: "Pool for doing driving time model training"
+  gpu_training:
+    name: gpu_training
+    slots: 10
+    description: "Pool for model training on GPU instance limit"
+  process-breaks-forecast:
+    name: breaks_forecasting_bq_save
+    slots: 4
+    description: "Pool for breaks forecasting when saving data to BQ"
+  tracking_time:
+    name: tracking_time
+    slots: 20
+    description: "Pool to train quantile models"
+  tracking_time_spark:
+    name: tracking_time_spark
+    slots: 5
+    description: "Pool to do spark processing"
+  export_read_replica_long_running_tasks:
+    name: export_read_replica_long_running_tasks
+    slots: 1
+    description: "Pool to process export read replica long running tasks"
+  walking_time:
+    name: walking_time
+    slots: 5
+    description: "Pool for walking times model training"
+  walking_time_spark:
+    name: walking_time_spark
+    slots: 4
+    description: "Pool for walking times spark processing"
+  rider_scoring:
+    name: rider_scoring
+    slots: 20
+    description: "Pool for rider scoring DAG"
+  curated_data_misc:
+    name: curated_data_misc
+    slots: 100
+    description: "Pool for curated-data DAG used by any operators"
+  curated_data_queries:
+    name: curated_data_queries
+    slots: 100
+    description: "Pool for curated-data DAG used to run queries"

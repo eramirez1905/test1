@@ -1,0 +1,25 @@
+SELECT
+  rider_special_payments.uuid,
+  rider_special_payments.id,
+  countries.rdbms_id,
+  rider_special_payments.lg_rider_uuid,
+  rider_special_payments.lg_rider_id,
+  rider_special_payments.lg_payment_cycle_uuid,
+  rider_special_payments.lg_payment_cycle_id,
+  rider_special_payments.region,
+  rider_special_payments.country_code,
+  rider_special_payments.rider_name,
+  rider_special_payments.created_by_email,
+  rider_special_payments.status,
+  rider_special_payments.reason,
+  rider_special_payments.note,
+  rider_special_payments.paid_local,
+  rider_special_payments.adjustment_type,
+  rider_special_payments.timezone,
+  rider_special_payments.payment_cycle_start_at_utc,
+  rider_special_payments.payment_cycle_end_at_utc,
+  rider_special_payments.created_at_utc,
+  rider_special_payments.created_date_utc,
+FROM `{project_id}.pandata_intermediate.lg_rider_special_payments` AS rider_special_payments
+LEFT JOIN `{project_id}.pandata_intermediate.pd_countries` AS countries
+       ON rider_special_payments.country_code = countries.lg_country_code

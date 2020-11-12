@@ -1,0 +1,315 @@
+contact_center:
+  regions:
+    cc-eu:
+      aws_region: eu-west-1
+      environments:
+        - cc-ta
+        - cc-at
+        - cc-se
+        - cc-no
+        - cc-fi
+        - cc-gr
+        - cc-eu
+        - cc-fp
+        - cc-ro
+        - cc-hu
+        - cc-bg
+        - cc-cz
+        - cc-py
+        - cc-tr
+  countries:
+    # middle east
+    - KW
+    - AE
+    - EG
+    - OM
+    - JO
+    - BH
+    - QA
+    - TR
+    # europe
+    - AT
+    - SE
+    - FI
+    - RO
+    - HU
+    - BG
+    - CZ
+    - "NO"
+    - GR
+    # apac
+    - BD
+    - KH
+    - LA
+    - MM
+    - MY
+    - TW
+    - HK
+    - PH
+    - PK
+    - SG
+    - TH
+    # south america
+    - AR
+    - UY
+    - DO
+    - PY
+    - BO
+    - CL
+    - PA
+  incident_types:
+    - cs_in_call
+    - cs_in_chat
+    - cs_in_some
+    - cs_in_emai
+    - dp_in_chat
+    - dp_in_issu
+    - ps_in_call
+    - ps_out_call
+    - ps_in_emai
+    - ps_in_chat
+    - sh_in_chat
+    - cs_in_escalation
+    - cs_in_refund
+  sqs:
+    cc-eu: https://sqs.eu-west-1.amazonaws.com./377193885864/cc-production-eu_job_run_created_forecast_api_queue
+
+simulator-node-affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: app
+              operator: In
+              values: [simulator]
+
+simulator-node:
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: app
+                operator: In
+                values: [simulator]
+  tolerations:
+    - effect: NoSchedule
+      key: app
+      value: simulator
+    - effect: PreferNoSchedule
+      key: app
+      value: simulator
+
+cpu-node:
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: app
+                operator: In
+                values: [cpu]
+  tolerations:
+    - effect: NoSchedule
+      key: app
+      value: cpu
+    - effect: PreferNoSchedule
+      key: app
+      value: cpu
+
+memory-node:
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: app
+                operator: In
+                values: [memory]
+  tolerations:
+    - effect: NoSchedule
+      key: app
+      value: memory
+    - effect: PreferNoSchedule
+      key: app
+      value: memory
+
+batch-node:
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: app
+                operator: In
+                values: [batch]
+  tolerations:
+    - effect: NoSchedule
+      key: app
+      value: batch
+    - effect: PreferNoSchedule
+      key: app
+      value: batch
+
+gpu-node:
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: app
+                operator: In
+                values: [gpu-training]
+  tolerations:
+    - effect: NoSchedule
+      key: app
+      value: gpu-training
+    - effect: PreferNoSchedule
+      key: app
+      value: gpu-training
+
+order-forecast:
+  sqs:
+    eu: https://sqs.eu-west-1.amazonaws.com./683110685365/production-eu_job_run_created_forecast_api_queue
+    ap: https://sqs.ap-southeast-1.amazonaws.com./683110685365/production-ap_job_run_created_forecast_api_queue
+    us: https://sqs.us-east-1.amazonaws.com./683110685365/production-us_job_run_created_forecast_api_queue
+    kr: https://sqs.ap-northeast-2.amazonaws.com./683110685365/production-kr_job_run_created_forecast_api_queue
+  resources:
+    request_cpu: "9000m"
+    limit_cpu: "9000m"
+    request_memory: "29000Mi"
+    limit_memory: "29000Mi"
+  env_vars:
+    COUNTRY_CODE: 'eu'
+    AWS_REGION: 'eu-west-1'
+    AWS_DEFAULT_REGION: 'eu-west-1'
+    SENTRY_ENDPOINT: 'https://7669c8d186b84c94b4a0087cfb7ac534@errors.rps-infra.com/27'
+  node_profile: cpu-node
+
+order-forecast-experimental:
+  models:
+    - model_name: farnsworth_regression
+      forecast_horizon: 50
+    - model_name: dentfree_regression
+      forecast_horizon: 50
+    - model_name: stacked_regression_rooster_adj
+      forecast_horizon: 50
+    - model_name: stacked_regression_country_weights
+      forecast_horizon: 50
+    - model_name: stacked_regression_custom_weights
+      forecast_horizon: 50
+
+incident-forecast-experimental:
+  models:
+    - model_name: sarimax
+      version: LOGDS-1641-custom-sarimax-estimator
+    - model_name: sarimax_scaled
+      version: LOGDS-1679-daily-level-forecast
+    - model_name: random_forest
+
+dmart-order-forecast:
+  maximum_gb_billed: 256
+  env_vars:
+    AWS_DEFAULT_REGION: 'eu-west-1'
+    SENTRY_ENDPOINT: 'https://7669c8d186b84c94b4a0087cfb7ac534@errors.rps-infra.com/27'
+  resources:
+    request_cpu: "5000m"
+    limit_cpu: "5000m"
+    request_memory: "8000Mi"
+    limit_memory: "8000Mi"
+  node_profile: batch-node
+  regions:
+    ap:
+      aws_region: ap-southeast-1
+      sqs: https://sqs.ap-southeast-1.amazonaws.com/525196134340/production-ap_job_run_created_forecast_api_queue
+      countries:
+        - dp-sg
+        - dp-tw
+        - dp-hk
+        - dp-th
+        - dp-my
+    eu:
+      aws_region: eu-west-1
+      sqs: https://sqs.eu-west-1.amazonaws.com/525196134340/production-eu_job_run_created_forecast_api_queue
+      countries:
+        - dp-ae
+        - dp-sa
+        - dp-kw
+    us:
+      aws_region: us-east-1
+      sqs: https://sqs.us-east-1.amazonaws.com/525196134340/production-us_job_run_created_forecast_api_queue
+      countries:
+        - dp-ar
+        - dp-cl
+        - dp-uy
+
+gcs_production: &gcs_production
+  bucket_name: 'fulfilment-dwh-production-import'
+
+location-updates:
+  <<: *gcs_production
+  project_id: "fulfillment-dwh-production"
+  s3_bucket: "batch-ingestion-bucket-prod"
+  node_profile: memory-node
+
+rider-scoring:
+  regions:
+    eu:
+      countries:
+        - bg
+        - cz
+        - se
+        - fi
+        - 'no'
+        - hu
+        - hr
+        - gr
+        - rs
+        - at
+        - ro
+        - me
+        - ba
+        - cy
+    mena:
+      countries:
+        - bh
+        - eg
+        - om
+        - jo
+        - qa
+        - kw
+        - ae
+    ap:
+      countries:
+        - my
+        - ph
+        - pk
+        - sg
+        - hk
+        - th
+        - tw
+        - bd
+        - la
+        - kh
+        - jp
+    us:
+      countries:
+        - ar
+        - bo
+        - cl
+        - co
+        - pa
+        - do
+        - py
+        - uy
+    sa:
+      countries:
+        - sa
+    mm:
+      countries:
+        - mm
+    kr:
+      countries:
+        - kr
+  base_url_suffix: ''
+  production: true

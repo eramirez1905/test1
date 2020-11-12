@@ -1,0 +1,406 @@
+dwh_merge_layer_databases:
+  airflow:
+    is_regional: true
+    source: Debezium
+    sharding_column: business_unit
+    database_type: mysql
+    endpoint: rds.eu.airflow.staging-eu.tf
+    port: 3306
+    credentials:
+      username: foodora
+      password: JDBC_LOG_PASSWORD
+    tables:
+      - name: ab_permission
+        time_partitioning: created_date
+        cleanup_enabled: false
+        sanity_checks:
+          created_date_null: true
+          duplicate_check: true
+        keep_last_import_only: true
+        keep_last_import_only_partition_by_pk: true
+        filter_import_by_date: false
+        partition_by_date: true
+        raw_layer:
+          created_at_column: _ingested_at
+          updated_at_column: _ingested_at
+      - name: ab_permission_view
+        time_partitioning: created_date
+        cleanup_enabled: false
+        sanity_checks:
+          created_date_null: true
+          duplicate_check: true
+        keep_last_import_only: true
+        keep_last_import_only_partition_by_pk: true
+        filter_import_by_date: false
+        partition_by_date: true
+        raw_layer:
+          created_at_column: _ingested_at
+          updated_at_column: _ingested_at
+      - name: ab_permission_view_role
+        time_partitioning: created_date
+        cleanup_enabled: false
+        sanity_checks:
+          created_date_null: true
+          duplicate_check: true
+        keep_last_import_only: true
+        keep_last_import_only_partition_by_pk: true
+        filter_import_by_date: false
+        partition_by_date: true
+        raw_layer:
+          created_at_column: _ingested_at
+          updated_at_column: _ingested_at
+      - name: ab_register_user
+        time_partitioning: created_date
+        cleanup_enabled: false
+        sanity_checks:
+          created_date_null: true
+          duplicate_check: true
+        keep_last_import_only: true
+        keep_last_import_only_partition_by_pk: true
+        filter_import_by_date: false
+        partition_by_date: true
+        raw_layer:
+          created_at_column: _ingested_at
+          updated_at_column: _ingested_at
+      - name: ab_role
+        time_partitioning: created_date
+        cleanup_enabled: false
+        sanity_checks:
+          created_date_null: true
+          duplicate_check: true
+        keep_last_import_only: true
+        keep_last_import_only_partition_by_pk: true
+        filter_import_by_date: false
+        partition_by_date: true
+        raw_layer:
+          created_at_column: _ingested_at
+          updated_at_column: _ingested_at
+      - name: ab_user
+        time_partitioning: created_date
+        cleanup_enabled: false
+        sanity_checks:
+          created_date_null: true
+          duplicate_check: true
+        keep_last_import_only: true
+        keep_last_import_only_partition_by_pk: true
+        filter_import_by_date: false
+        partition_by_date: true
+        raw_layer:
+          created_at_column: _ingested_at
+          updated_at_column: _ingested_at
+      - name: ab_user_role
+        time_partitioning: created_date
+        cleanup_enabled: false
+        sanity_checks:
+          created_date_null: true
+          duplicate_check: true
+        keep_last_import_only: true
+        keep_last_import_only_partition_by_pk: true
+        filter_import_by_date: false
+        partition_by_date: true
+        raw_layer:
+          created_at_column: _ingested_at
+          updated_at_column: _ingested_at
+      - name: ab_view_menu
+        time_partitioning: created_date
+        cleanup_enabled: false
+        sanity_checks:
+          created_date_null: true
+          duplicate_check: true
+        filter_import_by_date: false
+        partition_by_date: true
+        keep_last_import_only: true
+        keep_last_import_only_partition_by_pk: true
+        raw_layer:
+          created_at_column: _ingested_at
+          updated_at_column: _ingested_at
+      - name: chart
+        time_partitioning: created_date
+        cleanup_enabled: false
+        sanity_checks:
+          created_date_null: true
+          duplicate_check: true
+        filter_import_by_date: false
+        partition_by_date: true
+        keep_last_import_only: true
+        keep_last_import_only_partition_by_pk: true
+        raw_layer:
+          created_at_column: _ingested_at
+          updated_at_column: _ingested_at
+      - name: connection
+        time_partitioning: created_date
+        cleanup_enabled: false
+        sanity_checks:
+          created_date_null: true
+          duplicate_check: true
+        keep_last_import_only: true
+        keep_last_import_only_partition_by_pk: true
+        filter_import_by_date: false
+        partition_by_date: true
+        raw_layer:
+          created_at_column: _ingested_at
+          updated_at_column: _ingested_at
+      - name: dag
+        pk_columns: [business_unit, dag_id]
+        time_partitioning: created_date
+        cleanup_enabled: false
+        sanity_checks:
+          created_date_null: true
+          duplicate_check: true
+        keep_last_import_only: true
+        keep_last_import_only_partition_by_pk: true
+        filter_import_by_date: false
+        partition_by_date: true
+        raw_layer:
+          created_at_column: _ingested_at
+          updated_at_column: _ingested_at
+      - name: dag_code
+        pk_columns: [business_unit, fileloc_hash]
+        time_partitioning: created_date
+        cleanup_enabled: false
+        sanity_checks:
+          created_date_null: true
+          duplicate_check: true
+        keep_last_import_only: true
+        keep_last_import_only_partition_by_pk: true
+        filter_import_by_date: false
+        partition_by_date: true
+        raw_layer:
+          created_at_column: _ingested_at
+          updated_at_column: _ingested_at
+      - name: dag_pickle
+        time_partitioning: created_date
+        cleanup_enabled: false
+        sanity_checks:
+          created_date_null: true
+          duplicate_check: true
+        keep_last_import_only: true
+        keep_last_import_only_partition_by_pk: true
+        filter_import_by_date: false
+        partition_by_date: true
+        raw_layer:
+          created_at_column: _ingested_at
+          updated_at_column: _ingested_at
+      - name: dag_run
+        time_partitioning: created_date
+        cleanup_enabled: false
+        sanity_checks:
+          created_date_null: true
+          duplicate_check: true
+        keep_last_import_only: true
+        keep_last_import_only_partition_by_pk: true
+        filter_import_by_date: false
+        partition_by_date: true
+        raw_layer:
+          created_at_column: _ingested_at
+          updated_at_column: _ingested_at
+      - name: dag_tag
+        pk_columns: [business_unit, name, dag_id]
+        time_partitioning: created_date
+        cleanup_enabled: false
+        sanity_checks:
+          created_date_null: true
+          duplicate_check: true
+        keep_last_import_only: true
+        keep_last_import_only_partition_by_pk: true
+        filter_import_by_date: false
+        partition_by_date: true
+        raw_layer:
+          created_at_column: _ingested_at
+          updated_at_column: _ingested_at
+      - name: import_error
+        time_partitioning: created_date
+        cleanup_enabled: false
+        sanity_checks:
+          created_date_null: true
+          duplicate_check: true
+        keep_last_import_only: true
+        keep_last_import_only_partition_by_pk: true
+        filter_import_by_date: false
+        partition_by_date: true
+        raw_layer:
+          created_at_column: _ingested_at
+          updated_at_column: _ingested_at
+      - name: job
+        time_partitioning: created_date
+        cleanup_enabled: false
+        sanity_checks:
+          created_date_null: true
+          duplicate_check: true
+        raw_layer:
+          created_at_column: start_date
+          updated_at_column: _ingested_at
+      - name: known_event
+        time_partitioning: created_date
+        cleanup_enabled: false
+        sanity_checks:
+          created_date_null: true
+          duplicate_check: true
+        raw_layer:
+          created_at_column: start_date
+          updated_at_column: _ingested_at
+      - name: known_event_type
+        time_partitioning: created_date
+        cleanup_enabled: false
+        sanity_checks:
+          created_date_null: true
+          duplicate_check: true
+        keep_last_import_only: true
+        keep_last_import_only_partition_by_pk: true
+        filter_import_by_date: false
+        partition_by_date: true
+        raw_layer:
+          created_at_column: _ingested_at
+          updated_at_column: _ingested_at
+      - name: kube_resource_version
+        pk_columns: [business_unit, one_row_id]
+        time_partitioning: created_date
+        cleanup_enabled: false
+        sanity_checks:
+          created_date_null: true
+          duplicate_check: true
+        keep_last_import_only: true
+        keep_last_import_only_partition_by_pk: true
+        filter_import_by_date: false
+        partition_by_date: true
+        raw_layer:
+          created_at_column: _ingested_at
+          updated_at_column: _ingested_at
+      - name: kube_worker_uuid
+        pk_columns: [business_unit, one_row_id]
+        time_partitioning: created_date
+        cleanup_enabled: false
+        sanity_checks:
+          created_date_null: true
+          duplicate_check: true
+        keep_last_import_only: true
+        keep_last_import_only_partition_by_pk: true
+        filter_import_by_date: false
+        partition_by_date: true
+        raw_layer:
+          created_at_column: _ingested_at
+          updated_at_column: _ingested_at
+      - name: log
+        time_partitioning: created_date
+        cleanup_enabled: false
+        sanity_checks:
+          created_date_null: true
+          duplicate_check: true
+        raw_layer:
+          created_at_column: dttm
+          updated_at_column: _ingested_at
+      - name: rendered_task_instance_fields
+        pk_columns: [business_unit, dag_id, task_id, execution_date]
+        time_partitioning: created_date
+        cleanup_enabled: false
+        sanity_checks:
+          created_date_null: true
+          duplicate_check: true
+        raw_layer:
+          created_at_column: execution_date
+          updated_at_column: _ingested_at
+      - name: serialized_dag
+        pk_columns: [business_unit, dag_id]
+        time_partitioning: created_date
+        cleanup_enabled: false
+        sanity_checks:
+          created_date_null: true
+          duplicate_check: true
+        keep_last_import_only: true
+        keep_last_import_only_partition_by_pk: true
+        filter_import_by_date: false
+        partition_by_date: true
+        raw_layer:
+          created_at_column: _ingested_at
+          updated_at_column: _ingested_at
+      - name: sla_miss
+        pk_columns: [business_unit, dag_id]
+        time_partitioning: created_date
+        cleanup_enabled: false
+        sanity_checks:
+          created_date_null: true
+          duplicate_check: true
+        keep_last_import_only: true
+        keep_last_import_only_partition_by_pk: true
+        filter_import_by_date: false
+        partition_by_date: true
+        raw_layer:
+          created_at_column: _ingested_at
+          updated_at_column: _ingested_at
+      - name: slot_pool
+        time_partitioning: created_date
+        cleanup_enabled: false
+        sanity_checks:
+          created_date_null: true
+          duplicate_check: true
+        keep_last_import_only: true
+        keep_last_import_only_partition_by_pk: true
+        filter_import_by_date: false
+        partition_by_date: true
+        raw_layer:
+          created_at_column: _ingested_at
+          updated_at_column: _ingested_at
+      - name: task_fail
+        pk_columns: [business_unit, dag_id, task_id, execution_date]
+        time_partitioning: created_date
+        cleanup_enabled: false
+        sanity_checks:
+          created_date_null: true
+          duplicate_check: true
+        raw_layer:
+          created_at_column: execution_date
+          updated_at_column: _ingested_at
+      - name: task_instance
+        pk_columns: [business_unit, dag_id, task_id, execution_date]
+        time_partitioning: created_date
+        cleanup_enabled: false
+        sanity_checks:
+          created_date_null: true
+          duplicate_check: true
+        raw_layer:
+          created_at_column: execution_date
+          updated_at_column: _ingested_at
+      - name: task_reschedule
+        time_partitioning: created_date
+        cleanup_enabled: false
+        sanity_checks:
+          created_date_null: true
+          duplicate_check: true
+        raw_layer:
+          created_at_column: start_date
+          updated_at_column: _ingested_at
+      - name: users
+        time_partitioning: created_date
+        cleanup_enabled: false
+        sanity_checks:
+          created_date_null: true
+          duplicate_check: true
+        keep_last_import_only: true
+        keep_last_import_only_partition_by_pk: true
+        filter_import_by_date: false
+        partition_by_date: true
+        raw_layer:
+          created_at_column: _ingested_at
+          updated_at_column: _ingested_at
+      - name: variable
+        time_partitioning: created_date
+        cleanup_enabled: false
+        sanity_checks:
+          created_date_null: true
+          duplicate_check: true
+        keep_last_import_only: true
+        keep_last_import_only_partition_by_pk: true
+        filter_import_by_date: false
+        partition_by_date: true
+        raw_layer:
+          created_at_column: _ingested_at
+          updated_at_column: _ingested_at
+      - name: xcom
+        time_partitioning: created_date
+        cleanup_enabled: false
+        sanity_checks:
+          created_date_null: true
+          duplicate_check: true
+        raw_layer:
+          created_at_column: timestamp
+          updated_at_column: _ingested_at

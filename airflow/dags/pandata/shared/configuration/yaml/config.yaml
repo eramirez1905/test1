@@ -1,0 +1,36 @@
+teams: []
+
+slack:
+  channel: ''
+  channel_errors: ''
+  channel_cost_monitoring:
+    name: ''
+    id: ''
+  has_mentions: false
+
+opsgenie: {}
+
+business-unit:
+  name: "pandata"
+
+dags: {}
+
+bigquery_check_metadata_execution:
+  project_id: 'fulfillment-dwh-production'
+
+bigquery:
+  project_id: 'fulfillment-dwh-staging'
+  staging_project_id: 'fulfillment-dwh-staging'
+  dataset:
+    staging: staging_pandata
+    raw: raw_pandata
+    ml: ml_pandata
+    dl: dl_pandata
+    hl: hl_pandata
+    cl: cl_pandata
+    curated_data_filtered: curated_data_filtered_pandata
+    curated_data_shared: curated_data_shared_pandata
+    acl: acl_pandata
+  create_views: false
+
+pools: {}
