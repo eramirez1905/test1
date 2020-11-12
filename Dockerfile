@@ -3,7 +3,7 @@ FROM apache/airflow:1.10.10-python3.7
 USER root
 
 RUN python -m pip install --upgrade pip
-
+ENV AIRFLOW_HOME=/opt/airflow
 RUN set -ex \
     && packages=' \
         build-essential \
