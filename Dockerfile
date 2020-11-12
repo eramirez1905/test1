@@ -52,16 +52,11 @@ ARG PYTHON_BASE_IMAGE="python:3.6-slim-buster"
 FROM ${PYTHON_BASE_IMAGE} as main
 SHELL ["/bin/bash", "-o", "pipefail", "-e", "-u", "-x", "-c"]
 
-ARG AIRFLOW_UID
-ARG AIRFLOW_GID
-
 LABEL org.apache.airflow.distro="debian"
 LABEL org.apache.airflow.distro.version="buster"
 LABEL org.apache.airflow.module="airflow"
 LABEL org.apache.airflow.component="airflow"
 LABEL org.apache.airflow.image="airflow"
-LABEL org.apache.airflow.uid="${AIRFLOW_UID}"
-LABEL org.apache.airflow.gid="${AIRFLOW_GID}"
 
 ARG PYTHON_BASE_IMAGE
 ENV PYTHON_BASE_IMAGE=${PYTHON_BASE_IMAGE}
@@ -136,18 +131,10 @@ RUN KEY="A4A9406876FCBD3C456770C88C718D3B5072E1F5" \
     && apt-get autoremove -yqq --purge \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-ENV AIRFLOW_UID=${AIRFLOW_UID}
-ENV AIRFLOW_GID=${AIRFLOW_GID}
-
 ENV AIRFLOW__CORE__LOAD_EXAMPLES="false"
 
 ARG AIRFLOW_USER_HOME_DIR=/home/airflow
 ENV AIRFLOW_USER_HOME_DIR=${AIRFLOW_USER_HOME_DIR}
-
-RUN addgroup --gid "${AIRFLOW_GID}" "airflow" && \
-    adduser --quiet "airflow" --uid "${AIRFLOW_UID}" \
-        --gid "${AIRFLOW_GID}" \
-        --home "${AIRFLOW_USER_HOME_DIR}"
 
 ARG AIRFLOW_HOME
 ENV AIRFLOW_HOME=${AIRFLOW_HOME}
@@ -184,7 +171,7 @@ WORKDIR ${AIRFLOW_HOME}
 
 EXPOSE 8080
 
-USER ${AIRFLOW_UID}
+USER airflow
 
 ARG BUILD_ID
 ENV BUILD_ID=${BUILD_ID}
@@ -196,8 +183,6 @@ LABEL org.apache.airflow.distro.version="buster"
 LABEL org.apache.airflow.module="airflow"
 LABEL org.apache.airflow.component="airflow"
 LABEL org.apache.airflow.image="airflow"
-LABEL org.apache.airflow.uid="${AIRFLOW_UID}"
-LABEL org.apache.airflow.gid="${AIRFLOW_GID}"
 LABEL org.apache.airflow.mainImage.buildId=${BUILD_ID}
 LABEL org.apache.airflow.mainImage.commitSha=${COMMIT_SHA}
 
