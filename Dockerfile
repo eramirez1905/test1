@@ -30,9 +30,9 @@ RUN python -m pip install --upgrade pip
 # Install basic and additional apt dependencies
 RUN mkdir -pv /usr/share/man/man1 \
     && mkdir -pv /usr/share/man/man7 \
-    && export ${ADDITIONAL_DEV_ENV_VARS?} \
-    && bash -o pipefail -e -u -x -c "${DEV_APT_COMMAND}" \
-    && bash -o pipefail -e -u -x -c "${ADDITIONAL_DEV_APT_COMMAND}" \
+#     && export ${ADDITIONAL_DEV_ENV_VARS?} \
+#     && bash -o pipefail -e -u -x -c "${DEV_APT_COMMAND}" \
+#     && bash -o pipefail -e -u -x -c "${ADDITIONAL_DEV_APT_COMMAND}" \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
            apt-utils \
