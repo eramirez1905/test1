@@ -13,6 +13,16 @@ pytest
 dataclasses  # remove when Python >= 3.7
 yamllint==1.23.0
 oauthlib==2.1.0
-requests-oauthlib==1.1.0
 # httplib2 0.17.0 has a bug on the debug function https://github.com/httplib2/httplib2/commit/59586b5f0ccfa9d570d8c7d908d00d34cf1f3c89
 httplib2==0.18.0
+yarl
+multidict
+requests-oauthlib==1.1.0
+google-api-core==1.22.1
+Flask-OAuthlib==0.9.5
+protobuf>=3.12.0
+grpcio==1.33.2
+slackclient==2.0.0
+google-cloud-dataproc==1.0.1
+argcomplete==1.11.1
+apache-airflow-backport-providers-google
