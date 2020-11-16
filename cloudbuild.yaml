@@ -1,16 +1,14 @@
 steps:
-# # build the container image
-# - name: 'gcr.io/cloud-builders/docker'
-#   id: Build container
-#   args: ['build', '-t', 'us.gcr.io/$PROJECT_ID/datahub-testing:$COMMIT_SHA', '.']
-#   timeout: 500s
-# # push the container image to Container Registry
-# - name: 'gcr.io/cloud-builders/docker'
-#   id: Push container
-#   args: ['push', 'us.gcr.io/$PROJECT_ID/datahub-testing:$COMMIT_SHA']
-#   steps:
-  # running docker-compose
-- name: 'gcr.io/$PROJECT_ID/docker-compose'
-  args: ['up']
-# images:
-# - 'us.gcr.io/$PROJECT_ID/datahub-testing:$COMMIT_SHA'
+# build the container image
+- name: 'gcr.io/cloud-builders/docker'
+  id: Build container
+  args: ['build', '-t', 'us.gcr.io/$PROJECT_ID/datahub-testing:$COMMIT_SHA', '.']
+  timeout: 500s
+# push the container image to Container Registry
+- name: 'gcr.io/cloud-builders/docker'
+  id: Push container
+  args: ['push', 'us.gcr.io/$PROJECT_ID/datahub-testing:$COMMIT_SHA']
+  steps:
+# running docker-compose
+images:
+- 'us.gcr.io/$PROJECT_ID/datahub-testing:latest'
