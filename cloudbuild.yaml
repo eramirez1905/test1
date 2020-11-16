@@ -8,5 +8,9 @@ steps:
 - name: 'gcr.io/cloud-builders/docker'
   id: Push container
   args: ['push', 'us.gcr.io/$PROJECT_ID/datahub-testing:$COMMIT_SHA']
+  steps:
+  # running docker-compose
+- name: 'docker/compose:1.26.2'
+  args: ['up', '-d']
 images:
 - 'us.gcr.io/$PROJECT_ID/datahub-testing:$COMMIT_SHA'
