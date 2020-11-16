@@ -61,7 +61,7 @@ RUN mkdir -pv /usr/share/man/man1 \
            unixodbc \
            unixodbc-dev \
            yarn \
-           ${ADDITIONAL_DEV_APT_DEPS} \
+#            ${ADDITIONAL_DEV_APT_DEPS} \
     && apt-get autoremove -yqq --purge \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
