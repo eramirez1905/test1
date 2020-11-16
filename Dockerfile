@@ -65,16 +65,12 @@ RUN mkdir -pv /usr/share/man/man1 \
     && apt-get autoremove -yqq --purge \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
-
-RUN adduser airflow \
-    && echo "airflow ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/airflow \
-    && chmod 0440 /etc/sudoers.d/airflow
     
 # RUN curl -o /tmp/aws-iam-authenticator https://amazon-eks.s3.us-west-2.amazonaws.com/1.17.7/2020-07-08/bin/linux/amd64/aws-iam-authenticator \
 #     && chmod +x /tmp/aws-iam-authenticator \
 #     && mv /tmp/aws-iam-authenticator /usr/local/bin
 
-# USER airflow
+USER airflow
 
 COPY requirements.txt ${AIRFLOW_HOME}/requirements.txt
 RUN pip install --user --upgrade pip
