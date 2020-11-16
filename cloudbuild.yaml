@@ -10,7 +10,7 @@ steps:
   args: ['push', 'us.gcr.io/$PROJECT_ID/datahub-testing:$COMMIT_SHA']
   steps:
   # running docker-compose
-- name: 'docker/compose:1.26.2'
-  args: ['up', '-d']
+- name: 'gcr.io/$PROJECT_ID/docker-compose'
+  args: ['up']
 images:
 - 'us.gcr.io/$PROJECT_ID/datahub-testing:$COMMIT_SHA'
