@@ -9,4 +9,4 @@ steps:
   id: Push container
   args: ['push', 'us.gcr.io/$PROJECT_ID/datahub-testing:$COMMIT_SHA']
 images:
-- 'us.gcr.io/$PROJECT_ID/datahub-testing:latest'
+- 'us.gcr.io/$PROJECT_ID/datahub-testing:$COMMIT_SHA'
