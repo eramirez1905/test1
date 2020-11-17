@@ -1,9 +1,0 @@
-slack:
-  channel: '#log-airflow-st'
-  channel_errors: '#log-airflow-st'
-# DAG configurations
-dags:
-  curated-data:
-    schedule_interval: '0 3 * * *'
-  import-dwh:
-    schedule_interval: '0 1 * * *'

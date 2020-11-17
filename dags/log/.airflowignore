@@ -1,6 +1,0 @@
-databricks/import_data.py
-dwh_import_read_replica/.+py
-common/.+py
-operators/.+py
-curated_data/.+py
-tests/
