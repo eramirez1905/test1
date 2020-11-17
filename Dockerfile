@@ -35,14 +35,14 @@
 #
 ARG AIRFLOW_VERSION="1.10.12"
 ARG AIRFLOW_EXTRAS="async,aws,gcp,kubernetes,mysql,postgres,redis,slack,ssh,statsd,virtualenv"
-ARG ADDITIONAL_AIRFLOW_EXTRAS="requests-oauthlib==1.1.0 multidict yarl google-api-core==1.22.1 oauthlib==2.1.0 Flask-OAuthlib==0.9.5 protobuf>=3.12.0 grpcio==1.33.2 slackclient==2.0.0 google-cloud-dataproc==1.0.1 argcomplete==1.11.1 apache-airflow-backport-providers-google apache-airflow-backport-providers-amazon apache-airflow-backport-providers-slack "
-ARG ADDITIONAL_PYTHON_DEPS=""
+ARG ADDITIONAL_AIRFLOW_EXTRAS=""
+ARG ADDITIONAL_PYTHON_DEPS="requests-oauthlib==1.1.0 multidict yarl google-api-core==1.22.1 oauthlib==2.1.0 Flask-OAuthlib==0.9.5 protobuf>=3.12.0 grpcio==1.33.2 slackclient==2.0.0 google-cloud-dataproc==1.0.1 argcomplete==1.11.1 apache-airflow-backport-providers-google apache-airflow-backport-providers-amazon apache-airflow-backport-providers-slack "
 
 ARG AIRFLOW_HOME=/opt/airflow
 ARG AIRFLOW_UID="50000"
 ARG AIRFLOW_GID="50000"
 
-ARG PIP_VERSION="19.0.2"
+ARG PIP_VERSION="20.2.4"
 ARG CASS_DRIVER_BUILD_CONCURRENCY="8"
 
 ARG PYTHON_BASE_IMAGE="python:3.7-slim-buster"
@@ -165,7 +165,7 @@ ARG AIRFLOW_BRANCH=master
 ENV AIRFLOW_BRANCH=${AIRFLOW_BRANCH}
 
 ARG AIRFLOW_EXTRAS
-ARG ADDITIONAL_AIRFLOW_EXTRAS="requests-oauthlib==1.1.0 multidict yarl google-api-core==1.22.1 oauthlib==2.1.0 Flask-OAuthlib==0.9.5 protobuf>=3.12.0 grpcio==1.33.2 slackclient==2.0.0 google-cloud-dataproc==1.0.1 argcomplete==1.11.1 apache-airflow-backport-providers-google apache-airflow-backport-providers-amazon apache-airflow-backport-providers-slack "
+ARG ADDITIONAL_AIRFLOW_EXTRAS=""
 ENV AIRFLOW_EXTRAS=${AIRFLOW_EXTRAS}${ADDITIONAL_AIRFLOW_EXTRAS:+,}${ADDITIONAL_AIRFLOW_EXTRAS}
 
 ARG AIRFLOW_CONSTRAINTS_REFERENCE="constraints-master"
@@ -192,7 +192,7 @@ ENV CASS_DRIVER_BUILD_CONCURRENCY=${CASS_DRIVER_BUILD_CONCURRENCY}
 ARG AIRFLOW_VERSION
 ENV AIRFLOW_VERSION=${AIRFLOW_VERSION}
 
-ARG ADDITIONAL_PYTHON_DEPS=""
+ARG ADDITIONAL_PYTHON_DEPS="requests-oauthlib==1.1.0 multidict yarl google-api-core==1.22.1 oauthlib==2.1.0 Flask-OAuthlib==0.9.5 protobuf>=3.12.0 grpcio==1.33.2 slackclient==2.0.0 google-cloud-dataproc==1.0.1 argcomplete==1.11.1 apache-airflow-backport-providers-google apache-airflow-backport-providers-amazon apache-airflow-backport-providers-slack "
 ENV ADDITIONAL_PYTHON_DEPS=${ADDITIONAL_PYTHON_DEPS}
 
 ARG AIRFLOW_INSTALL_SOURCES="."
