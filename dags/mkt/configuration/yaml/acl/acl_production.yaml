@@ -1,0 +1,74 @@
+# ACL for shared views
+# Example:
+#acl:
+#  - name: PedidosYa
+#    domain: pedidosya.com # this is the catch-all domain, all users that belong to this domain
+#                          # will have access to all the countries defined below
+#                          # `domain` can be `null`, in this case the permissions are granted
+#                          # based on the contents of `users`
+#    countries: [ar, bo, cl, cr, pa, uy]       # Required: Filter rows by country_code
+#                                                If it is null (`~`) no filters are applied (all entities)
+#    entities: [PY_AR]                         # Required: Filter rows by entity_id if `filter_by_entity` is true
+#                                                If it is null (`~`) no filters are applied (all entities)
+#                                              IMPORTANT - you can only filter by entites if counties are specified
+#                                              as well (not null)
+#    users:                                    # Optional field
+#      - group: bi_logistics@pedidosya.com     # `group` is a google group
+#      - email: riccardo.bini@deliveryhero.com # `email` overrides the configuration of the venture
+#        countries: [de]                       # `countries` is optional, if omitted the countries of the venture will be used
+#                                              # If `countries` is defined it overrides the countries of the venture
+acl:
+  - name: Foodpanda APAC
+    domain: foodpanda.com
+    countries:
+      - hk
+      - bd
+      - la
+      - jp
+      - tw
+      - mm
+      - my
+      - kh
+      - ph
+      - sg
+      - pk
+      - th
+      - bg
+      - ro
+    entities:
+      - FP_HK
+      - FP_BD
+      - FP_LA
+      - FP_JP
+      - FP_TW
+      - FP_MM
+      - FP_MY
+      - FP_KH
+      - FP_PH
+      - FP_SG
+      - FP_PK
+      - FP_TH
+      - FP_BG
+      - FP_RO
+    users:
+      - email: datahub-airflow-deployment@dhh---analytics-apac-admin.iam.gserviceaccount.com
+      - email: datahub-airflow-production@dhh---analytics-apac-admin.iam.gserviceaccount.com
+      - email: datahub-airflow-staging@dhh---analytics-apac-admin.iam.gserviceaccount.com
+      - email: pandata-airflow-staging@dhh---analytics-apac-admin.iam.gserviceaccount.com
+      - email: pandata-airflow-production@dhh---analytics-apac-admin.iam.gserviceaccount.com
+      - email: pandata-airflow-development@dhh---analytics-apac-admin.iam.gserviceaccount.com
+      - email: pandata-airflow-deployment@dhh---analytics-apac-admin.iam.gserviceaccount.com
+      - group: data_members@foodpanda.com
+      - group: data_advanced_users@foodpanda.com
+  - name: NCR Team
+    domain: deliveryhero.com
+    countries: ~
+    entities: ~
+    users:
+      - group: dh_vt_ncr_tech@deliveryhero.com
+  - name: Rider Marketing
+    domain: null
+    countries: ~
+    entities: ~
+    users:
+      - email: mohamad.saleh@deliveryhero.com

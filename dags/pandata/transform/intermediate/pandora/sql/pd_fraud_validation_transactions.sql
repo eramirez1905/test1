@@ -1,0 +1,15 @@
+SELECT
+  `{project_id}`.pandata_intermediate.PD_UUID(id, rdbms_id) AS uuid,
+  id,
+  rdbms_id,
+  score,
+  validator_code,
+  reference AS order_code,
+  response_status = 'success' AS is_success,
+  response_status = 'error' AS is_error,
+  IFNULL(is_bad = 1, FALSE) AS is_bad,
+  transaction_reference,
+  NULLIF(handler_data, 'null') AS handler_data,
+  created_at AS created_at_local,
+  DATE(created_at) AS created_date_local,
+FROM `{project_id}.pandata_raw_ml_backend_latest.fraud_validation_transaction`

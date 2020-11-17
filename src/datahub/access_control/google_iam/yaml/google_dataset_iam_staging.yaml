@@ -1,0 +1,15 @@
+# Note: google_dataset_iam_production.yaml is the single place
+# where we update both Staging and Production project
+# This file used to test the functionality on staging environment
+
+google_dataset_iam:
+  fulfillment-dwh-staging:
+    test:
+      READER:
+        userByEmail:
+          - riccardo.bini@deliveryhero.com
+        groupByEmail:
+          - tech.logisticsdata@deliveryhero.com
+      WRITER:
+        userByEmail:
+          - riccardo.bini@deliveryhero.com

@@ -1,0 +1,23 @@
+SELECT
+  `{project_id}`.pandata_intermediate.ENTITY_UUID(id, global_entity_id) AS uuid,
+  id,
+  `{project_id}`.pandata_intermediate.ENTITY_UUID(subscription_id, global_entity_id) AS subscription_uuid,
+  subscription_id,
+  global_entity_id,
+  gateway_reference,
+  http_status,
+  internal_reference,
+  CAST(total_amount AS NUMERIC) AS total_amount_local,
+  CAST(vat_amount AS NUMERIC) AS vat_amount_local,
+  CAST(net_amount AS NUMERIC) AS net_amount_local,
+  payment_status AS status,
+  payment_status = 'success' AS is_status_success,
+  payment_status = 'failed' AS is_status_failed,
+  payment_status = 'pending' AS is_status_pending,
+  payment_date AS paid_at_utc,
+  subscription_start_date AS subscription_start_at_utc,
+  subscription_end_date AS subscription_end_at_utc,
+  created_at AS created_at_utc,
+  updated_at AS updated_at_utc,
+  dwh_last_modified AS dwh_last_modified_at_utc
+FROM `{project_id}.pandata_raw_ml_subscription_latest.subscription_payment`

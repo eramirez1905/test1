@@ -1,0 +1,73 @@
+{
+  "key": "LOGDEP-1084",
+  "id": "536394",
+  "expand": "renderedFields,names,schema,operations,editmeta,changelog,versionedRepresentations",
+  "permalink": "jira_server/browse/LOGDEP-1084",
+  "subtasks": [],
+  "resolutiondate": null,
+  "self": "https://jira.deliveryhero.com/rest/api/2/issue/536394",
+  "project": {
+    "id": "26100",
+    "key": "LOGDEP",
+    "name": "Logistics Data Engineering Pipeline",
+    "projectTypeKey": "software"
+  },
+  "watches": {
+    "watchCount": 0,
+    "isWatching": false
+  },
+  "assignee": {
+    "displayName": "Divyanshu Bansal",
+    "name": "7a0e7c4afdd74ffcafce7a3a6d8d3c2d",
+    "emailAddress": "divyanshu.bansal@deliveryhero.com",
+    "key": "JIRAUSER73930",
+    "active": true,
+    "timeZone": "Europe/Berlin"
+  },
+  "worklog": {
+    "total": 1,
+    "worklogs": [
+      {
+        "author": {
+          "name": "divyanshu.bansal",
+          "key": "divyanshu.bansal",
+          "emailAddress": "divyanshu.bansal@deliveryhero.com",
+          "displayName": "Divyanshu Bansal",
+          "active": false,
+          "timeZone": "Europe/Berlin"
+        },
+        "updateAuthor": {
+          "name": "divyanshu.bansal",
+          "key": "divyanshu.bansal",
+          "emailAddress": "divyanshu.bansal@deliveryhero.com",
+          "displayName": "Divyanshu Bansal",
+          "active": false,
+          "timeZone": "Europe/Berlin"
+        },
+        "comment": "",
+        "created": "2018-06-11 16:05:41.913000",
+        "updated": "2018-06-11 16:05:41.913000",
+        "started": "2018-06-11 16:05:00.000000",
+        "timeSpent": "30m",
+        "timeSpentSeconds": 1800,
+        "id": "287394",
+        "issueId": "263449"
+      }
+    ]
+  },
+  "timetracking": {
+    "remainingEstimate": "0m",
+    "timeSpent": "30m",
+    "remainingEstimateSeconds": 0,
+    "timeSpentSeconds": 1800
+  },
+  "components": [],
+  "timeoriginalestimate": null,
+  "lastViewed": null,
+  "project_id": "LOGDEP",
+  "_ingested_at": "2019-09-09 05:05:05.000000",
+  "created_date": "2020-02-28",
+  "created_at": "2020-02-28 14:42:04.533000",
+  "updated_at": null,
+  "merge_layer_run_from": "2020-03-31 05:00:00"
+}

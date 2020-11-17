@@ -1,0 +1,50 @@
+teams: []
+
+slack:
+  channel: ''
+  channel_errors: ''
+  channel_cost_monitoring:
+    name: ''
+    id: ''
+  has_mentions: false
+
+#opsgenie:
+#  responders:
+#    - name: 'Fulfillment-Data'
+#      type: 'team'
+#  visibleTo:
+#    - name: 'Fulfillment-Data'
+#      type: 'team'
+# For more information: https://docs.opsgenie.com/docs/python-sdk-alert
+#                       https://docs.opsgenie.com/docs/alert-api#section-create-alert
+#                       https://docs.opsgenie.com/docs/python-sdk-alert#add-details-custom-properties-to-alert
+opsgenie: {}
+
+business-unit:
+  name: gcc-service
+
+# DAG configurations
+dags: {}
+
+# TODO Please update the GCS bucket to use the one owned by the business unit
+gcs_staging: &gcs_staging
+  bucket_name: 'pd-bi-datahub'
+
+# See BigQueryCheckMetadataExecutionOperator to why it is set to production
+bigquery_check_metadata_execution:
+  project_id: 'fulfillment-dwh-production'
+
+bigquery:
+  <<: *gcs_staging
+  project_id: 'fulfillment-dwh-staging'
+  staging_project_id: 'fulfillment-dwh-staging'
+  dataset:
+    staging: staging_gcc_service
+    raw: raw_gcc_service
+    dl: dl_gcc_service
+    hl: hl_gcc_service
+    cl: cl_gcc_service
+    acl: acl_gcc_service
+    curated_data_filtered: curated_data_filtered_gcc_service
+    curated_data_shared: curated_data_shared_gcc_service
+  create_views: false

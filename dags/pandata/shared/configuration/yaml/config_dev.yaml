@@ -1,0 +1,3 @@
+dags:
+  shared_curated_data:
+    schedule_interval: null

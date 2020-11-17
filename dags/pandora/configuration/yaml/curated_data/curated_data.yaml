@@ -1,0 +1,1283 @@
+curated_data:
+  pandora:
+    ui_color: '#e81abe'
+    bigquery_conn_id:
+      tables: 'bigquery_default'
+      reports: 'bigquery_default'
+    reports: []
+
+    tables:
+      - name: city
+        create_shared_view: true
+        filter_by_entity: true
+        filter_by_country: false
+        entity_id_column: entity_id
+        columns:
+          - city_name
+          - is_test
+          - active
+          - created_at
+          - updated_at
+          - city_timezone
+          - option_value_vat_id
+          - rdbms_id
+          - city_id
+          - entity_id
+          - cdc_last_modified
+          - timezone
+        dependencies_dl:
+          - il_city
+
+      - name: cuisines
+        create_shared_view: true
+        filter_by_entity: true
+        filter_by_country: false
+        entity_id_column: entity_id
+        columns:
+          - rdbms_id
+          - cuisine_id
+          - globalcuisine_id
+          - cuisine_code
+          - cuisine_title
+          - globalcuisine_title
+          - cuisine_active
+          - created_at
+          - updated_at
+          - cdc_last_modified
+          - entity_id
+          - timezone
+        dependencies_dl:
+          - il_cuisines
+
+      - name: customer
+        create_shared_view: true
+        filter_by_entity: true
+        filter_by_country: false
+        entity_id_column: entity_id
+        columns:
+          - customer_name
+          - customer_email
+          - email_domain
+          - mobile_code
+          - mobile_number
+          - city
+          - postcode
+          - address_line1
+          - address_line2
+          - delivery_instructions
+          - lat
+          - lon
+          - first_order_date_all
+          - first_order_date
+          - first_app_order_date
+          - last_order_date
+          - subscribed
+          - subscribe_date
+          - source
+          - mobile_verified
+          - guest
+          - reference_code
+          - code
+          - company_id
+          - company_name
+          - loyaltyprogramname_id
+          - language_id
+          - deleted
+          - updated_at
+          - created_at
+          - lastlogin
+          - firstname
+          - lastname
+          - dwh_last_modified
+          - passwordless
+          - cdc_last_modified
+          - rdbms_id
+          - customer_id
+          - entity_id
+          - timezone
+        dependencies_dl:
+          - il_customer
+
+      - name: customeraddress
+        create_shared_view: true
+        filter_by_entity: true
+        filter_by_country: false
+        entity_id_column: entity_id
+        columns:
+          - customer_id
+          - area_id
+          - city_id
+          - address_line1
+          - address_line2
+          - address_line3
+          - address_line4
+          - address_line5
+          - building
+          - flat_number
+          - floor
+          - delivery_instructions
+          - company
+          - city
+          - postcode
+          - district
+          - is_verified
+          - address_deleted
+          - last_usage
+          - lat
+          - lon
+          - dwh_created
+          - dwh_last_modified
+          - business_area_id
+          - locationhash
+          - dwh_il_last_modified
+          - created_at
+          - updated_at
+          - position
+          - type
+          - rdbms_id
+          - delivery_address_id
+          - entity_id
+          - cdc_last_modified
+          - timezone
+        dependencies_dl:
+          - il_customeraddress
+
+      - name: decline_reasons
+        create_shared_view: true
+        filter_by_entity: true
+        filter_by_country: false
+        entity_id_column: entity_id
+        columns:
+          - declinereason_type
+          - declinereason_code
+          - title
+          - active
+          - title_en
+          - created_at
+          - updated_at
+          - rdbms_id
+          - declinereason_id
+          - entity_id
+          - cdc_last_modified
+          - timezone
+        dependencies_dl:
+          - il_decline_reasons
+
+      - name: deliveryprovider
+        create_shared_view: true
+        filter_by_entity: true
+        filter_by_country: false
+        entity_id_column: entity_id
+        columns:
+          - active
+          - description
+          - title
+          - language_id
+          - type
+          - updated_at
+          - created_at
+          - rdbms_id
+          - deliveryprovider_id
+          - entity_id
+          - cdc_last_modified
+          - timezone
+        dependencies_dl:
+          - il_deliveryprovider
+
+      - name: first_order_uuid
+        create_shared_view: true
+        filter_by_entity: true
+        filter_by_country: false
+        entity_id_column: entity_id
+        columns:
+          - dwh_country_id
+          - first_order_id
+          - first_order_date
+          - last_order_date
+          - voucher_customer
+          - discount_customer
+          - online_payment_customer
+          - first_order_hour
+          - first_gfv_local
+          - first_gfv_eur
+          - first_gmv_local
+          - first_gmv_eur
+          - first_voucher_value_local
+          - first_voucher_value_eur
+          - first_city
+          - first_vendor_id
+          - first_vendor_name
+          - first_order_source
+          - first_platform
+          - first_channel
+          - first_ga_source
+          - first_voucher_id
+          - first_voucher
+          - first_voucher_purpose
+          - first_expedition_type
+          - first_delivery_time
+          - first_delivery_delay
+          - commission
+          - delivery_fee
+          - expedition_type
+          - first_order_discount_type
+          - first_order_own_delivery
+          - first_payment_type
+          - pandora_platform
+          - first_loyalty_collected
+          - first_vertical
+          - cdc_last_modified
+          - entity_id
+          - rdbms_id
+          - new_customer_uuid
+          - timezone
+        dependencies_dl:
+          - il_first_order_uuid
+
+      - name: languages
+        create_shared_view: true
+        filter_by_entity: true
+        filter_by_country: false
+        entity_id_column: entity_id
+        columns:
+          - language_title
+          - google_map_lang
+          - language_code
+          - locale
+          - parent_id
+          - language_active
+          - language_deleted
+          - created_at
+          - updated_at
+          - cdc_last_modified
+          - entity_id
+          - rdbms_id
+          - language_id
+          - timezone
+        dependencies_dl:
+          - il_languages
+
+      - name: ops
+        create_shared_view: true
+        filter_by_entity: true
+        filter_by_country: false
+        entity_id_column: entity_id
+        columns:
+          - status_array
+          - code_array
+          - idle_time
+          - online_payment_time
+          - customer_verification_time
+          - cc_handling_time
+          - vendor_confirmation_time
+          - dispatcher_time
+          - order_placement_time
+          - automated
+          - order_date
+          - user_id_automation
+          - user_id_array
+          - user_name_array
+          - idle_start
+          - idle_end
+          - online_payment_process_start
+          - online_payment_process_end
+          - customer_verification_start
+          - customer_verification_end
+          - cc_handling_start
+          - cc_handling_end
+          - vendor_confirmation_start
+          - vendor_confirmation_end
+          - dispatcher_start
+          - dispatcher_end
+          - order_placement_start
+          - order_placement_end
+          - order_completed
+          - vendor_cancelled
+          - foodora_cancelled
+          - customer_cancelled
+          - dwh_il_last_modified
+          - cdc_last_modified
+          - entity_id
+          - rdbms_id
+          - order_id
+          - timezone
+        dependencies_dl:
+          - il_ops
+
+      - name: option_value
+        create_shared_view: true
+        filter_by_entity: true
+        filter_by_country: false
+        entity_id_column: entity_id
+        columns:
+          - vat_rate
+          - vat_name
+          - cdc_last_modified
+          - entity_id
+          - rdbms_id
+          - option_id
+          - vat_id
+          - timezone
+        dependencies_dl:
+          - il_option_value
+
+      - name: paymenttype
+        create_shared_view: true
+        filter_by_entity: true
+        filter_by_country: false
+        entity_id_column: entity_id
+        columns:
+          - code
+          - title
+          - online_payment
+          - subtype_code
+          - brand_code
+          - payment_fee_enabled
+          - payment_fee
+          - paymenttype_active
+          - created_at
+          - updated_at
+          - cdc_last_modified
+          - entity_id
+          - rdbms_id
+          - id
+          - timezone
+        dependencies_dl:
+          - il_paymenttype
+
+      - name: social_login
+        create_shared_view: true
+        filter_by_entity: true
+        filter_by_country: false
+        entity_id_column: entity_id
+        columns:
+          - customer_id
+          - customer_social_id
+          - platform
+          - is_deleted
+          - dwh_last_modified
+          - dwh_row_hash
+          - rdbms_id
+          - social_login_id
+          - entity_id
+          - cdc_last_modified
+          - timezone
+        dependencies_dl:
+          - il_social_login
+
+      - name: topping_templates
+        create_shared_view: true
+        filter_by_entity: true
+        filter_by_country: false
+        entity_id_column: entity_id
+        columns:
+          - productvariationtoppingtemplate_deleted
+          - topping_template_deleted
+          - topping_template_title
+          - productvariationtoppingtemplate_created_at
+          - productvariationtoppingtemplate_updated_at
+          - topping_template_created_at
+          - topping_template_updated_at
+          - quantity_minimum
+          - topping_template_price
+          - topping_template_product_deleted
+          - topping_template_product_active
+          - cdc_last_modified
+          - entity_id
+          - rdbms_id
+          - product_variation_id
+          - productvariationtoppingtemplate_id
+          - toppingtemplate_id
+          - topping_template_product_id
+          - dwh_last_modified
+          - timezone
+        dependencies_dl:
+          - il_topping_templates
+
+      - name: translations
+        create_shared_view: true
+        filter_by_entity: true
+        filter_by_country: false
+        entity_id_column: entity_id
+        columns:
+          - object
+          - objectattribute
+          - object_id
+          - text
+          - language_id
+          - created_at
+          - updated_at
+          - dwh_created
+          - dwh_last_modified
+          - dwh_merge_layer_created
+          - dwh_merge_layer_last_modified
+          - rdbms_id
+          - id
+          - entity_id
+          - cdc_last_modified
+          - timezone
+        dependencies_dl:
+          - il_translations
+
+      - name: users
+        create_shared_view: true
+        filter_by_entity: true
+        filter_by_country: false
+        entity_id_column: entity_id
+        columns:
+          - username
+          - firstname
+          - lastname
+          - roles
+          - global
+          - active
+          - visible
+          - deleted
+          - email
+          - updated_at
+          - created_at
+          - cdc_last_modified
+          - entity_id
+          - rdbms_id
+          - user_id
+          - timezone
+        dependencies_dl:
+          - il_users
+
+      - name: vendor_content
+        create_shared_view: true
+        filter_by_entity: true
+        filter_by_country: false
+        entity_id_column: entity_id
+        columns:
+          - vendor_code
+          - primary_cuisine
+          - avg_vat
+          - menucategories
+          - master_categories
+          - topping_master_categories
+          - menucategories_long_descr
+          - mc_descriptions
+          - products
+          - duplicate_products
+          - p_descriptions
+          - price_local
+          - price_eur
+          - desc_length
+          - avg_drink_price
+          - avg_food_price
+          - p_pictures
+          - cdc_last_modified
+          - entity_id
+          - rdbms_id
+          - vendor_id
+          - timezone
+        dependencies_dl:
+          - il_vendor_content
+
+      - name: vendor_discounts
+        create_shared_view: true
+        filter_by_entity: true
+        filter_by_country: false
+        entity_id_column: entity_id
+        columns:
+          - vendor_id
+          - discount_type
+          - discount_title
+          - discount_description
+          - banner_title
+          - condition_type
+          - discount_text
+          - discount_amount
+          - discount_mov
+          - start_date
+          - end_date
+          - vendordiscount_active
+          - vendordiscount_deleted
+          - discount_deleted
+          - created_at
+          - updated_at
+          - dwh_last_modified
+          - cdc_last_modified
+          - entity_id
+          - rdbms_id
+          - vendor_discount_id
+          - discount_id
+          - timezone
+        dependencies_dl:
+          - il_vendor_discounts
+
+      - name: vendor_foodcharacteristics
+        create_shared_view: true
+        filter_by_entity: true
+        filter_by_country: false
+        entity_id_column: entity_id
+        columns:
+          - foodcaracteristics_title
+          - foodcaracteristics_active
+          - created_at
+          - updated_at
+          - cdc_last_modified
+          - entity_id
+          - rdbms_id
+          - vendor_id
+          - foodcaracteristics_id
+          - timezone
+        dependencies_dl:
+          - il_vendor_foodcharacteristics
+
+      - name: vendor_products
+        create_shared_view: true
+        filter_by_entity: true
+        filter_by_country: false
+        entity_id_column: entity_id
+        columns:
+          - city_id
+          - vendor_code
+          - primary_cuisine
+          - master_category
+          - menu_category
+          - product_title
+          - product_description
+          - product_price
+          - menucategory_id
+          - product_active
+          - dish_image
+          - master_category_id
+          - product_type
+          - menu_title
+          - menu_start_hour
+          - menu_stop_hour
+          - product_deleted
+          - productvariation_deleted
+          - product_created_at
+          - product_updated_at
+          - is_prepacked_item
+          - image_pathname
+          - exclude_dish_information
+          - product_variation_title
+          - container_price
+          - remote_code
+          - cdc_last_modified
+          - entity_id
+          - menu_id
+          - rdbms_id
+          - vendor_id
+          - product_id
+          - product_variation_id
+          - vat_id
+          - timezone
+        dependencies_dl:
+          - il_vendor_products
+
+      - name: vendorflows
+        create_shared_view: true
+        filter_by_entity: true
+        filter_by_country: false
+        entity_id_column: entity_id
+        columns:
+          - created_at
+          - dwh_created
+          - dwh_last_modified
+          - start_date
+          - type
+          - updated_at
+          - user_id
+          - value
+          - vendor_id
+          - dwh_merge_layer_created
+          - dwh_merge_layer_last_modified
+          - cdc_last_modified
+          - entity_id
+          - rdbms_id
+          - id
+          - timezone
+        dependencies_dl:
+          - il_vendorflows
+
+      - name: vendors
+        create_shared_view: true
+        filter_by_entity: true
+        filter_by_country: false
+        entity_id_column: entity_id
+        columns:
+          - vendor_code
+          - vendor_name
+          - vendor_active
+          - vendor_deleted
+          - chain_id
+          - chain_name
+          - chain_active
+          - chain_deleted
+          - vendor_testing
+          - deliveryprovider_id
+          - created_at
+          - city_id
+          - address_line1
+          - address_line2
+          - postcode
+          - online_payment
+          - automation
+          - chain
+          - min_delivery_time
+          - minimum_delivery_value
+          - commission_type
+          - commission
+          - firstname
+          - lastname
+          - customer_phone
+          - email
+          - display_only
+          - prefered_contact
+          - automatic_calls_enabled
+          - activation_date
+          - pickup_time
+          - customers_type
+          - accept_discount
+          - accept_voucher
+          - budget
+          - rating
+          - premium_listing
+          - company_tax_id
+          - chain_code
+          - primary_cuisine_id
+          - offline_calls_disabled
+          - automatic_calls_delay
+          - automatic_calls_phone
+          - accept_pickup
+          - accept_delivery
+          - minimum_delivery_fee
+          - language_id
+          - vendor_description
+          - logo_filepath
+          - contact_phone
+          - crosslisted
+          - tag_id
+          - is_new
+          - is_private
+          - location_id
+          - business_area_id
+          - chain_menu_group_id
+          - order_email
+          - order_fax
+          - order_sms
+          - disabled_mobile_app
+          - calculation_configuration_template_id
+          - best_in_city
+          - vat_included
+          - option_value_vat_id
+          - payment_types
+          - branch
+          - is_new_until
+          - updated_at
+          - dwh_last_modified
+          - vendor_type
+          - main_vendor_id
+          - rider_pickup_instructions
+          - salesforce_id
+          - loyalty_percentage
+          - loyalty_active
+          - vendor_prepayment
+          - rider_payment_handling
+          - rider_payout
+          - cdc_last_modified
+          - entity_id
+          - payment_type_titles
+          - lat
+          - lon
+          - rdbms_id
+          - vendor_id
+          - timezone
+        dependencies_dl:
+          - il_vendors
+
+      - name: vendors_vouchers
+        create_shared_view: true
+        filter_by_entity: true
+        filter_by_country: false
+        entity_id_column: entity_id
+        columns:
+          - rdbms_id
+          - id
+          - vendor_id
+          - voucher_id
+          - deleted
+          - created_at
+          - updated_at
+          - dwh_last_modified
+          - cdc_last_modified
+          - entity_id
+          - timezone
+        dependencies_dl:
+          - il_vendors_vouchers
+
+      - name: vendorscuisines
+        create_shared_view: true
+        filter_by_entity: true
+        filter_by_country: false
+        entity_id_column: entity_id
+        columns:
+          - cuisine_title
+          - cuisine_active
+          - globalcuisine_id
+          - globalcuisine_title
+          - globalcuisine_active
+          - dwh_last_modified
+          - dwh_merge_layer_last_modified
+          - is_main_cuisine
+          - cdc_last_modified
+          - entity_id
+          - rdbms_id
+          - vendor_id
+          - cuisine_id
+          - timezone
+        dependencies_dl:
+          - il_vendorscuisines
+
+      - name: vouchers
+        create_shared_view: true
+        filter_by_entity: true
+        filter_by_country: false
+        entity_id_column: entity_id
+        columns:
+          - code
+          - customer_code
+          - start_date
+          - stop_date
+          - quantity
+          - customer_quantity
+          - type
+          - value
+          - purpose
+          - description
+          - customer_id
+          - created_at
+          - updated_at
+          - channel
+          - deleted
+          - new_customer_only
+          - platforms
+          - minimum_order_value
+          - payment_types
+          - expedition_type
+          - vertical_type
+          - maximum_order_value
+          - daily_usage_limit
+          - ratio_foodpanda
+          - unlimited
+          - cdc_last_modified
+          - entity_id
+          - rdbms_id
+          - voucher_id
+          - city_ids
+          - timezone
+        dependencies_dl:
+          - il_vouchers
+
+      - name: accounting
+        create_shared_view: true
+        filter_by_entity: true
+        filter_by_country: false
+        entity_id_column: entity_id
+        columns:
+          - accounting_id
+          - gross_total
+          - products_plus_vat
+          - products_vat
+          - products
+          - delivery_fee
+          - delivery_fee_plus_vat
+          - difference_to_minimum_order_value
+          - difference_to_minimum_order_value_plus_vat
+          - rider_tip
+          - rider_tip_plus_vat
+          - charity
+          - charity_plus_vat
+          - products_gross_eur
+          - products_vat_eur
+          - products_net_eur
+          - delivery_fee_net_eur
+          - delivery_fee_gross_eur
+          - charity_net_eur
+          - charity_gross_eur
+          - created_at
+          - updated_at
+          - dwh_last_modified
+          - surcharge_net_eur
+          - surcharge_gross_eur
+          - vouchers
+          - vouchers_plus_vat
+          - discounts
+          - discounts_plus_vat
+          - service_fee
+          - service_fee_plus_vat
+          - container_charges
+          - container_charges_plus_vat
+          - initial_products
+          - initial_products_plus_vat
+          - initial_gross_total
+          - initial_vouchers
+          - initial_vouchers_plus_vat
+          - initial_discounts
+          - initial_discounts_plus_vat
+          - payment_fee
+          - payment_fee_eur
+          - voucher_ratio_foodpanda
+          - joker_commission_base_plus_vat
+          - joker_fee_plus_vat
+          - delivery_fee_adjustment
+          - delivery_fee_adjustment_plus_vat
+          - delivery_fee_not_adjusted_plus_vat
+          - delivery_fee_not_adjusted
+          - cdc_last_modified
+          - entity_id
+          - rdbms_id
+          - order_id
+          - joker_fee
+          - timezone
+        dependencies_dl:
+          - il_accounting
+
+      - name: basket_update
+        create_shared_view: true
+        filter_by_entity: true
+        filter_by_country: false
+        entity_id_column: entity_id
+        columns:
+          - order_code
+          - meta_source
+          - meta_user_type
+          - created_at
+          - updated_at
+          - dwh_last_modified
+          - cdc_last_modified
+          - entity_id
+          - rdbms_id
+          - id
+          - timezone
+        dependencies_dl:
+          - il_basket_update
+
+      - name: basket_update_product
+        create_shared_view: true
+        filter_by_entity: true
+        filter_by_country: false
+        entity_id_column: entity_id
+        columns:
+          - rdbms_id
+          - id
+          - basket_update_id
+          - product_id
+          - productvariation_id
+          - action
+          - reason
+          - title
+          - variation_title
+          - original_quantity
+          - subtotal_gross
+          - packaging_fee_gross
+          - created_at
+          - updated_at
+          - dwh_last_modified
+          - cdc_last_modified
+          - entity_id
+          - timezone
+        dependencies_dl:
+          - il_basket_update_product
+
+      - name: basket_update_product_topping
+        create_shared_view: true
+        filter_by_entity: true
+        filter_by_country: false
+        entity_id_column: entity_id
+        columns:
+          - rdbms_id
+          - id
+          - basket_update_product_id
+          - toppingtemplateproduct_id
+          - title
+          - created_at
+          - updated_at
+          - dwh_last_modified
+          - cdc_last_modified
+          - entity_id
+          - timezone
+        dependencies_dl:
+          - il_basket_update_product_topping
+
+      - name: order_commissions
+        create_shared_view: true
+        filter_by_entity: true
+        filter_by_country: false
+        entity_id_column: entity_id
+        columns:
+          - billing_tool
+          - order_code
+          - commissionable_value_local
+          - commissionable_value_eur
+          - commission_local
+          - commission_eur
+          - invoice_date
+          - order_date
+          - cdc_last_modified
+          - entity_id
+          - rdbms_id
+          - order_id
+          - timezone
+        dependencies_dl:
+          - il_order_commissions
+
+      - name: order_payments
+        create_shared_view: true
+        filter_by_entity: true
+        filter_by_country: false
+        entity_id_column: entity_id
+        columns:
+          - order_code
+          - payment_method
+          - paid_amount_local
+          - paid_amount_eur
+          - metadata
+          - created_at
+          - updated_at
+          - dwh_last_modified
+          - cdc_last_modified
+          - entity_id
+          - rdbms_id
+          - order_payment_id
+          - timezone
+        dependencies_dl:
+          - il_order_payments
+
+      - name: order_toppings
+        create_shared_view: true
+        filter_by_entity: true
+        filter_by_country: false
+        entity_id_column: entity_id
+        columns:
+          - order_id
+          - orderproduct_id
+          - productvariation_id
+          - single_topping_price
+          - order_product_topping_price
+          - total_order_product_price
+          - orderproduct_title
+          - ordertopping_title
+          - created_at
+          - updated_at
+          - dwh_last_modified
+          - cdc_last_modified
+          - entity_id
+          - rdbms_id
+          - ordertopping_id
+          - timezone
+        dependencies_dl:
+          - il_order_toppings
+
+      - name: orderproducts
+        create_shared_view: true
+        filter_by_entity: true
+        filter_by_country: false
+        entity_id_column: entity_id
+        columns:
+          - productvariation_id
+          - order_id
+          - order_date
+          - orderproduct_title
+          - variation_title
+          - price_local
+          - price_eur
+          - total_price_local
+          - total_price_eur
+          - topping_price_local
+          - toppings_price_eur
+          - total_vat_amount_local
+          - total_vat_amount_eur
+          - quantity
+          - vat_id
+          - container_price
+          - created_at
+          - updated_at
+          - sold_out_option
+          - cdc_last_modified
+          - entity_id
+          - rdbms_id
+          - orderproduct_id
+          - vat_rate
+          - toppings_half_price_local
+          - special_instructions
+          - timezone
+        dependencies_dl:
+          - il_orderproducts
+
+      - name: orders
+        create_shared_view: true
+        filter_by_entity: true
+        filter_by_country: false
+        entity_id_column: entity_id
+        columns:
+          - customer_id
+          - city_id
+          - company_id
+          - order_code_google
+          - order_code_adjust
+          - order_source
+          - order_date
+          - order_hour
+          - status_id
+          - decline_reason_id
+          - vendor_id
+          - chain_id
+          - user_id
+          - deliveryprovider_id
+          - area_id
+          - expected_delivery_time
+          - paymenttype_id
+          - online_payment
+          - service_fee
+          - service_fee_eur
+          - delivery_fee
+          - delivery_fee_eur
+          - gmv_local
+          - gmv_eur
+          - gfv_local
+          - gfv_eur
+          - pc1_local
+          - pc1_eur
+          - commission_local
+          - commission_eur
+          - fx
+          - currency_code
+          - voucher_used
+          - voucher_id
+          - voucher_value_local
+          - voucher_value_eur
+          - discount_used
+          - discount_id
+          - discount_value_local
+          - discount_value_eur
+          - first_order_all
+          - first_order
+          - first_app_order
+          - preorder
+          - expected_delivery_min
+          - status_date
+          - minimum_delivery_value
+          - surcharge_net_local
+          - surcharge_net_eur
+          - surcharge_gross_local
+          - surcharge_gross_eur
+          - rider_tip_local
+          - rider_tip_eur
+          - delivery_address_id
+          - edited
+          - promised_expected_delivery_time
+          - promised_delivery_time
+          - delivery_fee_vat_rate
+          - payment_status
+          - expedition_type
+          - vendor_accepted
+          - is_billable
+          - order_date_local
+          - expected_delivery_time_local
+          - local_timezone
+          - voucher_ratio
+          - discount_ratio
+          - prefered_contact
+          - own_delivery
+          - vendor_prepayment
+          - location_id
+          - container_price_local
+          - container_price_eur
+          - dwh_il_last_modified
+          - order_comment
+          - customer_comment
+          - updated_at
+          - dwh_last_modified
+          - billable_for_vendor_flag
+          - vendor_daily_order_number
+          - is_subscription
+          - total_value
+          - vendor_comment
+          - loyalty_collected
+          - loyalty_percentage
+          - joker_offer_id
+          - joker_used
+          - cdc_last_modified
+          - entity_id
+          - rdbms_id
+          - order_id
+          - timezone
+        dependencies_dl:
+          - il_orders
+
+      - name: vendor_schedules
+        create_shared_view: true
+        filter_by_entity: true
+        filter_by_country: false
+        entity_id_column: entity_id
+        columns:
+          - all_day
+          - start_hour
+          - stop_hour
+          - type
+          - vendor_id
+          - weekday
+          - created_at
+          - updated_at
+          - cdc_last_modified
+          - entity_id
+          - rdbms_id
+          - id
+          - timezone
+        dependencies_dl:
+          - il_vendor_schedules
+
+      - name: vendor_schedules_special
+        create_shared_view: true
+        filter_by_entity: true
+        filter_by_country: false
+        entity_id_column: entity_id
+        columns:
+          - all_day
+          - start_hour
+          - stop_hour
+          - type
+          - vendor_id
+          - date
+          - created_at
+          - updated_at
+          - cdc_last_modified
+          - entity_id
+          - rdbms_id
+          - id
+          - timezone
+        dependencies_dl:
+          - il_vendor_schedules_special
+
+      - name: discounts
+        create_shared_view: true
+        filter_by_entity: true
+        filter_by_country: false
+        entity_id_column: entity_id
+        columns:
+          - rdbms_id
+          - discount_id
+          - discount_type
+          - condition_type
+          - discount_title
+          - discount_amount
+          - created_at
+          - active
+          - deleted
+          - start_date
+          - end_date
+          - description
+          - dwh_created
+          - dwh_last_modified
+          - start_hour
+          - end_hour
+          - minimum_order_value
+          - ratio_foodpanda
+          - updated_at
+          - vendor_id
+          - expedition_type
+          - cdc_last_modified
+          - entity_id
+          - timezone
+        dependencies_dl:
+          - il_discounts
+
+      - name: customers_uuid
+        create_shared_view: true
+        filter_by_entity: true
+        filter_by_country: false
+        entity_id_column: entity_id
+        columns:
+          - old_customer_uuid
+          - new_customer_uuid
+          - dwh_created_at
+          - dwh_updated_at
+          - customer_id
+          - rdbms_id
+          - cdc_last_modified
+          - entity_id
+          - timezone
+        dependencies_dl:
+          - il_customers_uuid
+
+      - name: sb_order
+        create_shared_view: true
+        filter_by_entity: true
+        filter_by_country: false
+        entity_id_column: entity_id
+        columns:
+          - id
+          - rdbms_id
+          - subscription_id
+          - subscription_code
+          - entity_id
+          - customer_code
+          - order_code
+          - vendor_code
+          - placed_at
+          - created_at
+          - dwh_last_modified
+          - cdc_last_modified
+          - timezone
+        dependencies_dl:
+          - il_sb_order
+
+      - name: sb_subscription
+        create_shared_view: true
+        filter_by_entity: true
+        filter_by_country: false
+        entity_id_column: entity_id
+        columns:
+          - id
+          - code
+          - plan_code
+          - entity_id
+          - customer_code
+          - status
+          - start_time
+          - end_time
+          - last_renewal_time
+          - next_renewal_time
+          - payment_token
+          - created_at
+          - updated_at
+          - dwh_last_modified
+          - cdc_last_modified
+          - rdbms_id
+          - timezone
+        dependencies_dl:
+          - il_sb_subscription
+
+      - name: sb_subscription_payment
+        create_shared_view: true
+        filter_by_entity: true
+        filter_by_country: false
+        entity_id_column: entity_id
+        columns:
+          - id
+          - subscription_id
+          - gateway_reference
+          - payment_status
+          - payment_date
+          - total_amount
+          - net_amount
+          - vat_amount
+          - subscription_start_date
+          - subscription_end_date
+          - created_at
+          - updated_at
+          - entity_id
+          - http_status
+          - internal_reference
+          - dwh_last_modified
+          - cdc_last_modified
+          - rdbms_id
+          - timezone
+        dependencies_dl:
+          - il_sb_subscription_payment

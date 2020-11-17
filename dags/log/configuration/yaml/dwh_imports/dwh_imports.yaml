@@ -1,0 +1,2205 @@
+spark_main_class: &spark_main_class
+  main_class: com.deliveryhero.datahub.spark.jobs.logistics.raw.ExtractReadReplicasToBigQueryJob
+
+databricks:
+  export_read_replica:
+    <<: *spark_main_class
+  export_read_replica_backfill:
+    <<: *spark_main_class
+
+raw_layer_backfill:
+  countries: ~         # List of countries to filter the import.
+                       # Empty array means all countries.
+                       # Null value disable the import for not regional applications.
+  regions: ~           # List of regions to filter the import.
+                       # Empty array means all regions.
+                       # Null value disable the import for regional applications.
+  from_date: ~         # Datetime format: %Y-%m-%d %H:%M:%S
+  to_date: ~           # Datetime format: %Y-%m-%d %H:%M:%S
+
+dwh_merge_layer_databases:
+  hurrier:
+    is_regional: false
+    source: RDS
+    opsgenie:
+      enabled: true
+      priority: P3
+    credentials:
+      username: foodora
+      password: JDBC_LOG_PASSWORD
+    tables:
+      - name: addresses
+        priority_weight: 40
+        spark_cluster:
+          export_read_replica:
+            driver_node: c5.4xlarge
+            worker_node: c5.xlarge
+            num_workers: 3
+      - name: addresses_zones
+        pk_columns: [country_code, address_id, zone_id]
+        priority_weight: 40
+        # TODO Verify why duplicate_check fails
+        sanity_checks:
+          duplicate_check: false
+        spark_cluster:
+          export_read_replica:
+            driver_node: c5.4xlarge
+            worker_node: c5.xlarge
+            num_workers: 3
+      - name: businesses
+      - name: businesses_vehicles
+        pk_columns: [country_code, business_id, vehicle_id]
+        filter_import_by_date: false
+        enable_historical_data_in_hl: false
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: true
+      - name: cities
+      - name: couriers
+      - name: courier_feedbacks
+        partition_time_expiration: 15552000000 # 180 days in ms
+      - name: courier_transitions
+        partition_time_expiration: 15552000000 # 180 days in ms
+        spark_cluster:
+          export_read_replica:
+            driver_node: c5.4xlarge
+            worker_node: c5.xlarge
+            num_workers: 3
+      - name: deliveries
+        pool_name: export_read_replica_long_running_tasks
+        priority_weight: 20
+        retries: 1
+        partition_time_expiration: 15552000000 # 180 days in ms
+        spark_cluster:
+          export_read_replica:
+            driver_node: c5.4xlarge
+            worker_node: c5.xlarge
+            num_workers: 3
+      - name: delivery_transitions
+        pool_name: export_read_replica_long_running_tasks
+        priority_weight: 20
+        retries: 1
+        cleanup_enabled: false
+        partition_time_expiration: 15552000000 # 180 days in ms
+        spark_cluster:
+          export_read_replica:
+            driver_node: c5.4xlarge
+            worker_node: r5.2xlarge
+            num_workers: 3
+      - name: delivery_timings
+        partition_time_expiration: 15552000000 # 180 days in ms
+      - name: dispatcher_notes
+      - name: issues
+        partition_time_expiration: 15552000000 # 180 days in ms
+      - name: issue_creation_params
+      - name: issue_rule_templates
+        # TODO Verify why duplicate_check fails
+        sanity_checks:
+          duplicate_check: false
+      - name: issue_rules
+        spark_cluster:
+          export_read_replica:
+            driver_node: c5.xlarge
+            worker_node: m5.2xlarge
+            num_workers: 3
+      - name: notifications
+      - name: order_transitions
+        partition_time_expiration: 15552000000 # 180 days in ms
+      - name: orders
+        cleanup_enabled: false
+        pool_name: export_read_replica_long_running_tasks
+        priority_weight: 20
+        retries: 1
+        partition_time_expiration: 15552000000 # 180 days in ms
+        spark_cluster:
+          export_read_replica:
+            driver_node: c5.4xlarge
+            worker_node: r5.xlarge
+            num_workers: 3
+      - name: vehicle_types
+        sanity_checks:
+          created_date_null: true
+          duplicate_check: true
+      - name: vehicle_bag_types
+        filter_import_by_date: false
+        enable_historical_data_in_hl: false
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: false
+      - name: vehicles
+        filter_import_by_date: false
+        enable_historical_data_in_hl: false
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: false
+      - name: zone_stats
+        cleanup_enabled: false
+        spark_cluster:
+          export_read_replica:
+            driver_node: c5.4xlarge
+            worker_node: c5.xlarge
+            num_workers: 2
+      - name: zones
+        # TODO Verify why duplicate_check fails
+        sanity_checks:
+          duplicate_check: false
+      - name: geo_zones
+        filter_import_by_date: false
+        enable_historical_data_in_hl: false
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: true
+      - name: deliveries_forbidden_couriers
+        pk_columns: [country_code, delivery_id, courier_id]
+        # TODO Verify why duplicate_check fails
+        sanity_checks:
+          duplicate_check: false
+      - name: deliveries_required_couriers
+        pk_columns: [country_code, delivery_id, courier_id]
+        # TODO Verify why duplicate_check fails
+        sanity_checks:
+          duplicate_check: false
+      - name: order_records
+
+  dispatch_service:
+    is_regional: false
+    source: RDS
+    opsgenie:
+      enabled: true
+      priority: P3
+    credentials:
+      username: foodora
+      password: JDBC_LOG_PASSWORD
+    tables:
+      - name: dispatch_cycles
+        retries: 1
+        cleanup_enabled: false
+        require_partition_filter: true
+        file_format: parquet
+        raw_layer:
+          created_at_column: started_at
+          updated_at_column: started_at
+        # TODO Verify why duplicate_check fails
+        sanity_checks:
+          duplicate_check: false
+        spark_cluster:
+          export_read_replica:
+            driver_node: c5.4xlarge
+            worker_node: r5.12xlarge
+            num_workers: 2
+          export_read_replica_backfill:
+            driver_node: c5.2xlarge
+            worker_node: r5.4xlarge
+            num_workers: 2
+
+  freshdesk:
+    is_regional: true
+    source: API
+    tables:
+      - name: reports
+        pk_columns: [instance, Ticket_Id]
+
+  soti:
+    is_regional: true
+    source: API
+    tables:
+      - name: devices
+        pk_columns: [region, DeviceId, MACAddress]
+        cleanup_enabled: false
+        partition_by_date: true
+        filter_import_by_date: false
+        raw_layer:
+          created_at_column: _ingested_at
+          updated_at_column: _ingested_at
+        # TODO Verify why duplicate_check fails
+        sanity_checks:
+          duplicate_check: false
+
+  # Mobilock import is disabled and, the configuration below
+  # is to control the creation of views.
+  mobilock:
+    is_regional: false
+    source: API
+    tables:
+      - name: devices
+        pk_columns: [instance, id]
+        cleanup_enabled: false
+        partition_by_date: true
+        raw_layer:
+          created_at_column: _ingested_at
+          updated_at_column: _ingested_at
+        # TODO Verify why duplicate_check fails
+        sanity_checks:
+          duplicate_check: false
+
+  jira:
+    is_regional: false
+    source: API
+    tables:
+      - name: issues
+        pk_columns: [key]
+        cleanup_enabled: false
+        partition_by_date: true
+        filter_import_by_date: false
+
+  salesforce_deliveryhero:
+    is_regional: false
+    source: API
+    tables:
+      - name: case
+        pk_columns: [id]
+        cleanup_enabled: false
+        partition_by_date: true
+        filter_import_by_date: false
+        raw_layer:
+          created_at_column: _ingested_at
+          updated_at_column: _ingested_at
+
+  salesforce_pandora:
+    is_regional: false
+    source: API
+    tables:
+      - name: case
+        pk_columns: [id]
+        cleanup_enabled: false
+        partition_by_date: true
+        raw_layer:
+          created_at_column: _ingested_at
+          updated_at_column: _ingested_at
+
+  go_droid_api:
+    is_regional: true
+    source: API
+    tables:
+      - name: devices
+        pk_columns: [region, id]
+        cleanup_enabled: false
+        partition_by_date: true
+        raw_layer:
+          created_at_column: _ingested_at
+          updated_at_column: _ingested_at
+        # TODO Verify why duplicate_check fails
+        sanity_checks:
+          duplicate_check: false
+
+  cloud_health:
+    is_regional: true
+    source: API
+    tables:
+      - name: reports
+        pk_columns: [name, type, dimension_label]
+        cleanup_enabled: false
+        partition_by_date: true
+        # TODO Verify why duplicate_check fails
+        sanity_checks:
+          duplicate_check: false
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: updated_at
+
+  rooster:
+    is_regional: false
+    source: RDS
+    opsgenie:
+      enabled: true
+      priority: P3
+    credentials:
+      username: foodora
+      password: JDBC_LOG_PASSWORD
+    tables:
+      - name: absence
+      - name: batch
+        pk_columns: [country_code, number, city_id]
+        time_columns:
+          - time
+      - name: batch_history
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: created_at
+      - name: city
+        time_columns:
+          - opening_time
+          - closing_time
+          - time
+      - name: contract
+      - name: employee
+      - name: evaluation
+        partition_time_expiration: 15552000000 # 180 days in ms
+      - name: discussion
+      - name: employee_contract
+      - name: employee_starting_points
+        pk_columns: [country_code, employee_id, starting_points_id]
+        filter_import_by_date: false
+        partition_by_date: true
+        keep_last_import_only: true
+      - name: employee_vehicle
+        pk_columns: [country_code, employee_id, vehicle_type_id]
+        # TODO Waiting for LOGWM-1323
+        sanity_checks:
+          duplicate_check: false
+      - name: shift
+        partition_time_expiration: 15552000000 # 180 days in ms
+      - name: special_day
+        filter_import_by_date: false
+        #partition_by_date: true 20191220 disabled by Faisal for failing check for null created_date
+        keep_last_import_only: true
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: false
+      - name: shift_state_machine_history
+        partition_time_expiration: 15552000000 # 180 days in ms
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: created_at
+      - name: shift_swap_request
+        partition_time_expiration: 15552000000 # 180 days in ms
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: created_at
+      - name: starting_point
+      - name: unassigned_shift
+      - name: field
+        pk_columns: [country_code, name]
+      - name: employee_field
+        pk_columns: [country_code, employee_id, name]
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: false
+      - name: employee_field_history
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: created_at
+      - name: vehicle_type
+      - name: contract_interval_rule
+        filter_import_by_date: false
+        partition_by_date: true
+        keep_last_import_only: true # TODO: Until rooster implements soft deletes
+
+  rooster_payments:
+    is_regional: false
+    source: RDS
+    opsgenie:
+      enabled: true
+      priority: P3
+    credentials:
+      username: foodora
+      password: JDBC_LOG_PASSWORD
+    tables:
+      - name: basic_payment_rule
+        time_columns:
+          - start_time
+          - end_time
+      - name: delivery
+        spark_cluster:
+          export_read_replica:
+            driver_node: c5.xlarge
+            worker_node: m5.2xlarge
+            num_workers: 3
+      - name: evaluation
+      - name: goal
+      - name: payment
+      - name: payment_detail
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: created_at
+      - name: quest_payment
+      - name: quest_payment_application
+      - name: quest_payment_rule
+        time_columns:
+          - start_time
+          - end_time
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: created_at
+      - name: referral
+      - name: referral_payment
+      - name: referral_payment_rule
+      - name: scoring_payment
+      - name: scoring_payment_rule
+      - name: special_payment
+      - name: payment_cycle
+      - name: real_time_scoring_payment
+      - name: deposit_payment
+      - name: deposit_payment_rule
+      - name: tip_payment
+      - name: estimated_scoring_payment
+      - name: estimated_basic_payment
+      - name: percentage_payment
+      - name: percentage_payment_rule
+      - name: hidden_basic_payment
+      - name: new_hire_benefit_payment
+      - name: new_hire_benefit_payment_rule
+
+  rider_scoring:
+    is_regional: true
+    source: RDS
+    opsgenie:
+      enabled: true
+      priority: P5
+    credentials:
+      username: foodora
+      password: JDBC_LOG_PASSWORD
+    tables:
+      - name: scoring_settings
+        sharding_column: region
+      - name: special_hour
+        sharding_column: region
+        time_columns:
+          - from_hour
+          - to_hour
+
+  compliance:
+    is_regional: false
+    source: RDS
+    opsgenie:
+      enabled: true
+      priority: P3
+    credentials:
+      username: foodora
+      password: JDBC_LOG_PASSWORD
+    tables:
+      - name: action
+      - name: action_template
+      - name: rule
+        # TODO Verify why duplicate_check fails
+        sanity_checks:
+          duplicate_check: false
+      - name: violation
+
+  geo_api:
+    is_regional: false
+    source: RDS
+    opsgenie:
+      enabled: true
+      priority: P3
+    credentials:
+      username: foodora
+      password: JDBC_LOG_PASSWORD
+    tables:
+      - name: courier_location
+        cleanup_enabled: false
+        require_partition_filter: true
+        # TODO Verify why duplicate_check fails
+        sanity_checks:
+          duplicate_check: false
+        spark_cluster:
+          export_read_replica:
+            driver_node: c5.2xlarge
+            worker_node: m5.2xlarge
+            num_workers: 3
+
+  rps_courier:
+    is_regional: true
+    source: RDS
+    opsgenie:
+      enabled: true
+      priority: P3
+    credentials:
+      username: fulfilment_ro
+      password: JDBC_RPS_COURIER_PASSWORD
+    tables:
+      - name: delivery_status_log
+        sharding_column: region
+        pk_columns: [region, id]
+        cleanup_enabled: false
+        raw_layer:
+          created_at_column: request_date
+          updated_at_column: request_date
+
+  go_droid:
+    is_regional: true
+    source: 'firebase'
+    job_config:
+      export_read_replica:
+        enabled: false
+      copy_staging_to_raw_layer:
+        enabled: false
+    tables:
+      - name: events
+        pk_columns: []
+        cleanup_enabled: false
+        partition_by_date: false
+        authorize_view: false
+        source_table: rps-own-delivery-live.analytics_156198623.events
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: false
+
+  road_runner:
+    is_regional: true
+    source: 'firebase'
+    job_config:
+      export_read_replica:
+        enabled: false
+      copy_staging_to_raw_layer:
+        enabled: false
+    tables:
+      - name: events
+        pk_columns: []
+        cleanup_enabled: false
+        partition_by_date: false
+        source_table: logistics-54934.analytics_220636781.events
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: false
+
+  go_win:
+    is_regional: true
+    source: 'google_analytics'
+    job_config:
+      export_read_replica:
+        enabled: false
+      copy_staging_to_raw_layer:
+        enabled: false
+    tables:
+      - name: sessions
+        pk_columns: []
+        cleanup_enabled: false
+        partition_by_date: false
+        authorize_view: false
+        source_table: dhh---rps-webkick.160669167.ga_sessions
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: false
+
+  rps_go_win:
+    is_regional: true
+    source: 'big_query'
+    job_config:
+      export_read_replica:
+        enabled: false
+      copy_staging_to_raw_layer:
+        enabled: false
+    tables:
+      - name: installation
+        pk_columns: []
+        cleanup_enabled: false
+        partition_by_date: false
+        authorize_view: false
+        source_table: rps-gowin-prd.installer.time_span_event
+        raw_layer:
+          created_at_column: created_at
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: false
+
+  rps_portal:
+    is_regional: true
+    source: 'google_analytics'
+    job_config:
+      export_read_replica:
+        enabled: false
+      copy_staging_to_raw_layer:
+        enabled: false
+    tables:
+      - name: sessions
+        pk_columns: []
+        cleanup_enabled: false
+        partition_by_date: false
+        authorize_view: false
+        source_table: dhh---rps-portal.176081791.ga_sessions
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: false
+
+  rps_backoffice:
+    is_regional: true
+    source: 'google_analytics'
+    job_config:
+      export_read_replica:
+        enabled: false
+      copy_staging_to_raw_layer:
+        enabled: false
+    tables:
+      - name: sessions
+        pk_columns: []
+        cleanup_enabled: false
+        partition_by_date: false
+        authorize_view: false
+        source_table: dhh---rps-backoffice.208577040.ga_sessions
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: false
+
+  data_fridge:
+    is_regional: true
+    source: 'big_query'
+    job_config:
+      export_read_replica:
+        enabled: false
+      copy_staging_to_raw_layer:
+        enabled: false
+    tables:
+      - name: survey_response_stream
+        pk_columns: []
+        cleanup_enabled: false
+        partition_by_date: false
+        time_partitioning: created_date
+        source_table: datafridge-production.dh_fridge_prod_us_bigquery_dataset_for_logistics.dh_fridge_survey_response_stream_prod_logistics
+        raw_layer:
+          created_at_column: timestamp
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: false
+      - name: timezone
+        pk_columns: []
+        cleanup_enabled: false
+        partition_by_date: false
+        authorize_view: false
+        time_partitioning: ~
+        source_table: datafridge-production.dh_public.timezone
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: false
+      - name: vendor_delivery_area_stream
+        pk_columns: []
+        cleanup_enabled: false
+        partition_by_date: false
+        time_partitioning: created_date
+        source_table: datafridge-production.dh_fridge_prod_us_bigquery_dataset_for_logistics.dh_fridge_vendor_delivery_area_stream_prod_logistics
+        raw_layer:
+          created_at_column: timestamp
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: false
+      - name: rider_survey_stream
+        pk_columns: []
+        cleanup_enabled: false
+        partition_by_date: false
+        time_partitioning: created_date
+        source_table: datafridge-production.dh_fridge_prod_us_bigquery_dataset_for_logistics.dh_fridge_rider_survey_stream_prod_logistics
+        raw_layer:
+          created_at_column: timestamp
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: false
+      - name: new_rider_survey_stream
+        pk_columns: []
+        cleanup_enabled: false
+        partition_by_date: false
+        time_partitioning: created_date
+        source_table: datafridge-production.dh_fridge_prod_us_bigquery_dataset_for_logistics.dh_fridge_new_rider_survey_stream_prod_logistics
+        raw_layer:
+          created_at_column: timestamp
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: false
+      - name: currency_exchange
+        pk_columns: []
+        cleanup_enabled: false
+        partition_by_date: false
+        authorize_view: true
+        time_partitioning: created_date
+        source_table: datafridge-production.dh_fridge_prod_us_bigquery_dataset_for_logistics.currency_exchange_logistics
+        raw_layer:
+          created_at_column: timestamp
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: false
+      - name: global_entity_ids
+        pk_columns: []
+        cleanup_enabled: false
+        partition_by_date: false
+        authorize_view: true
+        time_partitioning: ~
+        source_table: datafridge-production.dh_fridge_prod_us_bigquery_dataset_for_logistics.global_entity_ids_logistics
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: false
+      - name: vendor_stream
+        pk_columns: []
+        cleanup_enabled: false
+        partition_by_date: false
+        authorize_view: true
+        time_partitioning: created_date
+        source_table: datafridge-production.dh_fridge_prod_us_bigquery_dataset_for_logistics.dh_fridge_vendor_stream_prod_logistics
+        raw_layer:
+          created_at_column: timestamp
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: false
+      - name: order_stream
+        pk_columns: []
+        cleanup_enabled: false
+        partition_by_date: false
+        authorize_view: true
+        time_partitioning: created_date
+        source_table: datafridge-production.dh_fridge_prod_us_bigquery_dataset_for_logistics.dh_fridge_order_stream_prod_logistics
+        raw_layer:
+          created_at_column: timestamp
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: false
+      - name: order_status_stream
+        pk_columns: []
+        cleanup_enabled: false
+        partition_by_date: false
+        authorize_view: true
+        time_partitioning: created_date
+        source_table: datafridge-production.dh_fridge_prod_us_bigquery_dataset_for_logistics.dh_fridge_order_status_stream_prod_logistics
+        raw_layer:
+          created_at_column: timestamp
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: false
+      - name: review_stream
+        pk_columns: []
+        cleanup_enabled: false
+        partition_by_date: false
+        authorize_view: true
+        time_partitioning: created_date
+        source_table: datafridge-production.dh_fridge_prod_us_bigquery_dataset_for_logistics.dh_fridge_review_stream_prod_logistics
+        raw_layer:
+          created_at_column: timestamp
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: false
+      - name: vendor_schedule_stream
+        pk_columns: []
+        cleanup_enabled: false
+        partition_by_date: false
+        authorize_view: true
+        time_partitioning: created_date
+        source_table: datafridge-production.dh_fridge_prod_us_bigquery_dataset_for_logistics.dh_fridge_vendor_schedule_stream_prod_logistics
+        raw_layer:
+          created_at_column: timestamp
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: false
+      - name: delivery_area_event_stream
+        pk_columns: []
+        cleanup_enabled: false
+        partition_by_date: false
+        authorize_view: true
+        time_partitioning: created_date
+        source_table: datafridge-production.dh_fridge_prod_us_bigquery_dataset_for_logistics.dh_fridge_delivery_area_event_stream_prod_logistics
+        raw_layer:
+          created_at_column: timestamp
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: false
+      - name: product_availability_stream
+        pk_columns: []
+        cleanup_enabled: false
+        partition_by_date: false
+        authorize_view: true
+        time_partitioning: created_date
+        source_table: datafridge-production.dh_fridge_prod_us_bigquery_dataset_for_logistics.dh_fridge_product_availability_stream_prod_logistics
+        raw_layer:
+          created_at_column: timestamp
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: false
+
+  firebase_performance:
+    is_regional: true
+    source: 'big_query'
+    job_config:
+      export_read_replica:
+        enabled: false
+      copy_staging_to_raw_layer:
+        enabled: false
+    tables:
+      - name: restaurant_android_app
+        pk_columns: []
+        cleanup_enabled: false
+        partition_by_date: false
+        authorize_view: false
+        time_partitioning: created_date
+        source_table: rps-own-delivery-live.firebase_performance.com_deliveryhero_rps_restaurantandroidapp_ANDROID
+        raw_layer:
+          created_at_column: event_timestamp
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: false
+
+  digital_analytics:
+    is_regional: true
+    source: 'big_query'
+    job_config:
+      export_read_replica:
+        enabled: false
+      copy_staging_to_raw_layer:
+        enabled: false
+    tables:
+      - name: sessions_location_details
+        pk_columns: []
+        cleanup_enabled: false
+        partition_by_date: false
+        authorize_view: false
+        time_partitioning: created_date
+        source_table: dhh-digital-analytics-dwh.shared_views_to_logistics.sessions_location_details
+        raw_layer:
+          created_at_column: visitStartTime
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: false
+      - name: dps_sessions_mapped_to_orders
+        pk_columns: []
+        cleanup_enabled: false
+        partition_by_date: false
+        authorize_view: false
+        time_partitioning: ~
+        source_table: dhh-digital-analytics-dwh.shared_views_to_logistics.dps_sessions_mapped_to_orders
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: false
+      - name: pricing_sessions_details
+        pk_columns: []
+        cleanup_enabled: false
+        partition_by_date: false
+        authorize_view: false
+        time_partitioning: created_date
+        source_table: dhh-digital-analytics-dwh.shared_views_to_logistics.pricing_sessions_details
+        raw_layer:
+          created_at_column: partitionDate
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: false
+      - name: dps_sessions_mapped_to_ga_sessions
+        pk_columns: []
+        cleanup_enabled: false
+        partition_by_date: false
+        authorize_view: false
+        time_partitioning: ~
+        source_table: dhh-digital-analytics-dwh.shared_views_to_logistics.dps_sessions_mapped_to_ga_sessions
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: false
+      - name: ab_test_cvr_data
+        pk_columns: []
+        cleanup_enabled: false
+        partition_by_date: false
+        authorize_view: false
+        time_partitioning: created_date
+        source_table: dhh-digital-analytics-dwh.shared_views_to_logistics.ab_test_cvr_data
+        raw_layer:
+          created_at_column: partitiondate
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: false
+
+  porygon:
+    is_regional: false
+    source: RDS
+    opsgenie:
+      enabled: true
+      priority: P3
+    credentials:
+      username: foodora
+      password: JDBC_LOG_PASSWORD
+    tables:
+      - name: deliveryareas
+        pk_columns: [country_code, id, platform]
+        partition_by_date: true
+        sanity_checks:
+          duplicate_check: false
+      - name: deliveryareas_versions
+        pk_columns: [country_code, id, platform, transaction_id]
+        sanity_checks:
+          duplicate_check: false
+        spark_cluster:
+          export_read_replica:
+            driver_node: c5.xlarge
+            worker_node: r5.xlarge
+            num_workers: 1
+      - name: drive_time_polygons
+        spark_cluster:
+          export_read_replica:
+            driver_node: c5.xlarge
+            worker_node: r5.xlarge
+            num_workers: 1
+      - name: events
+        pk_columns: [country_code, id, platform]
+        # TODO Verify why duplicate_check fails
+        sanity_checks:
+          duplicate_check: false
+      - name: events_versions
+        pk_columns: [country_code, id, platform, transaction_id]
+      - name: campaigns
+        pk_columns: [country_code, id, platform]
+      - name: campaigns_versions
+        pk_columns: [country_code, id, platform, transaction_id]
+      - name: map_metrics
+        pk_columns: [country_code, geohash, metric_name, platform]
+        sanity_checks:
+          duplicate_check: false
+      - name: restaurants
+        partition_by_date: false
+        filter_import_by_date: false
+        keep_last_import_only: true
+        keep_last_import_only_partition_by_pk: true
+        pk_columns: [country_code, id, platform]
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: true
+      - name: transaction
+        raw_layer:
+          created_at_column: issued_at
+          updated_at_column: issued_at
+      - name: cities
+      - name: zones  # It is a full import because porygon updates every minute field `updated_at`
+        keep_last_import_only_partition_by_pk: true
+        filter_import_by_date: false
+        partition_by_date: true
+        keep_last_import_only: true
+        sanity_checks:
+          created_date_null: true
+          duplicate_check: true
+      - name: starting_points
+      - name: default_deliveryareas
+        filter_import_by_date: false
+        partition_by_date: true
+        keep_last_import_only: true
+      - name: default_deliveryarea_settings
+        filter_import_by_date: false
+        partition_by_date: true
+        keep_last_import_only: true
+
+  cod:
+    is_regional: false
+    source: RDS
+    opsgenie:
+      enabled: true
+      priority: P3
+    credentials:
+      username: foodora
+      password: JDBC_LOG_PASSWORD
+    tables:
+      - name: journal
+      - name: issue
+      - name: property
+        pk_columns: [country_code, property_name]
+      - name: payment_transaction
+
+  iam:
+    is_regional: true
+    source: RDS
+    opsgenie:
+      enabled: true
+      priority: P3
+    credentials:
+      username: foodora
+      password: JDBC_LOG_PASSWORD
+    tables:
+      - name: countries
+        partition_by_date: false
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: false
+      - name: memberships
+        # TODO Verify why duplicate_check fails
+        sanity_checks:
+          duplicate_check: false
+      - name: users
+        sharding_column: region
+
+  icash:
+    is_regional: true
+    source: RDS
+    opsgenie:
+      enabled: true
+      priority: P3
+    credentials:
+      username: data_engineering
+      password: JDBC_RPS_PASSWORD
+    tables:
+      - name: address_restaurant
+        sharding_column: region
+        pk_columns: [region, restaurant]
+        cleanup_enabled: false
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: dwh_updated_at
+      - name: contract_plan
+        cleanup_enabled: false
+        sharding_column: region
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: dwh_updated_at
+      - name: contract_plan_options
+        pk_columns: [region, contract_plan, option]
+        cleanup_enabled: false
+        sharding_column: region
+        # TODO Verify why duplicate_check fails
+        sanity_checks:
+          duplicate_check: false
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: dwh_updated_at
+      - name: country
+        sharding_column: region
+        cleanup_enabled: false
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: dwh_updated_at
+      - name: delivery
+        sharding_column: region
+        pk_columns: [region, belongs_to, delivery_id]
+        cleanup_enabled: false
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: dwh_updated_at
+        spark_cluster:
+          export_read_replica_backfill:
+            driver_node: c5.2xlarge
+            worker_node: r5.4xlarge
+            num_workers: 5
+      - name: delivery_changelog
+        sharding_column: region
+        pk_columns: [region, id]
+        raw_layer:
+          created_at_column: timestamp
+          updated_at_column: timestamp
+      - name: delivery_address
+        pk_columns: [region, belongs_to, delivery_id, id]
+        sharding_column: region
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: dwh_updated_at
+        spark_cluster:
+          export_read_replica:
+            driver_node: c5.xlarge
+            worker_node: r5.xlarge
+            num_workers: 2
+      - name: delivery_platform
+        cleanup_enabled: false
+        sharding_column: region
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: dwh_updated_at
+      - name: delivery_platform_notification
+        cleanup_enabled: false
+        sharding_column: region
+        raw_layer:
+          created_at_column: timestamp
+          updated_at_column: timestamp
+      - name: device
+        pk_columns: [region, belongs_to, id]
+        sharding_column: region
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: dwh_updated_at
+      - name: operator
+        cleanup_enabled: false
+        sharding_column: region
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: dwh_updated_at
+      - name: operator_changelog
+        pk_columns: [region, id]
+        sharding_column: region
+        raw_layer:
+          created_at_column: timestamp
+          updated_at_column: timestamp
+      - name: operator_contract_plan_options
+        pk_columns: [region, operator, option]
+        # TODO Verify why duplicate_check fails
+        sanity_checks:
+          duplicate_check: false
+        cleanup_enabled: false
+        sharding_column: region
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: dwh_updated_at
+      - name: operator_contract_type
+        cleanup_enabled: false
+        sharding_column: region
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: dwh_updated_at
+      - name: restaurant
+        sharding_column: region
+        cleanup_enabled: false
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: dwh_updated_at
+      - name: restaurant_2_delivery_platform
+        pk_columns: [region, belongs_to, id]
+        sharding_column: region
+        cleanup_enabled: false
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: dwh_updated_at
+      - name: delivery_cancellation
+        sharding_column: region
+        pk_columns: [region, belongs_to, delivery_id]
+        # TODO Verify why duplicate_check fails
+        sanity_checks:
+          duplicate_check: false
+        raw_layer:
+          created_at_column: timestamp
+          updated_at_column: timestamp
+      - name: delivery_transition_restaurant_ack
+        sharding_column: region
+        raw_layer:
+          created_at_column: timestamp
+          updated_at_column: timestamp
+
+  opa:
+    is_regional: true
+    source: RDS
+    opsgenie:
+      enabled: true
+      priority: P3
+    credentials:
+      username: fulfilment_ro
+      password: JDBC_RPS_OPA_PASSWORD
+    tables:
+      - name: order
+        sharding_column: region
+        pk_columns: [region, country_code, id]
+        cleanup_enabled: false
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: created_at
+
+  opa_country:
+    is_regional: false
+    source: RDS
+    create_views: false
+    create_maintenance_tasks: false
+    opsgenie:
+      enabled: true
+      priority: P3
+    credentials:
+      username: fulfilment_ro
+      password: JDBC_RPS_OPA_PASSWORD
+    tables:
+      - name: order
+        pk_columns: [region, country_code, id]
+        cleanup_enabled: false
+        destination_table_name: opa_order
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: created_at
+
+  oma_country:
+    is_regional: false
+    source: RDS
+    create_views: false
+    create_maintenance_tasks: false
+    opsgenie:
+      enabled: true
+      priority: P3
+    credentials:
+      username: fulfilment_ro
+      password: JDBC_RPS_OMA_PASSWORD
+    tables:
+      - name: grocery_order
+        pk_columns: [region, country_code, id]
+        cleanup_enabled: false
+        destination_table_name: oma_grocery_order
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: modified_at
+      - name: restaurant_order
+        pk_columns: [region, country_code, id]
+        cleanup_enabled: false
+        destination_table_name: oma_restaurant_order
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: modified_at
+      - name: logistics_service_order
+        pk_columns: [region, country_code, id]
+        cleanup_enabled: false
+        destination_table_name: oma_logistics_service_order
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: modified_at
+
+  oma:
+    is_regional: true
+    source: RDS
+    opsgenie:
+      enabled: true
+      priority: P3
+    credentials:
+      username: fulfilment_ro
+      password: JDBC_RPS_OMA_PASSWORD
+    tables:
+      - name: grocery_order
+        sharding_column: region
+        pk_columns: [region, country_code, id]
+        cleanup_enabled: false
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: modified_at
+      - name: restaurant_order
+        sharding_column: region
+        pk_columns: [region, country_code, id]
+        cleanup_enabled: false
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: modified_at
+      - name: logistics_service_order
+        sharding_column: region
+        pk_columns: [region, country_code, id]
+        cleanup_enabled: false
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: modified_at
+      - name: order_events
+        source: SQS
+        sharding_column: region
+        pk_columns: [region, rpsOrderId, platformOrderId, timestamp]
+        cleanup_enabled: false
+        partition_by_date: false
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: _ingested_at
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: true
+
+  posmw:
+    is_regional: true
+    source: RDS
+    opsgenie:
+      enabled: true
+      priority: P3
+    database_type: mysql
+    credentials:
+      username: fulfilment_ro
+      password: JDBC_RPS_POSMV_PASSWORD
+    tables:
+      - name: integration
+        pk_columns: [region, id]
+        cleanup_enabled: false
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: updated_at
+      - name: chain_mapped
+        pk_columns: [region, id, chain_code]
+        cleanup_enabled: false
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: updated_at
+      - name: vendor_mapped
+        pk_columns: [region, id, local_id, vendor_code]
+        cleanup_enabled: false
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: updated_at
+      - name: vendor_integration_type
+        pk_columns: [region, vendor_code]
+        cleanup_enabled: false
+        # TODO Verify why duplicate_check fails
+        sanity_checks:
+          duplicate_check: false
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: updated_at
+      - name: last_order_status
+        pk_columns: [region, order_id]
+        cleanup_enabled: false
+        # TODO Verify why duplicate_check fails
+        sanity_checks:
+          duplicate_check: false
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: updated_at
+      - name: order_id_mapped
+        pk_columns: [region, order_id]
+        # TODO Verify why duplicate_check fails
+        sanity_checks:
+          duplicate_check: false
+
+  restaurant_monitor:
+    is_regional: true
+    source: RDS
+    opsgenie:
+      enabled: true
+      priority: P3
+    database_type: mysql
+    credentials:
+      username: fulfilment_ro
+      password: JDBC_RPS_RESTAURANT_MONITOR_PASSWORD
+    tables:
+      - name: vendor_settings
+        pk_columns: [region, vendorId, platform]
+        sharding_column: region
+        # TODO Verify why duplicate_check fails
+        sanity_checks:
+          duplicate_check: false
+      - name: platform_settings
+        pk_columns: [region, platformId]
+        sharding_column: region
+        # TODO Verify why duplicate_check fails
+        sanity_checks:
+          duplicate_check: false
+
+  forecast:
+    is_regional: true
+    source: RDS
+    opsgenie:
+      enabled: true
+      priority: P3
+    credentials:
+      username: foodora
+      password: JDBC_LOG_PASSWORD
+    tables:
+      - name: job_runs
+        partition_time_expiration: 15552000000 # 180 days in ms
+      - name: orders_forecasts
+        # TODO Verify why duplicate_check fails
+        sanity_checks:
+          duplicate_check: false
+      - name: orders_histories
+        # TODO Verify why duplicate_check fails
+        sanity_checks:
+          duplicate_check: false
+      - name: no_show_forecasts
+        partition_time_expiration: 15552000000 # 180 days in ms
+      - name: utr_target_periods
+        filter_import_by_date: false
+        partition_by_date: true
+        keep_last_import_only: true
+        time_columns:
+          - from
+          - to
+      - name: adjustments
+        time_columns:
+          - start_time
+          - end_time
+      - name: demands
+        filter_staging_table_by_date: true
+        cleanup_enabled: false
+        partition_time_expiration: 15552000000 # 180 days in ms
+        # TODO Verify why duplicate_check fails
+        sanity_checks:
+          duplicate_check: false
+        spark_cluster:
+          export_read_replica:
+            driver_node: c5.xlarge
+            worker_node: m5.2xlarge
+            num_workers: 2
+      - name: starting_points
+      - name: opening_times
+        time_columns:
+          - from
+          - to
+        filter_import_by_date: false
+        partition_by_date: true
+        keep_last_import_only: true
+      - name: cities
+      - name: zones
+      - name: forecasts
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: created_at
+
+  audit_log:
+    is_regional: true
+    source: RDS
+    opsgenie:
+      enabled: true
+      priority: P3
+    credentials:
+      username: foodora
+      password: JDBC_LOG_PASSWORD
+    tables:
+      - name: audit_log
+        cleanup_enabled: false
+        partition_time_expiration: 15552000000 # 180 days in ms
+        # TODO Verify why duplicate_check fails
+        sanity_checks:
+          duplicate_check: false
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: created_at
+
+  dynamic_pricing:
+    is_regional: true
+    source: RDS
+    opsgenie:
+      enabled: true
+      priority: P3
+    credentials:
+      username: foodora
+      password: JDBC_LOG_PASSWORD
+    tables:
+      - name: vendor
+        sharding_column: region
+        pk_columns: [region, global_entity_id, vendor_id]
+        filter_import_by_date: false
+        partition_by_date: true
+        keep_last_import_only: true
+      - name: zone
+        sharding_column: region
+        # TODO Verify why duplicate_check fails
+        sanity_checks:
+          duplicate_check: false
+      - name: country_fee_configuration
+        pk_columns: [region, country_code]
+        sharding_column: region
+        filter_import_by_date: false
+        partition_by_date: true
+        keep_last_import_only: true
+      - name: delay_fee_configuration
+        pk_columns: [region, configuration_id]
+        sharding_column: region
+        filter_import_by_date: false
+        partition_by_date: true
+        keep_last_import_only: true
+      - name: delay_fee_configuration_row
+        pk_columns: [region, row_id]
+        sharding_column: region
+        filter_import_by_date: false
+        partition_by_date: true
+        keep_last_import_only: true
+      - name: delivery_fee_range
+        pk_columns: [region, id]
+        sharding_column: region
+      - name: mov_configuration
+        pk_columns: [region, configuration_id]
+        sharding_column: region
+        filter_import_by_date: false
+        partition_by_date: true
+        keep_last_import_only: true
+      - name: mov_configuration_row
+        pk_columns: [region, row_id]
+        sharding_column: region
+        filter_import_by_date: false
+        partition_by_date: true
+        keep_last_import_only: true
+      - name: travel_time_fee_configuration
+        pk_columns: [region, configuration_id]
+        sharding_column: region
+        filter_import_by_date: false
+        partition_by_date: true
+        keep_last_import_only: true
+      - name: travel_time_fee_configuration_row
+        pk_columns: [region, row_id]
+        sharding_column: region
+        filter_import_by_date: false
+        partition_by_date: true
+        keep_last_import_only: true
+      - name: travel_time_formula
+        pk_columns: [region, id]
+        sharding_column: region
+      - name: vendor_price_config
+        pk_columns: [region, vendor_price_config_id]
+        sharding_column: region
+        filter_import_by_date: false
+        partition_by_date: true
+        keep_last_import_only: true
+      - name: price_scheme
+        pk_columns: [region, scheme_id]
+        sharding_column: region
+        filter_import_by_date: false
+        partition_by_date: true
+        keep_last_import_only: true
+      - name: customer_profile
+        pk_columns: [region, perseus_id]
+        sharding_column: region
+      - name: basket_value_fee_configuration
+        pk_columns: [region, configuration_id]
+        sharding_column: region
+        filter_import_by_date: false
+        partition_by_date: true
+        keep_last_import_only: true
+      - name: basket_value_fee_configuration_row
+        pk_columns: [region, row_id]
+        sharding_column: region
+        filter_import_by_date: false
+        partition_by_date: true
+        keep_last_import_only: true
+      - name: customer_condition
+        pk_columns: [region, customer_condition_id]
+        sharding_column: region
+        filter_import_by_date: false
+        partition_by_date: true
+        keep_last_import_only: true
+      - name: price_scheme_schedule
+        pk_columns: [region, schedule_id]
+        sharding_column: region
+        filter_import_by_date: false
+        partition_by_date: true
+        keep_last_import_only: true
+      - name: service_fee_configuration
+        pk_columns: [region, configuration_id]
+        sharding_column: region
+        filter_import_by_date: false
+        partition_by_date: true
+        keep_last_import_only: true
+      - name: request_response_logs
+        source: 'kinesis_stream'
+        require_partition_filter: true
+        pk_columns: []
+        sharding_column: region
+        cleanup_enabled: false
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: false
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: _ingested_at
+        job_config:
+          export_read_replica:
+            enabled: false
+          copy_staging_to_raw_layer:
+            enabled: false
+
+  tes:
+    is_regional: true
+    source: RDS
+    opsgenie:
+      enabled: true
+      priority: P3
+    credentials:
+      username: foodora
+      password: JDBC_LOG_PASSWORD
+    tables:
+      - name: country
+        cleanup_enabled: false
+        partition_by_date: false
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: true
+      - name: city
+        cleanup_enabled: false
+        partition_by_date: false
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: true
+      - name: configuration
+        sharding_column: region
+        time_columns:
+          - lunch_start
+          - lunch_end
+          - dinner_start
+          - dinner_end
+      - name: platform
+        sharding_column: region
+        cleanup_enabled: false
+        partition_by_date: false
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: true
+      - name: platform_country
+        sharding_column: region
+        cleanup_enabled: false
+        partition_by_date: false
+        filter_import_by_date: false
+        enable_historical_data_in_hl: false
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: true
+      - name: restaurant
+        cleanup_enabled: false
+        partition_by_date: false
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: true
+      - name: driving_time_formula
+        sharding_column: region
+      - name: time_bucket
+        sharding_column: region
+
+  arara:
+    is_regional: true
+    source: RDS
+    opsgenie:
+      enabled: true
+      priority: P3
+    credentials:
+      username: foodora
+      password: JDBC_LOG_PASSWORD
+    tables:
+      - name: applicants
+        pk_columns: [region, id]
+      - name: applicant_fields
+        pk_columns: [region, id]
+      - name: applicant_stages
+        pk_columns: [region, id]
+      - name: applicant_stage_transitions
+        pk_columns: [region, id]
+        # TODO Verify why duplicate_check fails
+        sanity_checks:
+          duplicate_check: false
+      - name: rejection_reasons
+        pk_columns: [region, id]
+        filter_import_by_date: false
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: true
+      - name: stages
+        pk_columns: [region, id]
+      - name: workflows
+        pk_columns: [region, id]
+      - name: cities
+        pk_columns: [region, id]
+      - name: locations
+        pk_columns: [region, id]
+  comms:
+    is_regional: false
+    source: RDS
+    opsgenie:
+      enabled: true
+      priority: P3
+    credentials:
+      username: foodora
+      password: JDBC_LOG_PASSWORD
+    tables:
+      - name: channel
+      - name: message
+      - name: event
+      - name: event_message
+      - name: recipient_group
+      - name: delivery_acknowledged
+      - name: phone_message
+
+  alfred:
+    is_regional: true
+    source: RedShift_S3
+    source_format: parquet
+    redshift_s3:
+      # Pandora DWH do not have a staging environment
+      bucket_name: fulfillment-dwh-production-eu-pandora-import
+    tables:
+      - name: wallet_payment
+        pk_columns: [rdbms_id, id]
+        cleanup_enabled: false
+        redshift_s3:
+          table_name: v_wallet_payment
+          extra_columns: [CAST(creation_datetime AS DATE) AS created_date]
+      - name: wallet_wallet_account
+        pk_columns: [rdbms_id, id]
+        cleanup_enabled: false
+        redshift_s3:
+          table_name: v_wallet_wallet_account
+          extra_columns: [CAST(creation_datetime AS DATE) AS created_date]
+      - name: wallet_wallet
+        pk_columns: [rdbms_id, id]
+        cleanup_enabled: false
+        redshift_s3:
+          table_name: v_wallet_wallet
+          extra_columns: [CAST(creation_datetime AS DATE) AS created_date]
+      - name: wallet_payment_instrument
+        pk_columns: [rdbms_id, id]
+        cleanup_enabled: false
+        redshift_s3:
+          table_name: v_wallet_payment_instrument
+          extra_columns: [CAST(creation_datetime AS DATE) AS created_date]
+      - name: pay_instrument
+        pk_columns: [rdbms_id, id]
+        cleanup_enabled: false
+        redshift_s3:
+          table_name: v_pay_instrument
+          extra_columns: [CAST(creation_date_time AS DATE) AS created_date]
+      - name: wallet_balance_transaction
+        pk_columns: [rdbms_id, id]
+        cleanup_enabled: false
+        redshift_s3:
+          table_name: v_wallet_balance_transaction
+          extra_columns: [CAST(creation_datetime AS DATE) AS created_date]
+      - name: pay_transaction
+        pk_columns: [rdbms_id, id]
+        cleanup_enabled: false
+        redshift_s3:
+          table_name: v_pay_transaction
+          extra_columns: [CAST(creation_date_time AS DATE) AS created_date]
+
+  pandora:
+    is_regional: true
+    source: RedShift_S3
+    source_format: parquet
+    redshift_s3:
+      # Pandora DWH do not have a staging environment
+      bucket_name: fulfillment-dwh-production-eu-pandora-import
+    tables:
+      - name: freshchat_contact_reasons
+        pk_columns: [instance_group, interaction_id]
+        cleanup_enabled: false
+        redshift_s3:
+          table_name: freshchat_freshchat_contact_reasons
+          extra_columns: [CAST(created_timestamp AS DATE) AS created_date]
+      - name: freshchat_interactions
+        pk_columns: [instance_id, interaction_id]
+        cleanup_enabled: false
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: false
+        redshift_s3:
+          table_name: freshchat_freshchat_interactions
+          extra_columns: [CAST(created_timestamp AS DATE) AS created_date]
+      - name: fct_ao_nps
+        pk_columns: [rdbms_id, response_id]
+        sharding_column: rdbms_id
+        cleanup_enabled: false
+        redshift_s3:
+          table_name: il_global_ccn_pd_fct_ao_nps
+          extra_columns: [CAST(start_date AS DATE) AS created_date]
+      - name: dim_countries
+        pk_columns: [rdbms_id]
+        cleanup_enabled: false
+        partition_by_date: false
+        redshift_s3:
+          table_name: il_global_dim_countries
+          extra_columns: []
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: true
+      - name: sendbird_channel_members
+        pk_columns: [country_iso, channel_url, member_id]
+        partition_by_date: false
+        cleanup_enabled: false
+        redshift_s3:
+          table_name: sendbird_sendbird_channel_members
+          extra_columns: []
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: true
+      - name: sendbird_channels
+        pk_columns: [country_iso, channel_url]
+        partition_by_date: false
+        cleanup_enabled: false
+        redshift_s3:
+          table_name: sendbird_sendbird_channels
+          extra_columns: []
+        # TODO Verify why duplicate_check fails
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: false
+      - name: sendbird_messages
+        pk_columns: [country_iso, message_id]
+        cleanup_enabled: false
+        # TODO Verify why duplicate_check fails
+        sanity_checks:
+          duplicate_check: false
+        redshift_s3:
+          table_name: sendbird_sendbird_messages
+          extra_columns: [CAST(message_sent_at AS DATE) AS created_date]
+      - name: order_commissions
+        pk_columns: [rdbms_id, order_id]
+        sharding_column: rdbms_id
+        time_partitioning: created_date
+        cleanup_enabled: false
+        redshift_s3:
+          table_name: il_global_v_fct_order_commissions
+          extra_columns: [COALESCE(CAST(order_date AS DATE), DATE('0001-01-01')) AS created_date]
+      - name: rooster_fct_shifts
+        pk_columns: [rdbms_id, shift_id]
+        sharding_column: rdbms_id
+        cleanup_enabled: false
+        redshift_s3:
+          table_name: il_global_ccn_rooster_fct_shifts
+          extra_columns: [CAST(created_at AS DATE) AS created_date]
+      - name: rooster_incidents_teams_map
+        pk_columns: [rdbms_id, id, incident_type]
+        sharding_column: rdbms_id
+        cleanup_enabled: false
+        partition_by_date: false
+        # TODO Verify why duplicate_check fails
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: false
+        redshift_s3:
+          table_name: il_global_ccn_cc_rooster_incidents_teams_map
+          extra_columns: []
+      - name: global_cc_traffic
+        pk_columns: [dh_source_id, global_entity_id, incident_type]
+        sharding_column: dh_source_id
+        cleanup_enabled: false
+        # TODO Verify why duplicate_check fails
+        sanity_checks:
+          duplicate_check: false
+        redshift_s3:
+          table_name: bl_global_ccn_global_cc_traffic_dataset
+          extra_columns: [iso_date AS created_date, log_country_code AS country_code]
+
+  rps:
+    is_regional: true
+    source: 'SQS'
+    job_config:
+      export_read_replica:
+        enabled: false
+      copy_staging_to_raw_layer:
+        enabled: false
+    tables:
+      - name: monitor
+        pk_columns: [region, platformId, platformRestaurantId, event, eventTime]
+        cleanup_enabled: false
+        partition_by_date: false
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: true
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: _ingested_at
+      - name: heartbeats
+        pk_columns: [region, rpsVendorId, eventTime]
+        require_partition_filter: true
+        cleanup_enabled: false
+        partition_by_date: false
+        # TODO Verify why duplicate_check fails
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: false
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: _ingested_at
+      - name: phone_call_completed
+        pk_columns: [region, eventId]
+        cleanup_enabled: false
+        partition_by_date: false
+        # TODO Verify why duplicate_check fails
+        sanity_checks:
+          created_date_null: false
+          duplicate_check: false
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: _ingested_at
+
+  recruitment:
+    is_regional: true
+    source: 'DynamoDB'
+    job_config:
+      export_read_replica:
+        enabled: false
+      copy_staging_to_raw_layer:
+        enabled: false
+    tables:
+      - name: goldcrest_urls
+        sharding_column: region
+        cleanup_enabled: false
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: _ingested_at
+        job_config:
+          export_read_replica:
+            enabled: false
+          copy_staging_to_raw_layer:
+            enabled: false
+
+  dms:
+    is_regional: true
+    source: 'DynamoDB'
+    job_config:
+      export_read_replica:
+        enabled: false
+      copy_staging_to_raw_layer:
+        enabled: false
+    tables:
+      - name: device
+        source: 'DynamoDB'
+        sharding_column: region
+        partition_by_date: true
+        filter_import_by_date: false
+        keep_last_import_only: true
+        keep_last_import_only_partition_by_pk: true
+        cleanup_enabled: false
+        pk_columns: [region, deviceUuid]
+        # TODO Verify why duplicate_check fails
+        sanity_checks:
+          duplicate_check: false
+        job_config:
+          export_read_replica:
+            enabled: false
+          copy_staging_to_raw_layer:
+            enabled: false
+      - name: device_status
+        source: 'DynamoDB'
+        sharding_column: region
+        cleanup_enabled: false
+        pk_columns: [region, statusUuid]
+        # TODO Verify why duplicate_check fails
+        sanity_checks:
+          duplicate_check: false
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: _ingested_at
+        job_config:
+          export_read_replica:
+            enabled: false
+          copy_staging_to_raw_layer:
+            enabled: false
+      - name: push_notification_sent_message
+        source: 'DynamoDB'
+        sharding_column: region
+        cleanup_enabled: false
+        pk_columns: [region, deviceUuid, orderId, type, created_at]
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: _ingested_at
+        job_config:
+          export_read_replica:
+            enabled: false
+          copy_staging_to_raw_layer:
+            enabled: false
+
+  dpn:
+    is_regional: true
+    source: 'DynamoDB'
+    job_config:
+      export_read_replica:
+        enabled: false
+      copy_staging_to_raw_layer:
+        enabled: false
+    tables:
+      - name: push_notification_sent_message
+        source: 'DynamoDB'
+        sharding_column: region
+        cleanup_enabled: false
+        pk_columns: [region, deviceUuid, orderId, state, created_at]
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: _ingested_at
+        job_config:
+          export_read_replica:
+            enabled: false
+          copy_staging_to_raw_layer:
+            enabled: false
+
+  vendor:
+    is_regional: true
+    source: 'DynamoDB'
+    job_config:
+      export_read_replica:
+        enabled: false
+      copy_staging_to_raw_layer:
+        enabled: false
+    tables:
+      - name: monitor_platform_vendor_relations
+        source: 'DynamoDB'
+        sharding_column: region
+        cleanup_enabled: false
+        pk_columns: [region, vendorId]
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: _ingested_at
+        # TODO Verify why duplicate_check fails
+        sanity_checks:
+          duplicate_check: false
+        job_config:
+          export_read_replica:
+            enabled: false
+          copy_staging_to_raw_layer:
+            enabled: false
+      - name: monitor_platform_vendors
+        source: 'DynamoDB'
+        sharding_column: region
+        cleanup_enabled: false
+        pk_columns: [region, platformAndPlatformVendorId]
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: _ingested_at
+        # TODO Verify why duplicate_check fails
+        sanity_checks:
+          duplicate_check: false
+        job_config:
+          export_read_replica:
+            enabled: false
+          copy_staging_to_raw_layer:
+            enabled: false
+      - name: monitor_rules
+        source: 'DynamoDB'
+        sharding_column: region
+        cleanup_enabled: false
+        pk_columns: [region, id]
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: _ingested_at
+        # TODO Verify why duplicate_check fails
+        sanity_checks:
+          duplicate_check: false
+        job_config:
+          export_read_replica:
+            enabled: false
+          copy_staging_to_raw_layer:
+            enabled: false
+      - name: monitor_issues
+        source: 'DynamoDB'
+        sharding_column: region
+        cleanup_enabled: false
+        pk_columns: [region, id]
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: _ingested_at
+        job_config:
+          export_read_replica:
+            enabled: false
+          copy_staging_to_raw_layer:
+            enabled: false
+      - name: service_platform_vendor_relations
+        source: 'DynamoDB'
+        sharding_column: region
+        cleanup_enabled: false
+        pk_columns: [region, vendorId, platformGlobalKey, platformVendorId]
+        # TODO Verify why duplicate_check fails
+        sanity_checks:
+          duplicate_check: false
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: _ingested_at
+        job_config:
+          export_read_replica:
+            enabled: false
+          copy_staging_to_raw_layer:
+            enabled: false
+      - name: service_vendors
+        source: 'DynamoDB'
+        sharding_column: region
+        cleanup_enabled: false
+        pk_columns: [region, id]
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: _ingested_at
+        # TODO Verify why duplicate_check fails
+        sanity_checks:
+          duplicate_check: false
+        job_config:
+          export_read_replica:
+            enabled: false
+          copy_staging_to_raw_layer:
+            enabled: false
+      - name: availability_state_offline
+        source: 'SQS'
+        sharding_column: region
+        cleanup_enabled: false
+        pk_columns: [region, platformGlobalKey, platformVendorId, created_at]
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: _ingested_at
+        job_config:
+          export_read_replica:
+            enabled: false
+          copy_staging_to_raw_layer:
+            enabled: false
+      - name: availability_state_online
+        source: 'SQS'
+        sharding_column: region
+        cleanup_enabled: false
+        pk_columns: [region, platformGlobalKey, platformVendorId, created_at]
+        raw_layer:
+          created_at_column: created_at
+          updated_at_column: _ingested_at
+        job_config:
+          export_read_replica:
+            enabled: false
+          copy_staging_to_raw_layer:
+            enabled: false
+
+  issue_service:
+    is_regional: false
+    source: RDS
+    opsgenie:
+      enabled: true
+      priority: P3
+    credentials:
+      username: foodora
+      password: JDBC_LOG_PASSWORD
+    tables:
+      - name: issue_rules
+      - name: issue_creation_params
+        # TODO Verify why duplicate_check fails
+        sanity_checks:
+          duplicate_check: false
+      - name: issue_rule_templates
+        # TODO Verify why duplicate_check fails
+        sanity_checks:
+          duplicate_check: false
+      - name: issues
+      - name: issue_types
+      - name: request_issue_creation_params
+      - name: request_issue_rule_templates
+      - name: requests
+
+gcs_staging: &gcs_staging
+  bucket_name: 'fulfilment-dwh-staging-import'
+
+jira:
+  <<: *gcs_staging
+  jira_projects: 'LOGBI,LOGDEP,LOGDS,LOGL,LOGP,LOGREC,LOGRC,LOGTL,LOGWM,LOGOP,LOGA,LOGX'
+  issue_fields: [votes, environment, timespent, updated, timeestimate, reporter, aggregatetimeestimate,
+                 created, creator, priority, project, workratio, fixVersions, labels, lastViewed, duedate,
+                 aggregatetimeoriginalestimate, summary, issuetype, issuelinks, aggregateprogress, progress,
+                 aggregatetimespent, status, timeoriginalestimate, components, assignee, subtasks,
+                 resolutiondate, watches, resolution, transitions, changelog, comments, timetracking, worklog]
+
+soti:
+  <<: *gcs_staging
+  regions:
+    - "eu"
+    - "ap"
+    - "kh-la-mm"
+    - "bd"
+    - "pk"
+    - "hk"
+    - "ph"
+    - "sg"
+    - "my"
+#    - "th"
+    - "tw"
+    - "kr"
+    - "mena"
+  node_selectors:
+    app: batch
+  tolerations:
+    - effect: NoSchedule
+      key: app
+      value: batch
+      operator: Equal
+
+feature_store:
+  dataset: fs
+  queued_orders_table_name: queued_orders
+  live_orders_table_name: live_orders
+
+salesforce:
+  <<: *gcs_staging
+  instances:
+    - "pandora"
+    - "deliveryhero"
+
+go_droid_api:
+  <<: *gcs_staging
+  regions:
+    mena: 'https://rps-own-delivery-live-mena.firebaseio.com/rps/mena/data/devices.json'
+    eu: 'https://rps-own-delivery-live.firebaseio.com/rps/global/data/devices.json'
+    ap: 'https://rps-own-delivery-live-6221d.firebaseio.com/rps/asia/data/devices.json'
+    kr: 'https://rps-own-delivery-live-korea.firebaseio.com/rps/korea/data/devices.json'
+    us: 'https://rps-own-delivery-live-latam.firebaseio.com/rps/latam/data/devices.json'
+
+braze:
+  project_id: "fulfillment-dwh-staging"
+  node_selectors:
+    app: batch
+  tolerations:
+    - effect: NoSchedule
+      key: app
+      value: batch
+      operator: Equal
+
+rps_korean_team_dataset:
+  dataset: 'rps_kr_vd_dispatch'
+  project_id: 'fulfillment-dwh-staging'
+  tables:
+    - name: icash_delivery
+      time_partitioning: created_date_local
+
+roadrunner:
+  s3_bucket_name: 's3://dwh-staging-eu-airflow-data/roadrunner/'
+
+freshdesk:
+  <<: *gcs_staging
+  reports:
+    asia:
+      url: 'reports/scheduled_exports/2347531603290809/download_file.json'
+    sa:
+      url: 'reports/scheduled_exports/9447761603291475/download_file.json'
+    cee:
+      url: 'reports/scheduled_exports/7671551603291201/download_file.json'
+    at:
+      url: 'reports/scheduled_exports/9533281603290615/download_file.json'
+    eu:
+      url: 'reports/scheduled_exports/5602791603291345/download_file.json'
+    ksa:
+      url: 'reports/scheduled_exports/4465701603290985/download_file.json'
+    cyprus:
+      url: 'reports/scheduled_exports/27791603291121/download_file.json'
+    balkan:
+      url: 'reports/scheduled_exports/4707091603724537/download_file.json'
+    talabat:
+      url: 'reports/scheduled_exports/3828311603724287/download_file.json'
