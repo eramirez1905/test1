@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # flake8: noqa
 # Disable Flake8 because of all the sphinx imports
 #
@@ -33,15 +34,13 @@
 """Configuration of Airflow Docs"""
 import os
 import sys
-from glob import glob
-from typing import Dict, List
+from typing import Dict
 
 import airflow
 from airflow.configuration import default_config_yaml
 
 try:
     import sphinx_airflow_theme  # pylint: disable=unused-import
-
     airflow_theme_is_available = True
 except ImportError:
     airflow_theme_is_available = False
@@ -53,7 +52,6 @@ autodoc_mock_imports = [
     'azure',
     'azure.cosmos',
     'azure.datalake',
-    'azure.kusto',
     'azure.mgmt',
     'boto3',
     'botocore',
@@ -76,6 +74,7 @@ autodoc_mock_imports = [
     'jenkins',
     'jira',
     'kubernetes',
+    'mesos',
     'msrestazure',
     'pandas',
     'pandas_gbq',
@@ -134,12 +133,6 @@ extensions = [
     'docroles',
     'removemarktransform',
     'sphinx_copybutton',
-    'redirects',
-    # First, generate redoc
-    'sphinxcontrib.redoc',
-    # Second, update redoc script
-    "sphinx_script_update",
-    "sphinxcontrib.spelling",
 ]
 
 autodoc_default_options = {
@@ -166,8 +159,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'Airflow'
-# copyright = ''
+project = u'Airflow'
+# copyright = u''
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -192,85 +185,47 @@ release = airflow.__version__
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns: List[str] = [
-    # We only link to selected subpackages.
+exclude_patterns = [
+    '_api/airflow/api',
+    '_api/airflow/bin',
+    '_api/airflow/config_templates',
+    '_api/airflow/configuration',
+    '_api/airflow/contrib/auth',
+    '_api/airflow/contrib/example_dags',
+    '_api/airflow/contrib/index.rst',
+    '_api/airflow/contrib/kubernetes',
+    '_api/airflow/contrib/task_runner',
+    '_api/airflow/contrib/utils',
+    '_api/airflow/dag',
+    '_api/airflow/default_login',
+    '_api/airflow/example_dags',
     '_api/airflow/index.rst',
-    # We have custom page - operators-and-hooks-ref.rst
-    '_api/airflow/providers/index.rst',
-    # Packages with subpackages
-    "_api/airflow/providers/amazon/index.rst",
-    "_api/airflow/providers/facebook/index.rst",
-    "_api/airflow/providers/microsoft/index.rst",
-    "_api/airflow/providers/google/index.rst",
-    "_api/airflow/providers/apache/index.rst",
-    "_api/airflow/providers/yandex/index.rst",
-    "_api/airflow/providers/cncf/index.rst",
-    # Packages without operators
-    "_api/airflow/providers/sendgrid",
-    # Templates or partials
+    '_api/airflow/jobs',
+    '_api/airflow/kubernetes_deprecated',
+    '_api/airflow/lineage',
+    '_api/airflow/logging_config',
+    '_api/airflow/macros',
+    '_api/airflow/migrations',
+    '_api/airflow/plugins_manager',
+    '_api/airflow/security',
+    '_api/airflow/serialization',
+    '_api/airflow/settings',
+    '_api/airflow/sentry',
+    '_api/airflow/stats',
+    '_api/airflow/task',
+    '_api/airflow/typing_compat',
+    '_api/airflow/kubernetes',
+    '_api/airflow/ti_deps',
+    '_api/airflow/utils',
+    '_api/airflow/version',
+    '_api/airflow/www',
+    '_api/airflow/www_rbac',
+    '_api/kubernetes_executor',
+    '_api/main',
+    '_api/mesos_executor',
     'autoapi_templates',
-    'howto/operator/google/_partials',
+    'howto/operator/gcp/_partials',
 ]
-
-ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
-
-
-def _get_rst_filepath_from_path(filepath: str):
-    if os.path.isdir(filepath):
-        result = filepath
-    elif os.path.isfile(filepath) and filepath.endswith('/__init__.py'):
-        result = filepath.rpartition("/")[0]
-    else:
-        result = filepath.rpartition(".",)[0]
-    result += "/index.rst"
-
-    result = f"_api/{os.path.relpath(result, ROOT_DIR)}"
-    return result
-
-
-# Exclude top-level packages
-# do not exclude these top-level modules from the doc build:
-allowed_top_level = ("exceptions.py",)
-
-for path in glob(f"{ROOT_DIR}/airflow/*"):
-    name = os.path.basename(path)
-    if os.path.isfile(path) and not path.endswith(allowed_top_level):
-        exclude_patterns.append(f"_api/airflow/{name.rpartition('.')[0]}")
-    browsable_packages = ["operators", "hooks", "sensors", "providers", "executors", "models", "secrets"]
-    if os.path.isdir(path) and name not in browsable_packages:
-        exclude_patterns.append(f"_api/airflow/{name}")
-
-# Exclude package index
-providers_packages_roots = {
-    name.rpartition("/")[0]
-    for entity in ["hooks", "operators", "secrets", "sensors"]
-    for name in glob(f"{ROOT_DIR}/airflow/providers/**/{entity}", recursive=True)
-}
-
-providers_package_indexes = {
-    f"_api/{os.path.relpath(name, ROOT_DIR)}/index.rst"
-    for name in providers_packages_roots
-}
-
-exclude_patterns.extend(providers_package_indexes)
-
-# Exclude auth_backend, utils, _internal_client, example_dags in providers packages
-excluded_packages_in_providers = {
-    name
-    for entity in ['auth_backend', 'utils', '_internal_client', 'example_dags']
-    for name in glob(f"{ROOT_DIR}/airflow/providers/**/{entity}/", recursive=True)
-}
-excluded_files_in_providers = {
-    _get_rst_filepath_from_path(path)
-    for p in excluded_packages_in_providers
-    for path in glob(f"{p}/**/*", recursive=True)
-}
-excluded_files_in_providers |= {
-    _get_rst_filepath_from_path(name)
-    for name in excluded_packages_in_providers
-}
-
-exclude_patterns.extend(excluded_files_in_providers)
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
@@ -299,16 +254,13 @@ keep_warnings = True
 
 intersphinx_mapping = {
     'boto3': ('https://boto3.amazonaws.com/v1/documentation/api/latest/', None),
-    'celery': ('https://docs.celeryproject.org/en/stable/', None),
-    'hdfs': ('https://hdfscli.readthedocs.io/en/latest/', None),
-    'jinja2': ('https://jinja.palletsprojects.com/en/master/', None),
     'mongodb': ('https://api.mongodb.com/python/current/', None),
     'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
     'python': ('https://docs.python.org/3/', None),
     'requests': ('https://requests.readthedocs.io/en/master/', None),
     'sqlalchemy': ('https://docs.sqlalchemy.org/en/latest/', None),
-    # google-api
-    'google-api-core': ('https://googleapis.dev/python/google-api-core/latest', None),
+    'hdfs': ('https://hdfscli.readthedocs.io/en/latest/', None),
+    # google-cloud-python
     'google-cloud-automl': ('https://googleapis.dev/python/automl/latest', None),
     'google-cloud-bigquery': ('https://googleapis.dev/python/bigquery/latest', None),
     'google-cloud-bigquery-datatransfer': ('https://googleapis.dev/python/bigquerydatatransfer/latest', None),
@@ -316,12 +268,10 @@ intersphinx_mapping = {
     'google-cloud-bigtable': ('https://googleapis.dev/python/bigtable/latest', None),
     'google-cloud-container': ('https://googleapis.dev/python/container/latest', None),
     'google-cloud-core': ('https://googleapis.dev/python/google-cloud-core/latest', None),
-    'google-cloud-datacatalog': ('https://googleapis.dev/python/datacatalog/latest', None),
     'google-cloud-datastore': ('https://googleapis.dev/python/datastore/latest', None),
     'google-cloud-dlp': ('https://googleapis.dev/python/dlp/latest', None),
     'google-cloud-kms': ('https://googleapis.dev/python/cloudkms/latest', None),
     'google-cloud-language': ('https://googleapis.dev/python/language/latest', None),
-    'google-cloud-monitoring': ('https://googleapis.dev/python/monitoring/latest', None),
     'google-cloud-pubsub': ('https://googleapis.dev/python/pubsub/latest', None),
     'google-cloud-redis': ('https://googleapis.dev/python/redis/latest', None),
     'google-cloud-spanner': ('https://googleapis.dev/python/spanner/latest', None),
@@ -347,6 +297,12 @@ if airflow_theme_is_available:
 # further.  For a list of options available for each theme, see the
 # documentation.
 # html_theme_options = {}
+
+# Add any paths that contain custom themes here, relative to this directory.
+# html_theme_path = []
+import sphinx_rtd_theme  # pylint: disable=wrong-import-position,wrong-import-order
+
+html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
@@ -445,8 +401,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    ('index', 'Airflow.tex', 'Airflow Documentation',
-     'Apache Airflow', 'manual'),
+    ('index', 'Airflow.tex', u'Airflow Documentation',
+     u'Apache Airflow', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -475,8 +431,8 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'airflow', 'Airflow Documentation',
-     ['Apache Airflow'], 1)
+    ('index', 'airflow', u'Airflow Documentation',
+     [u'Apache Airflow'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -489,8 +445,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [(
-    'index', 'Airflow', 'Airflow Documentation',
-    'Apache Airflow', 'Airflow',
+    'index', 'Airflow', u'Airflow Documentation',
+    u'Apache Airflow', 'Airflow',
     'Airflow is a system to programmatically author, schedule and monitor data pipelines.',
     'Miscellaneous'
 ), ]
@@ -522,8 +478,12 @@ autoapi_template_dir = 'autoapi_templates'
 
 # A list of patterns to ignore when finding files
 autoapi_ignore = [
+    # These modules are backcompat shims, don't build docs for them
+    '*/airflow/contrib/operators/s3_to_gcs_transfer_operator.py',
+    '*/airflow/contrib/operators/gcs_to_gcs_transfer_operator.py',
+    '*/airflow/contrib/operators/gcs_to_gcs_transfer_operator.py',
     '*/airflow/kubernetes/kubernetes_request_factory/*',
-    '*/_internal*',
+
     '*/node_modules/*',
     '*/migrations/*',
 ]
@@ -535,31 +495,8 @@ autoapi_keep_files = True
 # anywhere in your documentation hierarchy.
 autoapi_root = '_api'
 
-# -- Options for example include ------------------------------------------
+# -- Options for examole include ------------------------------------------
 exampleinclude_sourceroot = os.path.abspath('..')
-
-# -- Options for sphinxcontrib-redirects ----------------------------------
-redirects_file = 'redirects.txt'
-
-# -- Options for redoc docs ----------------------------------
-OPENAPI_FILE = os.path.join(
-    os.path.dirname(__file__),
-    "..", "airflow", "api_connexion", "openapi", "v1.yaml"
-)
-redoc = [
-    {
-        'name': 'Airflow REST API',
-        'page': 'stable-rest-api-ref',
-        'spec': OPENAPI_FILE,
-        'opts': {
-            'hide-hostname': True,
-            'no-auto-auth': True,
-        }
-    },
-]
-
-# Options for script updater
-redoc_script_url = "https://cdn.jsdelivr.net/npm/redoc@2.0.0-rc.30/bundles/redoc.standalone.js"
 
 # -- Additional HTML Context variable
 html_context = {

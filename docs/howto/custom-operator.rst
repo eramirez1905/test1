@@ -47,8 +47,8 @@ Let's implement an example ``HelloOperator`` in a new file ``hello_operator.py``
             def __init__(
                     self,
                     name: str,
-                    **kwargs) -> None:
-                super().__init__(**kwargs)
+                    *args, **kwargs) -> None:
+                super().__init__(*args, **kwargs)
                 self.name = name
 
             def execute(self, context):
@@ -59,10 +59,9 @@ Let's implement an example ``HelloOperator`` in a new file ``hello_operator.py``
 .. note::
 
     For imports to work, you should place the file in a directory that
-    is present in the :envvar:`PYTHONPATH` env. Airflow adds ``dags/``, ``plugins/``, and ``config/`` directories
-    in the Airflow home to :envvar:`PYTHONPATH` by default. e.g., In our example,
+    is present in the ``PYTHONPATH`` env. Airflow adds ``dags/``, ``plugins/``, and ``config/`` directories
+    in the Airflow home to ``PYTHONPATH`` by default. e.g., In our example,
     the file is placed in the ``custom_operator`` directory.
-    See :doc:`../modules_management` for details on how Python and Airflow manage modules.
 
 You can now use the derived custom operator as follows:
 
@@ -72,18 +71,6 @@ You can now use the derived custom operator as follows:
 
     with dag:
         hello_task = HelloOperator(task_id='sample-task', name='foo_bar')
-
-If an operator communicates with an external service (API, database, etc) it's a good idea
-to implement the communication layer using a :ref:`custom-operator/hook`. In this way the implemented logic
-can be reused by other users in different operators. Such approach provides better decoupling and
-utilization of added integration than using ``CustomServiceBaseOperator`` for each external service.
-
-Other consideration is the temporary state. If an operation requires an in-memory state (for example
-a job id that should be used in ``on_kill`` method to cancel a request) then the state should be keep
-in the operator not in a hook. In this way the service hook can be completely state-less and whole
-logic of an operation is in one place - in the operator.
-
-.. _custom-operator/hook:
 
 Hooks
 ^^^^^
@@ -105,8 +92,8 @@ Let's extend our previous example to fetch name from MySQL:
                     name: str,
                     mysql_conn_id: str,
                     database: str,
-                    **kwargs) -> None:
-                super().__init__(**kwargs)
+                    *args, **kwargs) -> None:
+                super().__init__(*args, **kwargs)
                 self.name = name
                 self.mysql_conn_id = mysql_conn_id
                 self.database = database
@@ -124,10 +111,8 @@ When the operator invokes the query on the hook object, a new connection gets cr
 The hook retrieves the auth parameters such as username and password from Airflow
 backend and passes the params to the :py:func:`airflow.hooks.base_hook.BaseHook.get_connection`.
 You should create hook only in the ``execute`` method or any method which is called from ``execute``.
-The constructor gets called whenever Airflow parses a DAG which happens frequently. And instantiating a hook
-there will result in many unnecessary database connections.
+The constructor gets called whenever Airflow parses a DAG which happens frequently.
 The ``execute`` gets called only during a DAG run.
-
 
 User interface
 ^^^^^^^^^^^^^^^
@@ -158,8 +143,8 @@ the operator.
             def __init__(
                     self,
                     name: str,
-                    **kwargs) -> None:
-                super().__init__(**kwargs)
+                    *args, **kwargs) -> None:
+                super().__init__(*args, **kwargs)
                 self.name = name
 
             def execute(self, context):
@@ -188,14 +173,13 @@ with actual value. Note that Jinja substitutes the operator attributes and not t
         class HelloOperator(BaseOperator):
 
             template_fields = ['guest_name']
-            template_ext = ['.sql']
 
             @apply_defaults
             def __init__(
                     self,
                     name: str,
-                    **kwargs) -> None:
-                super().__init__(**kwargs)
+                    *args, **kwargs) -> None:
+                super().__init__(*args, **kwargs)
                 self.guest_name = name
 
 In the example, the ``template_fields`` should be ``['guest_name']`` and not  ``['name']``
@@ -207,27 +191,3 @@ Define an operator extra link
 For your operator, you can :doc:`Define an extra link <define_extra_link>` that can
 redirect users to external systems. For example, you can add a link that redirects
 the user to the operator's manual.
-
-Sensors
-^^^^^^^^
-Airflow provides a primitive for a special kind of operator, whose purpose is to
-poll some state (e.g. presence of a file) on a regular interval until a
-success criteria is met.
-
-You can create any sensor your want by extending the :class:`airflow.sensors.base_sensor_operator.BaseSensorOperator`
-defining a ``poke`` method to poll your external state and evaluate the success criteria.
-
-Sensors have a powerful feature called ``'reschedule'`` mode which allows the sensor to
-task to be rescheduled, rather than blocking a worker slot between pokes.
-This is useful when you can tolerate a longer poll interval and expect to be
-polling for a long time.
-
-Reschedule mode comes with a caveat that your sensor cannot maintain internal state
-between rescheduled executions. In this case you should decorate your sensor with
-:meth:`airflow.sensors.base_sensor_operator.poke_mode_only`. This will let users know
-that your sensor is not suitable for use with reschedule mode.
-
-An example of a sensor that keeps internal state and cannot be used with reschedule mode
-is :class:`airflow.providers.google.cloud.sensors.gcs.GCSUploadSessionCompleteSensor`.
-It polls the number of objects at a prefix (this number is the internal state of the sensor)
-and succeeds when there a certain amount of time has passed without the number of objects changing.

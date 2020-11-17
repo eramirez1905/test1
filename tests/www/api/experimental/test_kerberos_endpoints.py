@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -17,53 +18,42 @@
 # under the License.
 
 import json
+import mock
 import os
-import socket
 import unittest
+
 from datetime import datetime
-from unittest import mock
 
 import pytest
 
+from airflow.configuration import conf
 from airflow.api.auth.backend.kerberos_auth import CLIENT_AUTH
-from airflow.models import DagBag
+from airflow.utils.net import get_hostname
 from airflow.www import app as application
 from tests.test_utils.config import conf_vars
-from tests.test_utils.db import clear_db_dags
-
-KRB5_KTNAME = os.environ.get("KRB5_KTNAME")
 
 
 @pytest.mark.integration("kerberos")
-class TestApiKerberos(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        dagbag = DagBag(include_examples=True)
-        for dag in dagbag.dags.values():
-            dag.sync_to_db()
-
-    @conf_vars({
-        ("api", "auth_backend"): "airflow.api.auth.backend.kerberos_auth",
-        ("kerberos", "keytab"): KRB5_KTNAME,
-    })
+@conf_vars({('api', 'auth_backend'): 'airflow.contrib.auth.backends.kerberos_auth'})
+class ApiKerberosTests(unittest.TestCase):
     def setUp(self):
+        conf.set("kerberos",
+                 "keytab",
+                 os.environ['KRB5_KTNAME'])
+
         self.app = application.create_app(testing=True)
 
-    @classmethod
-    def tearDownClass(cls) -> None:
-        clear_db_dags()
-
     def test_trigger_dag(self):
-        with self.app.test_client() as client:
+        with self.app.test_client() as c:
             url_template = '/api/experimental/dags/{}/dag_runs'
-            response = client.post(
+            response = c.post(
                 url_template.format('example_bash_operator'),
                 data=json.dumps(dict(run_id='my_run' + datetime.now().isoformat())),
                 content_type="application/json"
             )
             self.assertEqual(401, response.status_code)
 
-            response.url = 'http://{}'.format(socket.getfqdn())
+            response.url = 'http://{}'.format(get_hostname())
 
             class Request:
                 headers = {}
@@ -78,12 +68,12 @@ class TestApiKerberos(unittest.TestCase):
             CLIENT_AUTH.mutual_authentication = 3
 
             # case can influence the results
-            CLIENT_AUTH.hostname_override = socket.getfqdn()
+            CLIENT_AUTH.hostname_override = get_hostname()
 
             CLIENT_AUTH.handle_response(response)
             self.assertIn('Authorization', response.request.headers)
 
-            response2 = client.post(
+            response2 = c.post(
                 url_template.format('example_bash_operator'),
                 data=json.dumps(dict(run_id='my_run' + datetime.now().isoformat())),
                 content_type="application/json",
@@ -92,9 +82,9 @@ class TestApiKerberos(unittest.TestCase):
             self.assertEqual(200, response2.status_code)
 
     def test_unauthorized(self):
-        with self.app.test_client() as client:
+        with self.app.test_client() as c:
             url_template = '/api/experimental/dags/{}/dag_runs'
-            response = client.post(
+            response = c.post(
                 url_template.format('example_bash_operator'),
                 data=json.dumps(dict(run_id='my_run' + datetime.now().isoformat())),
                 content_type="application/json"

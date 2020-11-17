@@ -30,7 +30,7 @@ Airflow Test Infrastructure
   marked as integration tests but soon they will be separated by ``pytest`` annotations.
 
 * **System tests** are automatic tests that use external systems like
-  Google Cloud. These tests are intended for an end-to-end DAG execution.
+  Google Cloud Platform. These tests are intended for an end-to-end DAG execution.
   The tests can be executed on both the current version of Apache Airflow and any of the older
   versions from 1.10.* series.
 
@@ -216,7 +216,7 @@ In the CI environment, integrations can be enabled by specifying the ``ENABLED_I
 storing a space-separated list of integrations to start. Thanks to that, we can run integration and
 integration-less tests separately in different jobs, which is desired from the memory usage point of view.
 
-Note that Kerberos is a special kind of integration. Some tests run differently when
+Note that Kerberos is a special kind of integration. There are some tests that run differently when
 Kerberos integration is enabled (they retrieve and use a Kerberos authentication token) and differently when the
 Kerberos integration is disabled (they neither retrieve nor use the token). Therefore, one of the test jobs
 for the CI system should run all tests with the Kerberos integration enabled to test both scenarios.
@@ -225,7 +225,7 @@ Running Integration Tests
 -------------------------
 
 All tests using an integration are marked with a custom pytest marker ``pytest.mark.integration``.
-The marker has a single parameter - the name of integration.
+The marker has a single parameter - the name of an integration.
 
 Example of the ``redis`` integration test:
 
@@ -238,7 +238,7 @@ Example of the ``redis`` integration test:
 
         self.assertTrue(redis.ping(), 'Connection to Redis with PING works.')
 
-The markers can be specified at the test level or the class level (then all tests in this class
+The markers can be specified at the test level or at the class level (then all tests in this class
 require an integration). You can add multiple markers with different integrations for tests that
 require more than one integration.
 
@@ -323,18 +323,6 @@ tests are usually flaky tests that need some attention and fix.
 Those tests are marked with ``@pytest.mark.quarantined`` annotation.
 Those tests are skipped by default. You can enable them with ``--include-quarantined`` flag. You
 can also decide to only run tests with ``-m quarantined`` flag to run only those tests.
-
-Heisen tests
-------------
-
-Some of our tests are Heisentests. This means that they run fine in isolation but when they run together with
-others they might fail the tests (this is likely due to resource consumptions). Therefore we run those tests
-in isolation.
-
-Those tests are marked with ``@pytest.mark.heisentests`` annotation.
-Those tests are skipped by default. You can enable them with ``--include-heisentests`` flag. You
-can also decide to only run tests with ``-m heisentests`` flag to run only those tests.
-
 
 Running Tests with Kubernetes
 =============================
@@ -510,7 +498,7 @@ Once you enter the environment you receive this information:
     You can run kubernetes testing via 'pytest kubernetes_tests/....'
     You can add -s to see the output of your tests on screen
 
-    The webserver is available at http://localhost:8080/
+    The webserver is available at http://localhost:30809/
 
     User/password: admin/admin
 
@@ -606,10 +594,10 @@ run Google Cloud system tests.
 
   # install any packages from dist folder if they are available
   if [[ ${RUN_AIRFLOW_1_10:=} == "true" ]]; then
-      pip install /dist/apache_airflow_backport_providers_{google,postgres,mysql}*.whl || true
+      pip install /dist/apache_airflow_providers_{google,postgres,mysql}*.whl || true
   fi
 
-To execute system tests, specify the ``--system SYSTEM``
+To execute system tests, specify the ``--system SYSTEM`
 flag where ``SYSTEM`` is a system to run the system tests for. It can be repeated.
 
 
@@ -624,7 +612,7 @@ visible to anything that you have installed inside the Docker container.
 Currently forwarded credentials are:
   * credentials stored in ``${HOME}/.aws`` for the aws Amazon Web Services client
   * credentials stored in ``${HOME}/.azure`` for the az Microsoft Azure client
-  * credentials stored in ``${HOME}/.config`` for gcloud Google Cloud client (among others)
+  * credentials stored in ``${HOME}/.config`` for gcloud Google Cloud Platform client (among others)
   * credentials stored in ``${HOME}/.docker`` for docker client
 
 Adding a New System Test
@@ -635,7 +623,7 @@ tests are run in our CI system. But to enable the test automation, we encourage 
 tests whenever an operator/hook/sensor is added/modified in a given system.
 
 * To add your own system tests, derive them from the
-  ``tests.test_utils.system_tests_class.SystemTest`` class and mark with the
+  ``tests.test_utils.system_tests_class.SystemTest` class and mark with the
   ``@pytest.mark.system(SYSTEM_NAME)`` marker. The system name should follow the path defined in
   the ``providers`` package (for example, the system tests from ``tests.providers.google.cloud``
   package should be marked with ``@pytest.mark.system("google.cloud")``.
@@ -668,21 +656,6 @@ A simple example of a system test is available in:
 It runs two DAGs defined in ``airflow.providers.google.cloud.example_dags.example_compute.py`` and
 ``airflow.providers.google.cloud.example_dags.example_compute_igm.py``.
 
-Preparing backport packages for System Tests for Airflow 1.10.* series
-----------------------------------------------------------------------
-
-To run system tests with old Airflow version you need to prepare backport packages. This
-can be done by running ``./breeze prepare-backport-packages -- <PACKAGES TO BUILD>``. For
-example the below command will build google postgres and mysql packages:
-
-.. code-block:: bash
-
-  ./breeze prepare-backport-packages -- google postgres mysql
-
-Those packages will be prepared in ./dist folder. This folder is mapped to /dist folder
-when you enter Breeze, so it is easy to automate installing those packages for testing.
-
-
 Installing backported for Airflow 1.10.* series
 -----------------------------------------------
 
@@ -713,7 +686,7 @@ Typically the command in you variables.env file will be similar to:
 
   # install any packages from dist folder if they are available
   if [[ ${RUN_AIRFLOW_1_10:=} == "true" ]]; then
-      pip install /dist/apache_airflow_backport_providers_{google,postgres,mysql}*.whl || true
+      pip install /dist/apache_airflow_providers_{google,postgres,mysql}*.whl || true
   fi
 
 The command above will automatically install backported google, postgres, and mysql packages if they
@@ -731,7 +704,7 @@ want to add ``-o faulthandler_timeout=2400`` (2400s = 40 minutes for example) to
 pytest command.
 
 The typical system test session
--------------------------------
+---------------------------
 
 Here is the typical session that you need to do to run system tests:
 
@@ -739,7 +712,7 @@ Here is the typical session that you need to do to run system tests:
 
 .. code-block:: bash
 
-  ./breeze prepare-backport-packages -- google postgres mysql
+  ./scripts/ci/ci_prepare_backport_packages.sh google postgres mysql
 
 2. Enter breeze with installing Airflow 1.10.*, forwarding credentials and installing
    backported packages (you need an appropriate line in ``./files/airflow-breeze-config/variables.env``)
@@ -811,7 +784,7 @@ The typical session then looks as follows:
 
 .. code-block:: bash
 
-  ./breeze prepare-backport-packages -- google postgres mysql
+  ./scripts/ci/ci_prepare_backport_packages.sh google postgres mysql
 
 2. Enter breeze with installing Airflow 1.10.*, forwarding credentials and installing
    backported packages (you need an appropriate line in ``./files/airflow-breeze-config/variables.env``)
@@ -841,14 +814,14 @@ In the host:
 
 .. code-block:: bash
 
-  ./breeze prepare-backport-packages -- google
+  ./scripts/ci/ci_prepare_backport_packages.sh google
 
 In the container:
 
 .. code-block:: bash
 
-  pip uninstall apache-airflow-backport-providers-google
-  pip install /dist/apache_airflow_backport_providers_google-*.whl
+  pip uninstall apache-airflow-providers-google
+  pip install /dist/apache_airflow_providers_google-*.whl
 
 The points 4. and 5. can be repeated multiple times without leaving the container
 
@@ -890,7 +863,7 @@ your local sources to the ``/opt/airflow`` location of the sources within the co
 Setup VM on GCP with SSH forwarding
 -----------------------------------
 
-Below are the steps you need to take to set up your virtual machine in the Google Cloud.
+Below are the steps you need to take to set up your virtual machine in the Google Cloud Platform.
 
 1. The next steps will assume that you have configured environment variables with the name of the network and
    a virtual machine, project ID and the zone where the virtual machine will be created
@@ -991,8 +964,7 @@ It will run a backfill job:
 .. code-block:: python
 
   if __name__ == '__main__':
-    from airflow.utils.state import State
-    dag.clear(dag_run_state=State.NONE)
+    dag.clear(reset_dag_runs=True)
     dag.run()
 
 
@@ -1004,13 +976,6 @@ It will run a backfill job:
 Additionally, ``DebugExecutor`` can be used in a fail-fast mode that will make
 all other running or scheduled tasks fail immediately. To enable this option, set
 ``AIRFLOW__DEBUG__FAIL_FAST=True`` or adjust ``fail_fast`` option in your ``airflow.cfg``.
-
-Also, with the Airflow CLI command ``airflow dags test``, you can execute one complete run of a DAG:
-
-.. code-block:: bash
-
-    # airflow dags test [dag_id] [execution_date]
-    airflow dags test example_branch_operator 2018-01-01
 
 By default ``/files/dags`` folder is mounted from your local ``<AIRFLOW_SOURCES>/files/dags`` and this is
 the directory used by airflow scheduler and webserver to scan dags for. You can place your dags there
@@ -1027,36 +992,6 @@ Otherwise, the released version of Airflow is installed.
 You should also consider running it with ``restart`` command when you change the installed version.
 This will clean-up the database so that you start with a clean DB and not DB installed in a previous version.
 So typically you'd run it like ``breeze --install-airflow-version=1.10.9 restart``.
-
-Tracking SQL statements
-=======================
-
-You can run tests with SQL statements tracking. To do this, use the ``--trace-sql`` option and pass the
-columns to be displayed as an argument. Each query will be displayed on a separate line.
-Supported values:
-
-* ``num`` -  displays the query number;
-* ``time`` - displays the query execution time;
-* ``trace`` - displays the simplified (one-line) stack trace;
-* ``sql`` - displays the SQL statements;
-* ``parameters`` - display SQL statement parameters.
-
-If you only provide ``num``, then only the final number of queries will be displayed.
-
-By default, pytest does not display output for successful tests, if you still want to see them, you must
-pass the ``--capture=no`` option.
-
-If you run the following command:
-
-.. code-block:: bash
-
-    pytest --trace-sql=num,sql,parameters --capture=no \
-      tests/jobs/test_scheduler_job.py -k test_process_dags_queries_count_05
-
-On the screen you will see database queries for the given test.
-
-SQL query tracking does not work properly if your test runs subprocesses. Only queries from the main process
-are tracked.
 
 BASH Unit Testing (BATS)
 ========================
@@ -1077,30 +1012,30 @@ Running BATS Tests on the Host
 
 To run all tests:
 
-.. code-block:: bash
-
-   bats -r tests/bats/
+```
+bats -r tests/bats/
+```
 
 To run a single test:
 
-.. code-block:: bash
-
-   bats tests/bats/your_test_file.bats
+```
+bats tests/bats/your_test_file.bats
+```
 
 Running BATS Tests via Docker
 -----------------------------
 
 To run all tests:
 
-.. code-block:: bash
-
-   docker run -it --workdir /airflow -v $(pwd):/airflow  bats/bats:latest -r /airflow/tests/bats
+```
+docker run -it --workdir /airflow -v $(pwd):/airflow  bats/bats:latest -r /airflow/tests/bats
+```
 
 To run a single test:
 
-.. code-block:: bash
-
-   docker run -it --workdir /airflow -v $(pwd):/airflow  bats/bats:latest /airflow/tests/bats/your_test_file.bats
+```
+docker run -it --workdir /airflow -v $(pwd):/airflow  bats/bats:latest /airflow/tests/bats/your_test_file.bats
+```
 
 Using BATS
 ----------

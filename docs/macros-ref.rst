@@ -23,7 +23,7 @@ Macros reference
 Variables and macros can be used in templates (see the :ref:`jinja-templating` section)
 
 The following come for free out of the box with Airflow.
-Additional custom macros can be added globally through :doc:`plugins`, or at a DAG level through the ``DAG.user_defined_macros`` argument.
+Additional custom macros can be added globally through :ref:`plugins`, or at a DAG level through the ``DAG.user_defined_macros`` argument.
 
 Default Variables
 -----------------
@@ -59,6 +59,8 @@ Variable                                Description
 ``{{ task }}``                          the Task object
 ``{{ macros }}``                        a reference to the macros package, described below
 ``{{ task_instance }}``                 the task_instance object
+``{{ end_date }}``                      same as ``{{ ds }}``
+``{{ latest_date }}``                   same as ``{{ ds }}``
 ``{{ ti }}``                            same as ``{{ task_instance }}``
 ``{{ params }}``                        a reference to the user-defined params dictionary which can be overridden by
                                         the dictionary passed through ``trigger_dag -c`` if you enabled

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -16,16 +17,15 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import datetime
 import unittest
+import datetime
 
-from airflow.models import DAG, DagRun, TaskInstance as TI
-from airflow.operators.branch_operator import BaseBranchOperator
+from airflow.models import TaskInstance as TI, DAG, DagRun
 from airflow.operators.dummy_operator import DummyOperator
+from airflow.operators.branch_operator import BaseBranchOperator
 from airflow.utils import timezone
-from airflow.utils.session import create_session
+from airflow.utils.db import create_session
 from airflow.utils.state import State
-from airflow.utils.types import DagRunType
 
 DEFAULT_DATE = timezone.datetime(2016, 1, 1)
 INTERVAL = datetime.timedelta(hours=12)
@@ -41,10 +41,10 @@ class ChooseBranchOneTwo(BaseBranchOperator):
         return ['branch_1', 'branch_2']
 
 
-class TestBranchOperator(unittest.TestCase):
+class BranchOperatorTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        super().setUpClass()
+        super(BranchOperatorTest, cls).setUpClass()
 
         with create_session() as session:
             session.query(DagRun).delete()
@@ -63,7 +63,7 @@ class TestBranchOperator(unittest.TestCase):
         self.branch_op = None
 
     def tearDown(self):
-        super().tearDown()
+        super(BranchOperatorTest, self).tearDown()
 
         with create_session() as session:
             session.query(DagRun).delete()
@@ -132,7 +132,7 @@ class TestBranchOperator(unittest.TestCase):
         self.dag.clear()
 
         dagrun = self.dag.create_dagrun(
-            run_type=DagRunType.MANUAL,
+            run_id="manual__",
             start_date=timezone.utcnow(),
             execution_date=DEFAULT_DATE,
             state=State.RUNNING
@@ -158,7 +158,7 @@ class TestBranchOperator(unittest.TestCase):
         self.dag.clear()
 
         dagrun = self.dag.create_dagrun(
-            run_type=DagRunType.MANUAL,
+            run_id="manual__",
             start_date=timezone.utcnow(),
             execution_date=DEFAULT_DATE,
             state=State.RUNNING

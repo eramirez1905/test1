@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -15,13 +16,11 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-import pytest
 from parameterized import parameterized
 
 from tests.test_utils.system_tests_class import SystemTest
 
 
-@pytest.mark.system("core")
 class TestExampleDagsSystem(SystemTest):
     @parameterized.expand([
         "example_bash_operator",

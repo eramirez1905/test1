@@ -18,14 +18,16 @@
 import unittest
 from datetime import timedelta
 
+import pendulum
+import six
 from mock import patch
 
 from airflow import AirflowException, example_dags as example_dags_module
 from airflow.models import DagBag
 from airflow.models.dagcode import DagCode
+from airflow.utils.db import create_session
 # To move it to a shared module.
 from airflow.utils.file import open_maybe_zipped
-from airflow.utils.session import create_session
 from tests.test_utils.config import conf_vars
 from tests.test_utils.db import clear_db_dag_code
 
@@ -125,6 +127,7 @@ class TestDagCode(unittest.TestCase):
     def test_code_can_be_read_when_no_access_to_file(self):
         """
         Test that code can be retrieved from DB when you do not have access to Code file.
+
         Source Code should atleast exist in one of DB or File.
         """
         example_dag = make_example_dags(example_dags_module).get('example_bash_operator')
@@ -132,7 +135,10 @@ class TestDagCode(unittest.TestCase):
 
         # Mock that there is no access to the Dag File
         with patch('airflow.models.dagcode.open_maybe_zipped') as mock_open:
-            mock_open.side_effect = FileNotFoundError
+            if six.PY2:
+                mock_open.side_effect = IOError
+            else:
+                mock_open.side_effect = FileNotFoundError
             dag_code = DagCode.get_code_by_fileloc(example_dag.fileloc)
 
             for test_string in ['example_bash_operator', 'also_run_this', 'run_this_last']:
@@ -154,7 +160,11 @@ class TestDagCode(unittest.TestCase):
             self.assertIsNotNone(result.source_code)
 
         with patch('airflow.models.dagcode.os.path.getmtime') as mock_mtime:
-            mock_mtime.return_value = (result.last_updated + timedelta(seconds=1)).timestamp()
+            if six.PY2:
+                mock_mtime.return_value = pendulum.instance(
+                    result.last_updated + timedelta(seconds=1)).timestamp()
+            else:
+                mock_mtime.return_value = (result.last_updated + timedelta(seconds=1)).timestamp()
 
             with patch('airflow.models.dagcode.DagCode._get_code_from_file') as mock_code:
                 mock_code.return_value = "# dummy code"

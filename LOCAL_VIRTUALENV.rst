@@ -51,7 +51,7 @@ Required Software Packages
 Use system-level package managers like yum, apt-get for Linux, or
 Homebrew for macOS to install required software packages:
 
-* Python (3.5 or 3.6)
+* Python (2.7, 3.5 or 3.6)
 * MySQL
 * libxml
 
@@ -61,7 +61,7 @@ of required packages.
 Extra Packages
 --------------
 
-You can also install extra packages (like ``[ssh]``, etc) via
+You can also install extra packages (like ``[gcp]``, etc) via
 ``pip install -e [EXTRA1,EXTRA2 ...]``. However, some of them may
 have additional install and setup requirements for your local system.
 
@@ -89,7 +89,7 @@ Creating a Local virtualenv
 
 To use your IDE for Airflow development and testing, you need to configure a virtual
 environment. Ideally you should set up virtualenv for all Python versions that Airflow
-supports (3.5, 3.6).
+supports (2.7, 3.5, 3.6).
 
 To create and initialize the local virtualenv:
 
@@ -116,7 +116,7 @@ To create and initialize the local virtualenv:
 
    .. code-block:: bash
 
-    pip install -U -e ".[devel,<OTHER EXTRAS>]" # for example: pip install -U -e ".[devel,google,postgres]"
+    pip install -U -e ".[devel,<OTHER EXTRAS>]" # for example: pip install -U -e ".[devel,gcp,postgres]"
 
 In case you have problems with installing airflow because of some requirements are not installable, you can
 try to install it with the set of working constraints (note that there are different constraint files
@@ -128,10 +128,10 @@ for different python versions:
         --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-master/constraints-3.6.txt"
 
 Note: when you first initialize database (the next step), you may encounter some problems.
-This is because airflow by default will try to load in example dags where some of them requires dependencies ``google`` and ``postgres``.
+This is because airflow by default will try to load in example dags where some of them requires dependencies ``gcp`` and ``postgres``.
 You can solve the problem by:
 
-- installing the extras i.e. ``[devel,google,postgres]`` or
+- installing the extras i.e. ``[devel,gcp,postgres]`` or
 - disable the example dags with environment variable: ``export AIRFLOW__CORE__LOAD_EXAMPLES=False`` or
 - simply ignore the error messages and proceed
 

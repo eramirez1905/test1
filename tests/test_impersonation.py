@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -23,13 +24,12 @@ import os
 import subprocess
 import sys
 import unittest
-import unittest.mock
+from tests.compat import mock
 from copy import deepcopy
 
 import pytest
 
-from airflow import models
-from airflow.jobs.backfill_job import BackfillJob
+from airflow import jobs, models
 from airflow.utils.db import add_default_pool_if_not_exists
 from airflow.utils.state import State
 from airflow.utils.timezone import datetime
@@ -48,11 +48,11 @@ TEST_USER = 'airflow_test_user'
 logger = logging.getLogger(__name__)
 
 
-def mock_custom_module_path(path: str):
+def mock_custom_module_path(path):
     """
-    This decorator adds a path to sys.path to simulate running the current script with
-    the :envvar:`PYTHONPATH` environment variable set and sets the environment variable
-    :envvar:`PYTHONPATH` to change the module load directory for child scripts.
+    This decorator adds a path to sys.path to simulate running the current script with the ``PYTHONPATH``
+    environment variable set and sets the environment variable ``PYTHONPATH`` to change the
+    module load directory for child scripts.
     """
     def wrapper(func):
         @functools.wraps(func)
@@ -60,7 +60,7 @@ def mock_custom_module_path(path: str):
             copy_sys_path = deepcopy(sys.path)
             sys.path.append(path)
             try:
-                with unittest.mock.patch.dict('os.environ', {'PYTHONPATH': path}):
+                with mock.patch.dict('os.environ', {'PYTHONPATH': path}):
                     return func(*args, **kwargs)
             finally:
                 sys.path = copy_sys_path
@@ -133,7 +133,7 @@ class TestImpersonation(unittest.TestCase):
         dag = self.dagbag.get_dag(dag_id)
         dag.clear()
 
-        BackfillJob(
+        jobs.BackfillJob(
             dag=dag,
             start_date=DEFAULT_DATE,
             end_date=DEFAULT_DATE).run()
@@ -164,16 +164,20 @@ class TestImpersonation(unittest.TestCase):
             'test_superuser',
         )
 
-    @unittest.mock.patch.dict('os.environ', AIRFLOW__CORE__DEFAULT_IMPERSONATION=TEST_USER)
     def test_default_impersonation(self):
         """
         If default_impersonation=TEST_USER, tests that the job defaults
         to running as TEST_USER for a test without run_as_user set
         """
-        self.run_backfill(
-            'test_default_impersonation',
-            'test_deelevated_user'
-        )
+        os.environ['AIRFLOW__CORE__DEFAULT_IMPERSONATION'] = TEST_USER
+
+        try:
+            self.run_backfill(
+                'test_default_impersonation',
+                'test_deelevated_user'
+            )
+        finally:
+            del os.environ['AIRFLOW__CORE__DEFAULT_IMPERSONATION']
 
     def test_impersonation_subdag(self):
         """
@@ -211,7 +215,7 @@ class TestImpersonationWithCustomPythonPath(unittest.TestCase):
         dag = self.dagbag.get_dag(dag_id)
         dag.clear()
 
-        BackfillJob(
+        jobs.BackfillJob(
             dag=dag,
             start_date=DEFAULT_DATE,
             end_date=DEFAULT_DATE).run()

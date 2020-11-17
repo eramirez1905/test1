@@ -17,38 +17,38 @@
 # under the License.
 
 # Docker command to build documentation
-function runs::run_docs() {
-    docker run "${EXTRA_DOCKER_FLAGS[@]}" -t \
+function run_docs() {
+    verbose_docker run "${EXTRA_DOCKER_FLAGS[@]}" -t \
             --entrypoint "/usr/local/bin/dumb-init"  \
+            --env PYTHONDONTWRITEBYTECODE \
+            --env VERBOSE \
+            --env VERBOSE_COMMANDS \
+            --env HOST_USER_ID="$(id -ur)" \
+            --env HOST_GROUP_ID="$(id -gr)" \
+            --env HOST_OS="$(uname -s)" \
+            --env HOST_HOME="${HOME}" \
+            --env HOST_AIRFLOW_SOURCES="${AIRFLOW_SOURCES}" \
+            --rm \
             "${AIRFLOW_CI_IMAGE}" \
-            "--" "/opt/airflow/scripts/in_container/run_docs_build.sh" "${@}"
+            "--" "/opt/airflow/docs/build" \
+            | tee -a "${OUTPUT_LOG}"
 }
-
 
 # Docker command to generate constraint files.
-function runs::run_generate_constraints() {
+function run_generate_constraints() {
     docker run "${EXTRA_DOCKER_FLAGS[@]}" \
         --entrypoint "/usr/local/bin/dumb-init"  \
+        --env PYTHONDONTWRITEBYTECODE \
+        --env VERBOSE \
+        --env VERBOSE_COMMANDS \
+        --env HOST_USER_ID="$(id -ur)" \
+        --env HOST_GROUP_ID="$(id -gr)" \
+        --env HOST_OS="$(uname -s)" \
+        --env HOST_HOME="${HOME}" \
+        --env HOST_AIRFLOW_SOURCES="${AIRFLOW_SOURCES}" \
+        --env PYTHON_MAJOR_MINOR_VERSION \
+        --rm \
         "${AIRFLOW_CI_IMAGE}" \
-        "--" "/opt/airflow/scripts/in_container/run_generate_constraints.sh"
-}
-
-# Docker command to prepare backport packages
-function runs::run_prepare_backport_packages() {
-    docker run "${EXTRA_DOCKER_FLAGS[@]}" \
-        --entrypoint "/usr/local/bin/dumb-init"  \
-        -t \
-        -v "${AIRFLOW_SOURCES}:/opt/airflow" \
-        "${AIRFLOW_CI_IMAGE}" \
-        "--" "/opt/airflow/scripts/in_container/run_prepare_backport_packages.sh" "${@}"
-}
-
-# Docker command to generate release notes for backport packages
-function runs::run_prepare_backport_readme() {
-    docker run "${EXTRA_DOCKER_FLAGS[@]}" \
-        --entrypoint "/usr/local/bin/dumb-init"  \
-        -t \
-        -v "${AIRFLOW_SOURCES}:/opt/airflow" \
-        "${AIRFLOW_CI_IMAGE}" \
-        "--" "/opt/airflow/scripts/in_container/run_prepare_backport_readme.sh" "${@}"
+        "--" "/opt/airflow/scripts/ci/in_container/run_generate_constraints.sh" \
+        | tee -a "${OUTPUT_LOG}"
 }

@@ -23,9 +23,10 @@ Setting Configuration Options
 The first time you run Airflow, it will create a file called ``airflow.cfg`` in
 your ``$AIRFLOW_HOME`` directory (``~/airflow`` by default). This file contains Airflow's configuration and you
 can edit it to change any of the settings. You can also set options with environment variables by using this format:
-:envvar:`AIRFLOW__{SECTION}__{KEY}` (note the double underscores).
+``$AIRFLOW__{SECTION}__{KEY}`` (note the double underscores).
 
-For example, the metadata database connection string can either be set in ``airflow.cfg`` like this:
+For example, the
+metadata database connection string can either be set in ``airflow.cfg`` like this:
 
 .. code-block:: ini
 
@@ -97,19 +98,3 @@ The universal order of precedence for all configuration options is as follows:
 #. command in ``airflow.cfg``
 #. secret key in ``airflow.cfg``
 #. Airflow's built in defaults
-
-You can check the current configuration with the ``airflow config list`` command.
-
-If you only want to see the value for one option, you can use ``airflow config get-value`` command as in
-the example below.
-
-.. code-block:: bash
-
-    $ airflow config get-value core executor
-    SequentialExecutor
-
-.. note::
-    For more information on configuration options, see :doc:`../configurations-ref`
-
-.. note::
-    See :doc:`../modules_management` for details on how Python and Airflow manage modules.

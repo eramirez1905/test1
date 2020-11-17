@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -16,23 +17,21 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import time
 import unittest
-from datetime import timedelta
+import time
+from datetime import datetime, timedelta
 
 import pytest
 
 from airflow import models
 from airflow.api.common.experimental.mark_tasks import (
-    _create_dagruns, set_dag_run_state_to_failed, set_dag_run_state_to_running, set_dag_run_state_to_success,
-    set_state,
-)
-from airflow.models import DagRun
+    set_state, _create_dagruns, set_dag_run_state_to_success, set_dag_run_state_to_failed,
+    set_dag_run_state_to_running)
 from airflow.utils import timezone
+from airflow.utils.db import create_session, provide_session
 from airflow.utils.dates import days_ago
-from airflow.utils.session import create_session, provide_session
 from airflow.utils.state import State
-from airflow.utils.types import DagRunType
+from airflow.models import DagRun
 from tests.test_utils.db import clear_db_runs
 
 DEV_NULL = "/dev/null"
@@ -50,7 +49,7 @@ class TestMarkTasks(unittest.TestCase):
         cls.dag3 = dagbag.dags['example_trigger_target_dag']
         cls.dag3.sync_to_db()
         cls.execution_dates = [days_ago(2), days_ago(1)]
-        start_date3 = cls.dag3.start_date
+        start_date3 = cls.dag3.default_args["start_date"]
         cls.dag3_execution_dates = [start_date3, start_date3 + timedelta(days=1),
                                     start_date3 + timedelta(days=2)]
 
@@ -58,15 +57,15 @@ class TestMarkTasks(unittest.TestCase):
         clear_db_runs()
         drs = _create_dagruns(self.dag1, self.execution_dates,
                               state=State.RUNNING,
-                              run_type=DagRunType.SCHEDULED)
+                              run_id_template="scheduled__{}")
         for dr in drs:
             dr.dag = self.dag1
             dr.verify_integrity()
 
         drs = _create_dagruns(self.dag2,
-                              [self.dag2.start_date],
+                              [self.dag2.default_args['start_date']],
                               state=State.RUNNING,
-                              run_type=DagRunType.SCHEDULED)
+                              run_id_template="scheduled__{}")
 
         for dr in drs:
             dr.dag = self.dag2
@@ -75,7 +74,7 @@ class TestMarkTasks(unittest.TestCase):
         drs = _create_dagruns(self.dag3,
                               self.dag3_execution_dates,
                               state=State.SUCCESS,
-                              run_type=DagRunType.MANUAL)
+                              run_id_template="manual__{}")
         for dr in drs:
             dr.dag = self.dag3
             dr.verify_integrity()
@@ -107,8 +106,6 @@ class TestMarkTasks(unittest.TestCase):
             self.assertEqual(ti.operator, dag.get_task(ti.task_id).__class__.__name__)
             if ti.task_id in task_ids and ti.execution_date in execution_dates:
                 self.assertEqual(ti.state, state)
-                if state in State.finished():
-                    self.assertIsNotNone(ti.end_date)
             else:
                 for old_ti in old_tis:
                     if old_ti.task_id == ti.task_id and old_ti.execution_date == ti.execution_date:
@@ -271,7 +268,7 @@ class TestMarkTasks(unittest.TestCase):
         self.assertEqual(len(altered), 14)
 
         # cannot use snapshot here as that will require drilling down the
-        # sub dag tree essentially recreating the same code as in the
+        # the sub dag tree essentially recreating the same code as in the
         # tested logic.
         self.verify_state(self.dag2, task_ids, [self.execution_dates[0]],
                           State.SUCCESS, [])
@@ -314,7 +311,7 @@ class TestMarkDAGRun(unittest.TestCase):
         self.assertEqual(dr.get_task_instance('run_this_last').state, State.FAILED)
 
     @provide_session
-    def _verify_task_instance_states(self, dag, date, state, session=None):
+    def _verify_task_instance_states(self, dag, date, state, session):
         TI = models.TaskInstance
         tis = session.query(TI)\
             .filter(TI.dag_id == dag.dag_id, TI.execution_date == date)
@@ -323,7 +320,7 @@ class TestMarkDAGRun(unittest.TestCase):
 
     def _create_test_dag_run(self, state, date):
         return self.dag1.create_dagrun(
-            run_type=DagRunType.MANUAL,
+            run_id='manual__' + datetime.now().isoformat(),
             state=state,
             execution_date=date
         )
@@ -510,19 +507,19 @@ class TestMarkDAGRun(unittest.TestCase):
     @provide_session
     def test_set_state_with_multiple_dagruns(self, session=None):
         self.dag2.create_dagrun(
-            run_type=DagRunType.MANUAL,
+            run_id='manual__' + datetime.now().isoformat(),
             state=State.FAILED,
             execution_date=self.execution_dates[0],
             session=session
         )
         self.dag2.create_dagrun(
-            run_type=DagRunType.MANUAL,
+            run_id='manual__' + datetime.now().isoformat(),
             state=State.FAILED,
             execution_date=self.execution_dates[1],
             session=session
         )
         self.dag2.create_dagrun(
-            run_type=DagRunType.MANUAL,
+            run_id='manual__' + datetime.now().isoformat(),
             state=State.RUNNING,
             execution_date=self.execution_dates[2],
             session=session
@@ -567,13 +564,14 @@ class TestMarkDAGRun(unittest.TestCase):
 
         # This will throw ValueError since dag.latest_execution_date
         # need to be 0 does not exist.
-        self.assertRaises(ValueError, set_dag_run_state_to_success, self.dag2,
+        self.assertRaises(ValueError, set_dag_run_state_to_success, self.dag1,
                           timezone.make_naive(self.execution_dates[0]))
+
         # altered = set_dag_run_state_to_success(self.dag1, self.execution_dates[0])
         # DagRun does not exist
         # This will throw ValueError since dag.latest_execution_date does not exist
         self.assertRaises(ValueError, set_dag_run_state_to_success,
-                          self.dag2, self.execution_dates[0])
+                          self.dag1, self.execution_dates[0])
 
     def test_set_dag_run_state_to_failed_no_running_tasks(self):
         """
@@ -593,3 +591,7 @@ class TestMarkDAGRun(unittest.TestCase):
         with create_session() as session:
             session.query(models.DagRun).delete()
             session.query(models.TaskInstance).delete()
+
+
+if __name__ == '__main__':
+    unittest.main()

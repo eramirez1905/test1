@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -15,26 +16,17 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-
+import mock
 import unittest
-from unittest import mock
+import json
 
-from parameterized import parameterized
-
-from airflow.api.common.experimental.trigger_dag import _trigger_dag
 from airflow.exceptions import AirflowException
 from airflow.models import DAG, DagRun
+from airflow.api.common.experimental.trigger_dag import _trigger_dag
 from airflow.utils import timezone
-from tests.test_utils import db
 
 
-class TestTriggerDag(unittest.TestCase):
-
-    def setUp(self) -> None:
-        db.clear_db_runs()
-
-    def tearDown(self) -> None:
-        db.clear_db_runs()
+class TriggerDagTests(unittest.TestCase):
 
     @mock.patch('airflow.models.DagRun')
     @mock.patch('airflow.models.DagBag')
@@ -123,6 +115,25 @@ class TestTriggerDag(unittest.TestCase):
         self.assertEqual(3, len(triggers))
 
     @mock.patch('airflow.models.DagBag')
+    def test_trigger_dag_with_str_conf(self, dag_bag_mock):
+        dag_id = "trigger_dag_with_str_conf"
+        dag = DAG(dag_id)
+        dag_bag_mock.dags = [dag_id]
+        dag_bag_mock.get_dag.return_value = dag
+        conf = "{\"foo\": \"bar\"}"
+        dag_run = DagRun()
+        triggers = _trigger_dag(
+            dag_id,
+            dag_bag_mock,
+            dag_run,
+            run_id=None,
+            conf=conf,
+            execution_date=None,
+            replace_microseconds=True)
+
+        self.assertEqual(triggers[0].conf, json.loads(conf))
+
+    @mock.patch('airflow.models.DagBag')
     def test_trigger_dag_with_too_early_start_date(self, dag_bag_mock):
         dag_id = "trigger_dag_with_too_early_start_date"
         dag = DAG(dag_id, default_args={'start_date': timezone.datetime(2016, 9, 5, 10, 10, 0)})
@@ -162,17 +173,13 @@ class TestTriggerDag(unittest.TestCase):
 
         assert len(triggers) == 1
 
-    @parameterized.expand([
-        (None, {}),
-        ({"foo": "bar"}, {"foo": "bar"}),
-        ('{"foo": "bar"}', {"foo": "bar"}),
-    ])
     @mock.patch('airflow.models.DagBag')
-    def test_trigger_dag_with_conf(self, conf, expected_conf, dag_bag_mock):
-        dag_id = "trigger_dag_with_conf"
+    def test_trigger_dag_with_dict_conf(self, dag_bag_mock):
+        dag_id = "trigger_dag_with_dict_conf"
         dag = DAG(dag_id)
         dag_bag_mock.dags = [dag_id]
         dag_bag_mock.get_dag.return_value = dag
+        conf = dict(foo="bar")
         dag_run = DagRun()
         triggers = _trigger_dag(
             dag_id,
@@ -183,4 +190,8 @@ class TestTriggerDag(unittest.TestCase):
             execution_date=None,
             replace_microseconds=True)
 
-        self.assertEqual(triggers[0].conf, expected_conf)
+        self.assertEqual(triggers[0].conf, conf)
+
+
+if __name__ == '__main__':
+    unittest.main()

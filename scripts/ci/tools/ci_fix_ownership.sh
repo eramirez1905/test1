@@ -19,13 +19,28 @@
 #
 # Fixes ownership for files created inside container (files owned by root will be owned by host user)
 #
+export PYTHON_MAJOR_MINOR_VERSION=${PYTHON_MAJOR_MINOR_VERSION:-3.6}
+
 # shellcheck source=scripts/ci/libraries/_script_init.sh
 . "$( dirname "${BASH_SOURCE[0]}" )/../libraries/_script_init.sh"
+
+export AIRFLOW_CI_IMAGE=\
+${DOCKERHUB_USER}/${DOCKERHUB_REPO}:${BRANCH_NAME}-python${PYTHON_MAJOR_MINOR_VERSION}-ci
+
+export AIRFLOW_IMAGE=${AIRFLOW_CI_IMAGE}
+export WEBSERVER_HOST_PORT=28080
+HOST_USER_ID="$(id -ur)"
+HOST_GROUP_ID="$(id -gr)"
+HOST_OS="$(uname -s)"
+
+export HOST_USER_ID
+export HOST_GROUP_ID
+export HOST_OS
+export BACKEND="sqlite"
 
 docker-compose \
     -f "${SCRIPTS_CI_DIR}/docker-compose/base.yml" \
     -f "${SCRIPTS_CI_DIR}/docker-compose/local.yml" \
-    -f "${SCRIPTS_CI_DIR}/docker-compose/files.yml" \
     -f "${SCRIPTS_CI_DIR}/docker-compose/forward-credentials.yml" \
     run --entrypoint /bin/bash \
-    airflow -c /opt/airflow/scripts/in_container/run_fix_ownership.sh
+    airflow -c /opt/airflow/scripts/ci/in_container/run_fix_ownership.sh

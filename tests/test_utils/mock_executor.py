@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -19,14 +20,13 @@
 from collections import defaultdict
 
 from airflow.executors.base_executor import BaseExecutor
-from airflow.models.taskinstance import TaskInstanceKey
-from airflow.utils.session import create_session
 from airflow.utils.state import State
+from airflow.utils.db import create_session
 
 
 class MockExecutor(BaseExecutor):
     """
-    TestExecutor is used for unit testing purposes.
+    MockExecutor is used for unit testing purposes.
     """
 
     def __init__(self, do_update=True, *args, **kwargs):
@@ -43,7 +43,7 @@ class MockExecutor(BaseExecutor):
         # So we should pass self.success instead of lambda.
         self.mock_task_results = defaultdict(self.success)
 
-        super().__init__(*args, **kwargs)
+        super(MockExecutor, self).__init__(*args, **kwargs)
 
     def success(self):
         return State.SUCCESS
@@ -60,7 +60,7 @@ class MockExecutor(BaseExecutor):
             def sort_by(item):
                 key, val = item
                 (dag_id, task_id, date, try_number) = key
-                (_, prio, _, _) = val
+                (cmd, prio, queue, sti) = val
                 # Sort by priority (DESC), then date,task, try
                 return -prio, date, dag_id, task_id, try_number
 
@@ -80,11 +80,11 @@ class MockExecutor(BaseExecutor):
     def end(self):
         self.sync()
 
-    def change_state(self, key, state, info=None):
-        super().change_state(key, state, info=info)
+    def change_state(self, key, state):
+        super(MockExecutor, self).change_state(key, state)
         # The normal event buffer is cleared after reading, we want to keep
         # a list of all events for testing
-        self.sorted_tasks.append((key, (state, info)))
+        self.sorted_tasks.append((key, state))
 
     def mock_task_fail(self, dag_id, task_id, date, try_number=1):
         """
@@ -94,4 +94,4 @@ class MockExecutor(BaseExecutor):
         If the task identified by the tuple ``(dag_id, task_id, date,
         try_number)`` is run by this executor it's state will be FAILED.
         """
-        self.mock_task_results[TaskInstanceKey(dag_id, task_id, date, try_number)] = State.FAILED
+        self.mock_task_results[(dag_id, task_id, date, try_number)] = State.FAILED

@@ -17,16 +17,14 @@
 # under the License.
 
 
-function kind::get_kind_cluster_name(){
+function initialize_kind_variables(){
     # Name of the KinD cluster to connect to
     export KIND_CLUSTER_NAME=${KIND_CLUSTER_NAME:="airflow-python-${PYTHON_MAJOR_MINOR_VERSION}-${KUBERNETES_VERSION}"}
-    readonly KIND_CLUSTER_NAME
     # Name of the KinD cluster to connect to when referred to via kubectl
     export KUBECTL_CLUSTER_NAME=kind-${KIND_CLUSTER_NAME}
-    readonly KUBECTL_CLUSTER_NAME
 }
 
-function kind::dump_kind_logs() {
+function dump_kind_logs() {
     echo "###########################################################################################"
     echo "                   Dumping logs from KIND"
     echo "###########################################################################################"
@@ -34,56 +32,59 @@ function kind::dump_kind_logs() {
     echo "EXIT_CODE is ${EXIT_CODE:=}"
 
     local DUMP_DIR_NAME DUMP_DIR
-    DUMP_DIR_NAME=kind_logs_$(date "+%Y-%m-%d")_${CI_BUILD_ID}_${CI_JOB_ID}
+    DUMP_DIR_NAME=kind_logs_$(date "+%Y-%m-%d")_${CI_BUILD_ID:="default"}_${CI_JOB_ID:="default"}
     DUMP_DIR="/tmp/${DUMP_DIR_NAME}"
-    kind --name "${KIND_CLUSTER_NAME}" export logs "${DUMP_DIR}"
+    verbose_kind --name "${KIND_CLUSTER_NAME}" export logs "${DUMP_DIR}"
 }
 
-function kind::make_sure_kubernetes_tools_are_installed() {
+function make_sure_kubernetes_tools_are_installed() {
     SYSTEM=$(uname -s| tr '[:upper:]' '[:lower:]')
-
+    KIND_VERSION=${KIND_VERSION:=${DEFAULT_KIND_VERSION}}
     KIND_URL="https://github.com/kubernetes-sigs/kind/releases/download/${KIND_VERSION}/kind-${SYSTEM}-amd64"
+    KIND_PATH="${BUILD_CACHE_DIR}/bin/kind"
+    HELM_VERSION=${HELM_VERSION:=${DEFAULT_HELM_VERSION}}
+    HELM_URL="https://get.helm.sh/helm-${HELM_VERSION}-${SYSTEM}-amd64.tar.gz"
+    HELM_PATH="${BUILD_CACHE_DIR}/bin/helm"
+    KUBECTL_VERSION=${KUBERNETES_VERSION:=${DEFAULT_KUBERNETES_VERSION}}
+    KUBECTL_URL="https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/${SYSTEM}/amd64/kubectl"
+    KUBECTL_PATH="${BUILD_CACHE_DIR}/bin/kubectl"
     mkdir -pv "${BUILD_CACHE_DIR}/bin"
-    if [[ -f "${KIND_BINARY_PATH}" ]]; then
-        DOWNLOADED_KIND_VERSION=v"$(${KIND_BINARY_PATH} --version | awk '{ print $3 }')"
+    if [[ -f "${KIND_PATH}" ]]; then
+        DOWNLOADED_KIND_VERSION=v"$(${KIND_PATH} --version | awk '{ print $3 }')"
         echo "Currently downloaded kind version = ${DOWNLOADED_KIND_VERSION}"
     fi
-    if [[ ! -f "${KIND_BINARY_PATH}"  || ${DOWNLOADED_KIND_VERSION} != "${KIND_VERSION}" ]]; then
+    if [[ ! -f "${KIND_PATH}"  || ${DOWNLOADED_KIND_VERSION} != "${KIND_VERSION}" ]]; then
         echo
         echo "Downloading Kind version ${KIND_VERSION}"
-        curl --fail --location "${KIND_URL}" --output "${KIND_BINARY_PATH}"
-        chmod a+x "${KIND_BINARY_PATH}"
+        curl --fail --location "${KIND_URL}" --output "${KIND_PATH}"
+        chmod a+x "${KIND_PATH}"
     else
         echo "Kind version ok"
         echo
     fi
-
-    KUBECTL_URL="https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/${SYSTEM}/amd64/kubectl"
-    if [[ -f "${KUBECTL_BINARY_PATH}" ]]; then
-        DOWNLOADED_KUBECTL_VERSION="$(${KUBECTL_BINARY_PATH} version --client=true --short | awk '{ print $3 }')"
+    if [[ -f "${KUBECTL_PATH}" ]]; then
+        DOWNLOADED_KUBECTL_VERSION="$(${KUBECTL_PATH} version --client=true --short | awk '{ print $3 }')"
         echo "Currently downloaded kubectl version = ${DOWNLOADED_KUBECTL_VERSION}"
     fi
-    if [[ ! -f "${KUBECTL_BINARY_PATH}" || ${DOWNLOADED_KUBECTL_VERSION} != "${KUBECTL_VERSION}" ]]; then
+    if [[ ! -f "${KUBECTL_PATH}" || ${DOWNLOADED_KUBECTL_VERSION} != "${KUBECTL_VERSION}" ]]; then
         echo
         echo "Downloading Kubectl version ${KUBECTL_VERSION}"
-        curl --fail --location "${KUBECTL_URL}" --output "${KUBECTL_BINARY_PATH}"
-        chmod a+x "${KUBECTL_BINARY_PATH}"
+        curl --fail --location "${KUBECTL_URL}" --output "${KUBECTL_PATH}"
+        chmod a+x "${KUBECTL_PATH}"
     else
         echo "Kubectl version ok"
         echo
     fi
-
-    HELM_URL="https://get.helm.sh/helm-${HELM_VERSION}-${SYSTEM}-amd64.tar.gz"
-    if [[ -f "${HELM_BINARY_PATH}" ]]; then
-        DOWNLOADED_HELM_VERSION="$(${HELM_BINARY_PATH} version --template '{{.Version}}')"
+    if [[ -f "${HELM_PATH}" ]]; then
+        DOWNLOADED_HELM_VERSION="$(${HELM_PATH} version --template '{{.Version}}')"
         echo "Currently downloaded helm version = ${DOWNLOADED_HELM_VERSION}"
     fi
-    if [[ ! -f "${HELM_BINARY_PATH}" || ${DOWNLOADED_HELM_VERSION} != "${HELM_VERSION}" ]]; then
+    if [[ ! -f "${HELM_PATH}" || ${DOWNLOADED_HELM_VERSION} != "${HELM_VERSION}" ]]; then
         echo
         echo "Downloading Helm version ${HELM_VERSION}"
         curl     --location "${HELM_URL}" |
-            tar -xvz -O "${SYSTEM}-amd64/helm" >"${HELM_BINARY_PATH}"
-        chmod a+x "${HELM_BINARY_PATH}"
+            tar -xvz -O "${SYSTEM}-amd64/helm" >"${HELM_PATH}"
+        chmod a+x "${HELM_PATH}"
     else
         echo "Helm version ok"
         echo
@@ -91,7 +92,7 @@ function kind::make_sure_kubernetes_tools_are_installed() {
     PATH=${PATH}:${BUILD_CACHE_DIR}/bin
 }
 
-function kind::create_cluster() {
+function create_cluster() {
     if [[ "${TRAVIS:="false"}" == "true" ]]; then
         # Travis CI does not handle the nice output of Kind well, so we need to capture it
         # And display only if kind fails to start
@@ -105,7 +106,7 @@ function kind::create_cluster() {
         fi
         stop_output_heartbeat
     else
-        kind create cluster \
+        verbose_kind create cluster \
             --name "${KIND_CLUSTER_NAME}" \
             --config "${AIRFLOW_SOURCES}/scripts/ci/kubernetes/kind-cluster-conf.yaml" \
             --image "kindest/node:${KUBERNETES_VERSION}"
@@ -115,19 +116,19 @@ function kind::create_cluster() {
     echo
 }
 
-function kind::delete_cluster() {
-    kind delete cluster --name "${KIND_CLUSTER_NAME}"
+function delete_cluster() {
+    verbose_kind delete cluster --name "${KIND_CLUSTER_NAME}"
     echo
     echo "Deleted cluster ${KIND_CLUSTER_NAME}"
     echo
     rm -rf "${HOME}/.kube/*"
 }
 
-function kind::perform_kind_cluster_operation() {
+function perform_kind_cluster_operation() {
     ALLOWED_KIND_OPERATIONS="[ start restart stop deploy test shell recreate ]"
 
     set +u
-    if [[ -z "${1=}" ]]; then
+    if [[ -z "${1}" ]]; then
         echo >&2
         echo >&2 "Operation must be provided as first parameter. One of: ${ALLOWED_KIND_OPERATIONS}"
         echo >&2
@@ -146,7 +147,7 @@ function kind::perform_kind_cluster_operation() {
             echo
             echo "Cluster name: ${KIND_CLUSTER_NAME}"
             echo
-            kind::check_cluster_ready_for_airflow
+            verbose_kind get nodes --name "${KIND_CLUSTER_NAME}"
             echo
             exit
         else
@@ -166,23 +167,26 @@ function kind::perform_kind_cluster_operation() {
             echo
             echo "Recreating cluster"
             echo
-            kind::delete_cluster
-            kind::create_cluster
+            delete_cluster
+            create_cluster
         elif [[ ${OPERATION} == "stop" ]]; then
             echo
             echo "Deleting cluster"
             echo
-            kind::delete_cluster
+            delete_cluster
             exit
         elif [[ ${OPERATION} == "deploy" ]]; then
             echo
             echo "Deploying Airflow to KinD"
             echo
-            kind::build_image_for_kubernetes_tests
-            kind::load_image_to_kind_cluster
-            kind::deploy_airflow_with_helm
-            kind::forward_port_to_kind_webserver
-            kind::deploy_test_kubernetes_resources
+            get_environment_for_builds_on_ci
+            make_sure_kubernetes_tools_are_installed
+            initialize_kind_variables
+            build_prod_image_for_kubernetes_tests
+            load_image_to_kind_cluster
+            deploy_airflow_with_helm
+            forward_port_to_kind_webserver
+            deploy_test_kubernetes_resources
         elif [[ ${OPERATION} == "test" ]]; then
             echo
             echo "Testing with KinD"
@@ -204,13 +208,13 @@ function kind::perform_kind_cluster_operation() {
             echo
             echo "Creating cluster"
             echo
-            kind::create_cluster
+            create_cluster
         elif [[ ${OPERATION} == "recreate" ]]; then
             echo
             echo "Cluster ${KIND_CLUSTER_NAME} does not exist. Creating rather than recreating"
             echo "Creating cluster"
             echo
-            kind::create_cluster
+            create_cluster
         elif [[ ${OPERATION} == "stop" || ${OPERATION} == "deploy" || \
                 ${OPERATION} == "test" || ${OPERATION} == "shell" ]]; then
             echo >&2
@@ -226,49 +230,42 @@ function kind::perform_kind_cluster_operation() {
     fi
 }
 
-function kind::check_cluster_ready_for_airflow() {
-    kubectl cluster-info --cluster "${KUBECTL_CLUSTER_NAME}"
-    kubectl get nodes --cluster "${KUBECTL_CLUSTER_NAME}"
+function check_cluster_ready_for_airflow() {
+    verbose_kubectl cluster-info --cluster "${KUBECTL_CLUSTER_NAME}"
+    verbose_kubectl get nodes --cluster "${KUBECTL_CLUSTER_NAME}"
     echo
     echo "Showing storageClass"
     echo
-    kubectl get storageclass --cluster "${KUBECTL_CLUSTER_NAME}"
+    verbose_kubectl get storageclass --cluster "${KUBECTL_CLUSTER_NAME}"
     echo
     echo "Showing kube-system pods"
     echo
-    kubectl get -n kube-system pods --cluster "${KUBECTL_CLUSTER_NAME}"
+    verbose_kubectl get -n kube-system pods --cluster "${KUBECTL_CLUSTER_NAME}"
     echo
     echo "Airflow environment on kubernetes is good to go!"
     echo
-    kubectl create namespace test-namespace --cluster "${KUBECTL_CLUSTER_NAME}"
+    verbose_kubectl create namespace test-namespace --cluster "${KUBECTL_CLUSTER_NAME}"
 }
 
 
-function kind::build_image_for_kubernetes_tests() {
+function build_prod_image_for_kubernetes_tests() {
     cd "${AIRFLOW_SOURCES}" || exit 1
-    docker build --tag "${AIRFLOW_PROD_IMAGE_KUBERNETES}" . -f - <<EOF
-FROM ${AIRFLOW_PROD_IMAGE}
-
-USER root
-
-COPY --chown=airflow:root airflow/example_dags/ \${AIRFLOW_HOME}/dags/
-
-COPY --chown=airflow:root airflow/kubernetes_executor_templates/ \${AIRFLOW_HOME}/pod_templates/
-
-USER airflow
-
-EOF
-    echo "The ${AIRFLOW_PROD_IMAGE_KUBERNETES} is prepared for test kubernetes deployment."
+    export EMBEDDED_DAGS="airflow/example_dags"
+    export DOCKER_CACHE=${DOCKER_CACHE:="pulled"}
+    prepare_prod_build
+    build_prod_image
+    echo "The ${AIRFLOW_PROD_IMAGE} is prepared for test kubernetes deployment."
+    rm "${OUTPUT_LOG}"
 }
 
-function kind::load_image_to_kind_cluster() {
+function load_image_to_kind_cluster() {
     echo
-    echo "Loading ${AIRFLOW_PROD_IMAGE_KUBERNETES} to ${KIND_CLUSTER_NAME}"
+    echo "Loading ${AIRFLOW_PROD_IMAGE} to ${KIND_CLUSTER_NAME}"
     echo
-    kind load docker-image --name "${KIND_CLUSTER_NAME}" "${AIRFLOW_PROD_IMAGE_KUBERNETES}"
+    verbose_kind load docker-image --name "${KIND_CLUSTER_NAME}" "${AIRFLOW_PROD_IMAGE}"
 }
 
-function kind::forward_port_to_kind_webserver() {
+function forward_port_to_kind_webserver() {
     num_tries=0
     set +e
     while ! curl http://localhost:8080/health -s | grep -q healthy; do
@@ -289,43 +286,44 @@ function kind::forward_port_to_kind_webserver() {
     set -e
 }
 
-function kind::deploy_airflow_with_helm() {
+function deploy_airflow_with_helm() {
     echo
     echo "Deploying Airflow with Helm"
     echo
     echo "Deleting namespace ${HELM_AIRFLOW_NAMESPACE}"
-    kubectl delete namespace "${HELM_AIRFLOW_NAMESPACE}" >/dev/null 2>&1 || true
-    kubectl delete namespace "test-namespace" >/dev/null 2>&1 || true
-    kubectl create namespace "${HELM_AIRFLOW_NAMESPACE}"
-    kubectl create namespace "test-namespace"
+    verbose_kubectl delete namespace "${HELM_AIRFLOW_NAMESPACE}" >/dev/null 2>&1 || true
+    verbose_kubectl delete namespace "test-namespace" >/dev/null 2>&1 || true
+    verbose_kubectl create namespace "${HELM_AIRFLOW_NAMESPACE}"
+    verbose_kubectl create namespace "test-namespace"
     pushd "${AIRFLOW_SOURCES}/chart" || exit 1
-    helm repo add stable https://kubernetes-charts.storage.googleapis.com
-    helm dep update
-    helm install airflow . --namespace "${HELM_AIRFLOW_NAMESPACE}" \
+    verbose_helm repo add stable https://kubernetes-charts.storage.googleapis.com
+    verbose_helm dep update
+    verbose_helm install airflow . --namespace "${HELM_AIRFLOW_NAMESPACE}" \
         --set "defaultAirflowRepository=${DOCKERHUB_USER}/${DOCKERHUB_REPO}" \
         --set "images.airflow.repository=${DOCKERHUB_USER}/${DOCKERHUB_REPO}" \
-        --set "images.airflow.tag=${AIRFLOW_PROD_BASE_TAG}-kubernetes" -v 1 \
-        --set "defaultAirflowTag=${AIRFLOW_PROD_BASE_TAG}-kubernetes" -v 1 \
+        --set "images.airflow.tag=${AIRFLOW_PROD_BASE_TAG}" -v 1 \
+        --set "defaultAirflowTag=${AIRFLOW_PROD_BASE_TAG}" -v 1 \
         --set "config.api.auth_backend=airflow.api.auth.backend.default"
     echo
     popd || exit 1
 }
 
 
-function kind::deploy_test_kubernetes_resources() {
+function deploy_test_kubernetes_resources() {
     echo
     echo "Deploying Custom kubernetes resources"
     echo
-    kubectl apply -f "scripts/ci/kubernetes/volumes.yaml" --namespace default
+    verbose_kubectl apply -f "scripts/ci/kubernetes/volumes.yaml" --namespace default
+    verbose_kubectl apply -f "scripts/ci/kubernetes/secrets.yaml" --namespace default
 }
 
 
-function kind::dump_kubernetes_logs() {
+function dump_kubernetes_logs() {
     POD=$(kubectl get pods -o go-template --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}' \
         --cluster "${KUBECTL_CLUSTER_NAME}" | grep airflow | head -1)
     echo "------- pod description -------"
-    kubectl describe pod "${POD}" --cluster "${KUBECTL_CLUSTER_NAME}"
+    verbose_kubectl describe pod "${POD}" --cluster "${KUBECTL_CLUSTER_NAME}"
     echo "------- airflow pod logs -------"
-    kubectl logs "${POD}" --all-containers=true || true
+    verbose_kubectl logs "${POD}" --all-containers=true || true
     echo "--------------"
 }

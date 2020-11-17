@@ -82,20 +82,20 @@ Content
     howto/index
     ui
     concepts
+    profiling
     scheduler
     executor/index
     dag-run
     plugins
-    security/index
-    logging-monitoring/index
+    security
     timezone
     Using the CLI <usage-cli>
     integration
+    metrics
+    errors
     kubernetes
     lineage
     dag-serialization
-    modules_management
-    smart-sensor
     changelog
     best-practices
     faq
@@ -105,10 +105,8 @@ Content
     :maxdepth: 1
     :caption: References
 
-    Operators and hooks <operators-and-hooks-ref>
     CLI <cli-ref>
     Macros <macros-ref>
     Python API <_api/index>
-    Experimental REST API <rest-api-ref>
-    Stable REST API <stable-rest-api-ref>
     Configurations <configurations-ref>
+    REST API <rest-api-ref>

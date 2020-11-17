@@ -15,11 +15,32 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+export PYTHON_MAJOR_MINOR_VERSION=${PYTHON_MAJOR_MINOR_VERSION:-3.6}
+
 # shellcheck source=scripts/ci/libraries/_script_init.sh
 . "$( dirname "${BASH_SOURCE[0]}" )/../libraries/_script_init.sh"
 
-build_images::prepare_ci_build
+function run_docs() {
+    docker run "${EXTRA_DOCKER_FLAGS[@]}" -t \
+            --entrypoint "/usr/local/bin/dumb-init"  \
+            --env PYTHONDONTWRITEBYTECODE \
+            --env VERBOSE \
+            --env VERBOSE_COMMANDS \
+            --env HOST_USER_ID="$(id -ur)" \
+            --env HOST_GROUP_ID="$(id -gr)" \
+            --env HOST_OS="$(uname -s)" \
+            --env HOST_HOME="${HOME}" \
+            --env HOST_AIRFLOW_SOURCES="${AIRFLOW_SOURCES}" \
+            --rm \
+            "${AIRFLOW_CI_IMAGE}" \
+            "--" "/opt/airflow/docs/build" \
+            | tee -a "${OUTPUT_LOG}"
+}
 
-build_images::rebuild_ci_image_if_needed
+get_environment_for_builds_on_ci
 
-runs::run_docs "${@}"
+prepare_ci_build
+
+rebuild_ci_image_if_needed
+
+run_docs

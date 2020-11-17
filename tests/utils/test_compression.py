@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -25,17 +26,19 @@ import shutil
 import tempfile
 import unittest
 
+import six
+
 from airflow.utils import compression
 
 
-class TestCompression(unittest.TestCase):
+class Compression(unittest.TestCase):
 
     def setUp(self):
-        self.file_names = {}
+        self.fn = {}
         try:
-            header = b"Sno\tSome,Text \n"
-            line1 = b"1\tAirflow Test\n"
-            line2 = b"2\tCompressionUtil\n"
+            header = "Sno\tSome,Text \n".encode()
+            line1 = "1\tAirflow Test\n".encode()
+            line2 = "2\tCompressionUtil\n".encode()
             self.tmp_dir = tempfile.mkdtemp(prefix='test_utils_compression_')
             # create sample txt, gz and bz2 files
             with tempfile.NamedTemporaryFile(mode='wb+',
@@ -71,22 +74,22 @@ class TestCompression(unittest.TestCase):
     # Helper method to create a dictionary of file names and
     # file extension
     def _set_fn(self, fn, ext):
-        self.file_names[ext] = fn
+        self.fn[ext] = fn
 
     # Helper method to fetch a file of a
     # certain extension
     def _get_fn(self, ext):
-        return self.file_names[ext]
+        return self.fn[ext]
 
     def test_uncompress_file(self):
         # Testing txt file type
-        self.assertRaisesRegex(NotImplementedError,
-                               "^Received .txt format. Only gz and bz2.*",
-                               compression.uncompress_file,
-                               **{'input_file_name': None,
-                                  'file_extension': '.txt',
-                                  'dest_dir': None
-                                  })
+        six.assertRaisesRegex(self, NotImplementedError,
+                              "^Received .txt format. Only gz and bz2.*",
+                              compression.uncompress_file,
+                              **{'input_file_name': None,
+                                 'file_extension': '.txt',
+                                 'dest_dir': None
+                                 })
         # Testing gz file type
         fn_txt = self._get_fn('.txt')
         fn_gz = self._get_fn('.gz')
@@ -98,3 +101,7 @@ class TestCompression(unittest.TestCase):
         txt_bz2 = compression.uncompress_file(fn_bz2, '.bz2', self.tmp_dir)
         self.assertTrue(filecmp.cmp(txt_bz2, fn_txt, shallow=False),
                         msg="Uncompressed file doest match original")
+
+
+if __name__ == '__main__':
+    unittest.main()

@@ -20,218 +20,163 @@
 # Should be run with set +e
 # Parameters:
 #   $1 -> image to pull
-function push_pull_remove_images::pull_image_if_not_present_or_forced() {
+function pull_image_if_needed() {
     local IMAGE_TO_PULL="${1}"
     local IMAGE_HASH
     IMAGE_HASH=$(docker images -q "${IMAGE_TO_PULL}" 2> /dev/null || true)
     local PULL_IMAGE=${FORCE_PULL_IMAGES}
 
-    if [[ -z "${IMAGE_HASH=}" ]]; then
+    if [[ "${IMAGE_HASH}" == "" ]]; then
         PULL_IMAGE="true"
     fi
     if [[ "${PULL_IMAGE}" == "true" ]]; then
         echo
         echo "Pulling the image ${IMAGE_TO_PULL}"
         echo
-        docker pull "${IMAGE_TO_PULL}"
+        verbose_docker pull "${IMAGE_TO_PULL}" | tee -a "${OUTPUT_LOG}"
         EXIT_VALUE="$?"
         echo
         return ${EXIT_VALUE}
     fi
 }
 
-# Pulls image if needed but tries to pull it from GitHub registry before
-# It attempts to pull it from the DockerHub registry. This is used to speed up the builds
-# In GitHub Actions and to pull appropriately tagged builds.
+# Pulls image if needed but tries to pull it from cache (for example GitHub registry) before
+# It attempts to pull it from the main repository. This is used to speed up the builds
+# In GitHub Actions.
 # Parameters:
-#   $1 -> DockerHub image to pull
-#   $2 -> GitHub image to try to pull first
-function push_pull_remove_images::pull_image_github_dockerhub() {
-    local DOCKERHUB_IMAGE="${1}"
-    local GITHUB_IMAGE="${2}"
+#   $1 -> image to pull
+#   $2 -> cache image to pull first
+function pull_image_possibly_from_cache() {
+    local IMAGE="${1}"
+    local CACHED_IMAGE="${2}"
+    local IMAGE_PULL_RETURN_VALUE=-1
 
     set +e
-    if push_pull_remove_images::pull_image_if_not_present_or_forced "${GITHUB_IMAGE}"; then
-        # Tag the image to be the DockerHub one
-        docker tag "${GITHUB_IMAGE}" "${DOCKERHUB_IMAGE}"
-    else
-        push_pull_remove_images::pull_image_if_not_present_or_forced "${DOCKERHUB_IMAGE}"
+    if [[ ${CACHED_IMAGE:=} != "" ]]; then
+        pull_image_if_needed "${CACHED_IMAGE}"
+        IMAGE_PULL_RETURN_VALUE="$?"
+        if [[ ${IMAGE_PULL_RETURN_VALUE} == "0" ]]; then
+            # Tag the image to be the target one
+            verbose_docker tag "${CACHED_IMAGE}" "${IMAGE}"
+        fi
+    fi
+    if [[ ${IMAGE_PULL_RETURN_VALUE} != "0" ]]; then
+        pull_image_if_needed "${IMAGE}"
     fi
     set -e
 }
 
 # Pulls CI image in case caching strategy is "pulled" and the image needs to be pulled
-function push_pull_remove_images::pull_ci_images_if_needed() {
+function pull_ci_image_if_needed() {
+    # Whether to force pull images to populate cache
+    export FORCE_PULL_IMAGES=${FORCE_PULL_IMAGES:="false"}
 
     if [[ "${DOCKER_CACHE}" == "pulled" ]]; then
         if [[ "${FORCE_PULL_IMAGES}" == "true" ]]; then
             echo
             echo "Force pull base image ${PYTHON_BASE_IMAGE}"
             echo
-            if [[ -n ${DETECTED_TERMINAL=} ]]; then
+            if [[ -n ${DETECTED_TERMINAL:=""} ]]; then
                 echo -n "
 Docker pulling ${PYTHON_BASE_IMAGE}.
                     " > "${DETECTED_TERMINAL}"
             fi
-            if [[ ${USE_GITHUB_REGISTRY} == "true" ]]; then
-                PYTHON_TAG_SUFFIX=""
-                if [[ ${GITHUB_REGISTRY_PULL_IMAGE_TAG} != "latest" ]]; then
-                    PYTHON_TAG_SUFFIX="-${GITHUB_REGISTRY_PULL_IMAGE_TAG}"
-                fi
-                push_pull_remove_images::pull_image_github_dockerhub "${PYTHON_BASE_IMAGE}" "${GITHUB_REGISTRY_PYTHON_BASE_IMAGE}${PYTHON_TAG_SUFFIX}"
+            if [[ ${PULL_PYTHON_BASE_IMAGES_FROM_CACHE:="true"} == "true" ]]; then
+                pull_image_possibly_from_cache "${PYTHON_BASE_IMAGE}" "${CACHED_PYTHON_BASE_IMAGE}"
             else
-                docker pull "${PYTHON_BASE_IMAGE}"
+                verbose_docker pull "${PYTHON_BASE_IMAGE}" | tee -a "${OUTPUT_LOG}"
             fi
             echo
         fi
-        if [[ ${USE_GITHUB_REGISTRY} == "true" ]]; then
-            push_pull_remove_images::pull_image_github_dockerhub "${AIRFLOW_CI_IMAGE}" "${GITHUB_REGISTRY_AIRFLOW_CI_IMAGE}:${GITHUB_REGISTRY_PULL_IMAGE_TAG}"
-        else
-            push_pull_remove_images::pull_image_if_not_present_or_forced "${AIRFLOW_CI_IMAGE}"
-        fi
+        pull_image_possibly_from_cache "${AIRFLOW_CI_IMAGE}" "${CACHED_AIRFLOW_CI_IMAGE}"
     fi
 }
 
 
 # Pulls PROD image in case caching strategy is "pulled" and the image needs to be pulled
-function push_pull_remove_images::pull_prod_images_if_needed() {
+function pull_prod_images_if_needed() {
+    # Whether to force pull images to populate cache
+    export FORCE_PULL_IMAGES=${FORCE_PULL_IMAGES:="false"}
+
     if [[ "${DOCKER_CACHE}" == "pulled" ]]; then
         if [[ "${FORCE_PULL_IMAGES}" == "true" ]]; then
             echo
             echo "Force pull base image ${PYTHON_BASE_IMAGE}"
             echo
-            if [[ ${USE_GITHUB_REGISTRY} == "true" ]]; then
-                PYTHON_TAG_SUFFIX=""
-                if [[ ${GITHUB_REGISTRY_PULL_IMAGE_TAG} != "latest" ]]; then
-                    PYTHON_TAG_SUFFIX="-${GITHUB_REGISTRY_PULL_IMAGE_TAG}"
-                fi
-                push_pull_remove_images::pull_image_github_dockerhub "${PYTHON_BASE_IMAGE}" "${GITHUB_REGISTRY_PYTHON_BASE_IMAGE}${PYTHON_TAG_SUFFIX}"
+            if [[ ${PULL_PYTHON_BASE_IMAGES_FROM_CACHE:="true"} == "true" ]]; then
+                pull_image_possibly_from_cache "${PYTHON_BASE_IMAGE}" "${CACHED_PYTHON_BASE_IMAGE}"
             else
-                docker pull "${PYTHON_BASE_IMAGE}"
+                verbose_docker pull "${PYTHON_BASE_IMAGE}" | tee -a "${OUTPUT_LOG}"
             fi
             echo
         fi
-        if [[ ${USE_GITHUB_REGISTRY} == "true" ]]; then
-            # "Build" segment of production image
-            push_pull_remove_images::pull_image_github_dockerhub "${AIRFLOW_PROD_BUILD_IMAGE}" "${GITHUB_REGISTRY_AIRFLOW_PROD_BUILD_IMAGE}:${GITHUB_REGISTRY_PULL_IMAGE_TAG}"
-            # "Main" segment of production image
-            push_pull_remove_images::pull_image_github_dockerhub "${AIRFLOW_PROD_IMAGE}" "${GITHUB_REGISTRY_AIRFLOW_PROD_IMAGE}:${GITHUB_REGISTRY_PULL_IMAGE_TAG}"
-        else
-            push_pull_remove_images::pull_image_if_not_present_or_forced "${AIRFLOW_PROD_BUILD_IMAGE}"
-            push_pull_remove_images::pull_image_if_not_present_or_forced "${AIRFLOW_PROD_IMAGE}"
+        # "Build" segment of production image
+        pull_image_possibly_from_cache "${AIRFLOW_PROD_BUILD_IMAGE}" "${CACHED_AIRFLOW_PROD_BUILD_IMAGE}"
+        # we never pull the main segment of production image - we always build it locally = this is
+        # usually very fast this way and it is much nicer for rebuilds and development
+    fi
+}
+
+# Pushes Ci image and it's manifest to the registry. In case the image was taken from cache registry
+# it is pushed to the cache, not to the main registry. Manifest is only pushed to the main registry
+function push_ci_image() {
+    if [[ ${CACHED_AIRFLOW_CI_IMAGE:=} != "" ]]; then
+        verbose_docker tag "${AIRFLOW_CI_IMAGE}" "${CACHED_AIRFLOW_CI_IMAGE}"
+        IMAGE_TO_PUSH="${CACHED_AIRFLOW_CI_IMAGE}"
+    else
+        IMAGE_TO_PUSH="${AIRFLOW_CI_IMAGE}"
+    fi
+    verbose_docker push "${IMAGE_TO_PUSH}"
+    if [[ ${CACHED_AIRFLOW_CI_IMAGE} == "" ]]; then
+        # Only push manifest image for builds that are not using CI cache
+        verbose_docker tag "${AIRFLOW_CI_LOCAL_MANIFEST_IMAGE}" "${AIRFLOW_CI_REMOTE_MANIFEST_IMAGE}"
+        verbose_docker push "${AIRFLOW_CI_REMOTE_MANIFEST_IMAGE}"
+        if [[ -n ${DEFAULT_IMAGE:=""} ]]; then
+            verbose_docker push "${DEFAULT_IMAGE}"
         fi
     fi
-}
-
-# Pushes Ci images and the manifest to the registry in DockerHub.
-function push_pull_remove_images::push_ci_images_to_dockerhub() {
-    docker push "${AIRFLOW_CI_IMAGE}"
-    docker tag "${AIRFLOW_CI_LOCAL_MANIFEST_IMAGE}" "${AIRFLOW_CI_REMOTE_MANIFEST_IMAGE}"
-    docker push "${AIRFLOW_CI_REMOTE_MANIFEST_IMAGE}"
-    if [[ -n ${DEFAULT_CI_IMAGE=} ]]; then
-        # Only push default image to DockerHub registry if it is defined
-        docker push "${DEFAULT_CI_IMAGE}"
+    if [[ ${CACHED_PYTHON_BASE_IMAGE} != "" ]]; then
+        verbose_docker tag "${PYTHON_BASE_IMAGE}" "${CACHED_PYTHON_BASE_IMAGE}"
+        verbose_docker push "${CACHED_PYTHON_BASE_IMAGE}"
     fi
-}
-
-# Pushes Ci images and their tags to registry in GitHub
-function push_pull_remove_images::push_ci_images_to_github() {
-    # Push image to GitHub registry with chosen push tag
-    # the PUSH tag might be:
-    #     "${GITHUB_RUN_ID}" - in case of pull-request triggered 'workflow_run' builds
-    #     "latest"           - in case of push builds
-    AIRFLOW_CI_TAGGED_IMAGE="${GITHUB_REGISTRY_AIRFLOW_CI_IMAGE}:${GITHUB_REGISTRY_PUSH_IMAGE_TAG}"
-    docker tag "${AIRFLOW_CI_IMAGE}" "${AIRFLOW_CI_TAGGED_IMAGE}"
-    docker push "${AIRFLOW_CI_TAGGED_IMAGE}"
-    if [[ -n ${GITHUB_SHA=} ]]; then
-        # Also push image to GitHub registry with commit SHA
-        AIRFLOW_CI_SHA_IMAGE="${GITHUB_REGISTRY_AIRFLOW_CI_IMAGE}:${COMMIT_SHA}"
-        docker tag "${AIRFLOW_CI_IMAGE}" "${AIRFLOW_CI_SHA_IMAGE}"
-        docker push "${AIRFLOW_CI_SHA_IMAGE}"
-    fi
-    PYTHON_TAG_SUFFIX=""
-    if [[ ${GITHUB_REGISTRY_PUSH_IMAGE_TAG} != "latest" ]]; then
-        PYTHON_TAG_SUFFIX="-${GITHUB_REGISTRY_PUSH_IMAGE_TAG}"
-    fi
-    docker tag "${PYTHON_BASE_IMAGE}" "${GITHUB_REGISTRY_PYTHON_BASE_IMAGE}${PYTHON_TAG_SUFFIX}"
-    docker push "${GITHUB_REGISTRY_PYTHON_BASE_IMAGE}${PYTHON_TAG_SUFFIX}"
-}
-
-
-# Pushes Ci image and it's manifest to the registry.
-function push_pull_remove_images::push_ci_images() {
-    if [[ ${USE_GITHUB_REGISTRY} == "true" ]]; then
-        push_pull_remove_images::push_ci_images_to_github
-    else
-        push_pull_remove_images::push_ci_images_to_dockerhub
-    fi
-}
-
-# Pushes PROD image to registry in DockerHub
-function push_pull_remove_images::push_prod_images_to_dockerhub () {
-    # Prod image
-    docker push "${AIRFLOW_PROD_IMAGE}"
-    if [[ -n ${DEFAULT_PROD_IMAGE=} ]]; then
-        docker push "${DEFAULT_PROD_IMAGE}"
-    fi
-    # Prod build image
-    docker push "${AIRFLOW_PROD_BUILD_IMAGE}"
 
 }
-
-
-# Pushes PROD image to and their tags to registry in GitHub
-function push_pull_remove_images::push_prod_images_to_github () {
-    # Push image to GitHub registry with chosen push tag
-    # the PUSH tag might be:
-    #     "${GITHUB_RUN_ID}" - in case of pull-request triggered 'workflow_run' builds
-    #     "latest"           - in case of push builds
-    AIRFLOW_PROD_TAGGED_IMAGE="${GITHUB_REGISTRY_AIRFLOW_PROD_IMAGE}:${GITHUB_REGISTRY_PUSH_IMAGE_TAG}"
-    docker tag "${AIRFLOW_PROD_IMAGE}" "${AIRFLOW_PROD_TAGGED_IMAGE}"
-    docker push "${GITHUB_REGISTRY_AIRFLOW_PROD_IMAGE}:${GITHUB_REGISTRY_PUSH_IMAGE_TAG}"
-    if [[ -n ${COMMIT_SHA=} ]]; then
-        # Also push image to GitHub registry with commit SHA
-        AIRFLOW_PROD_SHA_IMAGE="${GITHUB_REGISTRY_AIRFLOW_PROD_IMAGE}:${COMMIT_SHA}"
-        docker tag "${AIRFLOW_PROD_IMAGE}" "${AIRFLOW_PROD_SHA_IMAGE}"
-        docker push "${AIRFLOW_PROD_SHA_IMAGE}"
-    fi
-    # Also push prod build image
-    AIRFLOW_PROD_BUILD_TAGGED_IMAGE="${GITHUB_REGISTRY_AIRFLOW_PROD_BUILD_IMAGE}:${GITHUB_REGISTRY_PUSH_IMAGE_TAG}"
-    docker tag "${AIRFLOW_PROD_BUILD_IMAGE}" "${AIRFLOW_PROD_BUILD_TAGGED_IMAGE}"
-    docker push "${AIRFLOW_PROD_BUILD_TAGGED_IMAGE}"
-}
-
 
 # Pushes PROD image to the registry. In case the image was taken from cache registry
 # it is also pushed to the cache, not to the main registry
-function push_pull_remove_images::push_prod_images() {
-    if [[ ${USE_GITHUB_REGISTRY} == "true" ]]; then
-        push_pull_remove_images::push_prod_images_to_github
+function push_prod_images() {
+    if [[ ${CACHED_AIRFLOW_PROD_IMAGE:=} != "" ]]; then
+        verbose_docker tag "${AIRFLOW_PROD_IMAGE}" "${CACHED_AIRFLOW_PROD_IMAGE}"
+        IMAGE_TO_PUSH="${CACHED_AIRFLOW_PROD_IMAGE}"
     else
-        push_pull_remove_images::push_prod_images_to_dockerhub
+        IMAGE_TO_PUSH="${AIRFLOW_PROD_IMAGE}"
     fi
+    if [[ ${CACHED_AIRFLOW_PROD_BUILD_IMAGE:=} != "" ]]; then
+        verbose_docker tag "${AIRFLOW_PROD_BUILD_IMAGE}" "${CACHED_AIRFLOW_PROD_BUILD_IMAGE}"
+        IMAGE_TO_PUSH_BUILD="${CACHED_AIRFLOW_PROD_BUILD_IMAGE}"
+    else
+        IMAGE_TO_PUSH_BUILD="${AIRFLOW_PROD_BUILD_IMAGE}"
+    fi
+    verbose_docker push "${IMAGE_TO_PUSH}"
+    verbose_docker push "${IMAGE_TO_PUSH_BUILD}"
+    if [[ -n ${DEFAULT_IMAGE:=""} && ${CACHED_AIRFLOW_PROD_IMAGE} == "" ]]; then
+        verbose_docker push "${DEFAULT_IMAGE}"
+    fi
+    # we do not need to push PYTHON base image here - they are already pushed in the CI push
 }
 
-# waits for an image to be available in the github registry
-function push_pull_remove_images::wait_for_github_registry_image() {
-    github_repository_lowercase="$(echo "${GITHUB_REPOSITORY}" |tr '[:upper:]' '[:lower:]')"
-    GITHUB_API_ENDPOINT="https://${GITHUB_REGISTRY}/v2/${github_repository_lowercase}"
-    IMAGE_NAME="${1}"
-    IMAGE_TAG=${2}
-    echo "Waiting for ${IMAGE_NAME}:${IMAGE_TAG} image"
-
-    GITHUB_API_CALL="${GITHUB_API_ENDPOINT}/${IMAGE_NAME}/manifests/${IMAGE_TAG}"
-    while true; do
-        curl -X GET "${GITHUB_API_CALL}" -u "${GITHUB_USERNAME}:${GITHUB_TOKEN}" 2>/dev/null > "${OUTPUT_LOG}"
-        local digest
-        digest=$(jq '.config.digest' < "${OUTPUT_LOG}")
-        echo -n "."
-        if [[ ${digest} != "null" ]]; then
-            echo -e " \e[32mOK.\e[0m"
-            break
-        fi
-        sleep 10
-    done
-    verbosity::print_info "Found ${IMAGE_NAME}:${IMAGE_TAG} image"
-    verbosity::print_info "Digest: '${digest}'"
+# Removes airflow CI and base images
+function remove_all_images() {
+    echo
+    "${AIRFLOW_SOURCES}/confirm" "Removing all local images ."
+    echo
+    verbose_docker rmi "${PYTHON_BASE_IMAGE}" || true
+    verbose_docker rmi "${AIRFLOW_CI_IMAGE}" || true
+    echo
+    echo "###################################################################"
+    echo "NOTE!! Removed Airflow images for Python version ${PYTHON_MAJOR_MINOR_VERSION}."
+    echo "       But the disk space in docker will be reclaimed only after"
+    echo "       running 'docker system prune' command."
+    echo "###################################################################"
+    echo
 }

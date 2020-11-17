@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -25,7 +26,6 @@ from airflow.utils.timezone import datetime
 class DummyWithOnKill(DummyOperator):
     def execute(self, context):
         import os
-
         # This runs extra processes, so that we can be sure that we correctly
         # tidy up all processes launched by a task when killing
         if not os.fork():
@@ -34,8 +34,9 @@ class DummyWithOnKill(DummyOperator):
 
     def on_kill(self):
         self.log.info("Executing on_kill")
-        with open("/tmp/airflow_on_kill", "w") as f:
-            f.write("ON_KILL_TEST")
+        f = open("/tmp/airflow_on_kill", "w")
+        f.write("ON_KILL_TEST")
+        f.close()
 
 
 # DAG tests backfill with pooled tasks

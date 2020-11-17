@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -18,18 +19,16 @@
 
 import datetime
 import unittest
-from unittest.mock import Mock, patch
 
 import pendulum
+from mock import patch, Mock
 
 from airflow import settings
-from airflow.models.dag import DAG
-from airflow.models.skipmixin import SkipMixin
-from airflow.models.taskinstance import TaskInstance as TI
+from airflow.models import DAG, TaskInstance as TI
+from airflow.models import SkipMixin
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.utils import timezone
 from airflow.utils.state import State
-from airflow.utils.types import DagRunType
 
 DEFAULT_DATE = timezone.datetime(2016, 1, 1)
 
@@ -48,8 +47,7 @@ class TestSkipMixin(unittest.TestCase):
         with dag:
             tasks = [DummyOperator(task_id='task')]
         dag_run = dag.create_dagrun(
-            run_type=DagRunType.MANUAL,
-            execution_date=now,
+            run_id='manual__' + now.isoformat(),
             state=State.FAILED,
         )
         SkipMixin().skip(

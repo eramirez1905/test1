@@ -29,6 +29,11 @@ will be available on the task page:
 
 The following code shows how to add extra links to an operator:
 
+  .. note::
+
+    In order for extra links to be rendered you must be using the
+    ``RBAC UI``, *NOT* the ``Flask UI``.
+
 .. code-block:: python
 
     from airflow.models.baseoperator import BaseOperator, BaseOperatorLink
@@ -48,8 +53,8 @@ The following code shows how to add extra links to an operator:
         )
 
         @apply_defaults
-        def __init__(self, **kwargs):
-            super().__init__(**kwargs)
+        def __init__(self, *args, **kwargs):
+            super(MyFirstOperator, self).__init__(*args, **kwargs)
 
         def execute(self, context):
             self.log.info("Hello World!")
@@ -66,7 +71,7 @@ You can also add (or override) an extra link to an existing operators
 through an Airflow plugin.
 
 For example, the following Airflow plugin will add an Operator Link on all
-tasks using :class:`~airflow.providers.amazon.aws.transfers.gcs_to_s3.GCSToS3Operator` operator.
+tasks using :class:`~airflow.operators.gcs_to_s3.GoogleCloudStorageToS3Operator` operator.
 
 **Adding Operator Links to Existing Operators**
 ``plugins/extra_link.py``:
@@ -75,14 +80,14 @@ tasks using :class:`~airflow.providers.amazon.aws.transfers.gcs_to_s3.GCSToS3Ope
 
   from airflow.plugins_manager import AirflowPlugin
   from airflow.models.baseoperator import BaseOperatorLink
-  from airflow.providers.amazon.aws.transfers.gcs_to_s3 import GCSToS3Operator
+  from airflow.operators.gcs_to_s3 import GoogleCloudStorageToS3Operator
 
   class S3LogLink(BaseOperatorLink):
       name = 'S3'
 
       # Add list of all the operators to which you want to add this OperatorLinks
-      # Example: operators = [GCSToS3Operator, GCSToBigQueryOperator]
-      operators = [GCSToS3Operator]
+      # Example: operators = [GoogleCloudStorageToS3Operator, GoogleCloudStorageToBigQueryOperator]
+      operators = [GoogleCloudStorageToS3Operator]
 
       def get_link(self, operator, dttm):
           return 'https://s3.amazonaws.com/airflow-logs/{dag_id}/{task_id}/{execution_date}'.format(
@@ -101,14 +106,14 @@ tasks using :class:`~airflow.providers.amazon.aws.transfers.gcs_to_s3.GCSToS3Ope
 **Overriding Operator Links of Existing Operators**:
 
 It is also possible to replace a built in link on an operator via a Plugin. For example
-:class:`~airflow.providers.google.cloud.operators.bigquery.BigQueryExecuteQueryOperator` includes a link to the Google Cloud
-Console, but if we wanted to change that link we could:
+:class:`~airflow.gcp.operators.bigquery.BigQueryOperator` includes a link to the GCP
+console, but if we wanted to change that link we could:
 
 .. code-block:: python
 
     from airflow.plugins_manager import AirflowPlugin
     from airflow.models.baseoperator import BaseOperatorLink
-    from airflow.providers.google.cloud.operators.bigquery import BigQueryOperator
+    from airflow.gcp.operators.bigquery import BigQueryOperator
 
     # Change from https to http just to display the override
     BIGQUERY_JOB_DETAILS_LINK_FMT = 'http://console.cloud.google.com/bigquery?j={job_id}'

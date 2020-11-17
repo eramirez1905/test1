@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -15,23 +16,22 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+
+import datetime
 import unittest
+
+import six
+
+from tests.compat import mock
 import uuid
-from datetime import date, datetime
-from unittest import mock
 
 import jinja2
-import pytest
 from parameterized import parameterized
 
-from airflow.exceptions import AirflowException
-from airflow.lineage.entities import File
 from airflow.models import DAG
-from airflow.models.baseoperator import chain, cross_downstream
 from airflow.operators.dummy_operator import DummyOperator
-from airflow.utils.decorators import apply_defaults
 from tests.models import DEFAULT_DATE
-from tests.test_utils.mock_operators import DeprecatedOperator, MockNamedTuple, MockOperator
+from tests.test_utils.mock_operators import MockNamedTuple, MockOperator
 
 
 class ClassWithCustomAttributes:
@@ -67,7 +67,7 @@ object2 = ClassWithCustomAttributes(
 setattr(object1, 'ref', object2)
 
 
-class TestBaseOperator(unittest.TestCase):
+class BaseOperatorTest(unittest.TestCase):
     @parameterized.expand(
         [
             ("{{ foo }}", {"foo": "bar"}, "bar"),
@@ -84,8 +84,8 @@ class TestBaseOperator(unittest.TestCase):
                 {"foo": "bar"},
                 {"key_{{ foo }}_1": 1, "key_2": "bar_2"},
             ),
-            (date(2018, 12, 6), {"foo": "bar"}, date(2018, 12, 6)),
-            (datetime(2018, 12, 6, 10, 55), {"foo": "bar"}, datetime(2018, 12, 6, 10, 55)),
+            (datetime.date(2018, 12, 6), {"foo": "bar"}, datetime.date(2018, 12, 6)),
+            (datetime.datetime(2018, 12, 6, 10, 55), {"foo": "bar"}, datetime.datetime(2018, 12, 6, 10, 55)),
             (MockNamedTuple("{{ foo }}_1", "{{ foo }}_2"), {"foo": "bar"}, MockNamedTuple("bar_1", "bar_2")),
             ({"{{ foo }}_1", "{{ foo }}_2"}, {"foo": "bar"}, {"bar_1", "bar_2"}),
             (None, {}, None),
@@ -197,11 +197,10 @@ class TestBaseOperator(unittest.TestCase):
         with DAG("test-dag", start_date=DEFAULT_DATE):
             task = DummyOperator(task_id="op1")
 
-        with self.assertRaises(AttributeError) as e:
+        re = "('ClassWithCustomAttributes' object|ClassWithCustomAttributes instance) " \
+             "has no attribute 'missing_field'"
+        with six.assertRaisesRegex(self, AttributeError, re):
             task.render_template(ClassWithCustomAttributes(template_fields=["missing_field"]), {})
-
-        self.assertEqual("'ClassWithCustomAttributes' object has no attribute 'missing_field'",
-                         str(e.exception))
 
     def test_jinja_invalid_expression_is_just_propagated(self):
         """Test render_template propagates Jinja invalid expression errors."""
@@ -248,169 +247,3 @@ class TestBaseOperator(unittest.TestCase):
         task = DummyOperator(task_id="custom-resources", resources={"cpus": 1, "ram": 1024})
         self.assertEqual(task.resources.cpus.qty, 1)
         self.assertEqual(task.resources.ram.qty, 1024)
-
-    def test_default_email_on_actions(self):
-        test_task = DummyOperator(task_id='test_default_email_on_actions')
-        assert test_task.email_on_retry is True
-        assert test_task.email_on_failure is True
-
-    def test_email_on_actions(self):
-        test_task = DummyOperator(
-            task_id='test_default_email_on_actions',
-            email_on_retry=False,
-            email_on_failure=True
-        )
-        assert test_task.email_on_retry is False
-        assert test_task.email_on_failure is True
-
-
-class TestBaseOperatorMethods(unittest.TestCase):
-    def test_cross_downstream(self):
-        """Test if all dependencies between tasks are all set correctly."""
-        dag = DAG(dag_id="test_dag", start_date=datetime.now())
-        start_tasks = [DummyOperator(task_id="t{i}".format(i=i), dag=dag) for i in range(1, 4)]
-        end_tasks = [DummyOperator(task_id="t{i}".format(i=i), dag=dag) for i in range(4, 7)]
-        cross_downstream(from_tasks=start_tasks, to_tasks=end_tasks)
-
-        for start_task in start_tasks:
-            self.assertCountEqual(start_task.get_direct_relatives(upstream=False), end_tasks)
-
-    def test_chain(self):
-        dag = DAG(dag_id='test_chain', start_date=datetime.now())
-        [op1, op2, op3, op4, op5, op6] = [
-            DummyOperator(task_id='t{i}'.format(i=i), dag=dag)
-            for i in range(1, 7)
-        ]
-        chain(op1, [op2, op3], [op4, op5], op6)
-
-        self.assertCountEqual([op2, op3], op1.get_direct_relatives(upstream=False))
-        self.assertEqual([op4], op2.get_direct_relatives(upstream=False))
-        self.assertEqual([op5], op3.get_direct_relatives(upstream=False))
-        self.assertCountEqual([op4, op5], op6.get_direct_relatives(upstream=True))
-
-    def test_chain_not_support_type(self):
-        dag = DAG(dag_id='test_chain', start_date=datetime.now())
-        [op1, op2] = [DummyOperator(task_id='t{i}'.format(i=i), dag=dag) for i in range(1, 3)]
-        with self.assertRaises(TypeError):
-            chain([op1, op2], 1)  # noqa
-
-    def test_chain_different_length_iterable(self):
-        dag = DAG(dag_id='test_chain', start_date=datetime.now())
-        [op1, op2, op3, op4, op5] = [DummyOperator(task_id='t{i}'.format(i=i), dag=dag) for i in range(1, 6)]
-        with self.assertRaises(AirflowException):
-            chain([op1, op2], [op3, op4, op5])
-
-    def test_lineage_composition(self):
-        """
-        Test composition with lineage
-        """
-        inlet = File(url="in")
-        outlet = File(url="out")
-        dag = DAG("test-dag", start_date=DEFAULT_DATE)
-        task1 = DummyOperator(task_id="op1", dag=dag)
-        task2 = DummyOperator(task_id="op2", dag=dag)
-
-        # mock
-        task1.supports_lineage = True
-
-        # note: operator precedence still applies
-        inlet > task1 | (task2 > outlet)
-
-        self.assertEqual(task1.get_inlet_defs(), [inlet])
-        self.assertEqual(task2.get_inlet_defs(), [task1.task_id])
-        self.assertEqual(task2.get_outlet_defs(), [outlet])
-
-        fail = ClassWithCustomAttributes()
-        with self.assertRaises(TypeError):
-            fail > task1
-        with self.assertRaises(TypeError):
-            task1 > fail
-        with self.assertRaises(TypeError):
-            fail | task1
-        with self.assertRaises(TypeError):
-            task1 | fail
-
-        task3 = DummyOperator(task_id="op3", dag=dag)
-        extra = File(url="extra")
-        [inlet, extra] > task3
-
-        self.assertEqual(task3.get_inlet_defs(), [inlet, extra])
-
-        task1.supports_lineage = False
-        with self.assertRaises(ValueError):
-            task1 | task3
-
-        self.assertEqual(task2.supports_lineage, False)
-        task2 | task3
-        self.assertEqual(len(task3.get_inlet_defs()), 3)
-
-        task4 = DummyOperator(task_id="op4", dag=dag)
-        task4 > [inlet, outlet, extra]
-        self.assertEqual(task4.get_outlet_defs(), [inlet, outlet, extra])
-
-    def test_warnings_are_properly_propagated(self):
-        with self.assertWarns(DeprecationWarning) as warns:
-            DeprecatedOperator(task_id="test")
-            assert len(warns.warnings) == 1
-            warning = warns.warnings[0]
-            # Here we check that the trace points to the place
-            # where the deprecated class was used
-            assert warning.filename == __file__
-
-
-class CustomOp(DummyOperator):
-    template_fields = ("field", "field2")
-
-    @apply_defaults
-    def __init__(self, field=None, field2=None, **kwargs):
-        super().__init__(**kwargs)
-        self.field = field
-        self.field2 = field2
-
-    def execute(self, context):
-        self.field = None
-
-
-class TestXComArgsRelationsAreResolved:
-    def test_setattr_performs_no_custom_action_at_execute_time(self):
-        op = CustomOp(task_id="test_task")
-        op_copy = op.prepare_for_execution()
-
-        with mock.patch(
-            "airflow.models.baseoperator.BaseOperator.set_xcomargs_dependencies"
-        ) as method_mock:
-            op_copy.execute({})
-        assert method_mock.call_count == 0
-
-    def test_upstream_is_set_when_template_field_is_xcomarg(self):
-        with DAG("xcomargs_test", default_args={"start_date": datetime.today()}):
-            op1 = DummyOperator(task_id="op1")
-            op2 = CustomOp(task_id="op2", field=op1.output)
-
-        assert op1 in op2.upstream_list
-        assert op2 in op1.downstream_list
-
-    def test_set_xcomargs_dependencies_works_recursively(self):
-        with DAG("xcomargs_test", default_args={"start_date": datetime.today()}):
-            op1 = DummyOperator(task_id="op1")
-            op2 = DummyOperator(task_id="op2")
-            op3 = CustomOp(task_id="op3", field=[op1.output, op2.output])
-            op4 = CustomOp(task_id="op4", field={"op1": op1.output, "op2": op2.output})
-
-        assert op1 in op3.upstream_list
-        assert op2 in op3.upstream_list
-        assert op1 in op4.upstream_list
-        assert op2 in op4.upstream_list
-
-    def test_set_xcomargs_dependencies_works_when_set_after_init(self):
-        with DAG(dag_id='xcomargs_test', default_args={"start_date": datetime.today()}):
-            op1 = DummyOperator(task_id="op1")
-            op2 = CustomOp(task_id="op2")
-            op2.field = op1.output  # value is set after init
-
-        assert op1 in op2.upstream_list
-
-    def test_set_xcomargs_dependencies_error_when_outside_dag(self):
-        with pytest.raises(AirflowException):
-            op1 = DummyOperator(task_id="op1")
-            CustomOp(task_id="op2", field=op1.output)

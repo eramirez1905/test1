@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -17,8 +18,8 @@
 # under the License.
 #
 
+import mock
 import unittest
-from unittest import mock
 
 from airflow.hooks.dbapi_hook import DbApiHook
 from airflow.models import Connection
@@ -27,21 +28,20 @@ from airflow.models import Connection
 class TestDbApiHook(unittest.TestCase):
 
     def setUp(self):
-        super().setUp()
+        super(TestDbApiHook, self).setUp()
 
         self.cur = mock.MagicMock()
         self.conn = mock.MagicMock()
         self.conn.cursor.return_value = self.cur
         conn = self.conn
 
-        class UnitTestDbApiHook(DbApiHook):
+        class TestDBApiHook(DbApiHook):
             conn_name_attr = 'test_conn_id'
-            log = mock.MagicMock()
 
             def get_conn(self):
                 return conn
 
-        self.db_hook = UnitTestDbApiHook()
+        self.db_hook = TestDBApiHook()
 
     def test_get_records(self):
         statement = "SQL"
@@ -77,8 +77,8 @@ class TestDbApiHook(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             self.db_hook.get_records(statement)
 
-        assert self.conn.close.call_count == 1
-        assert self.cur.close.call_count == 1
+        self.conn.close.call_count == 1
+        self.cur.close.call_count == 1
         self.cur.execute.assert_called_once_with(statement)
 
     def test_insert_rows(self):
@@ -172,8 +172,3 @@ class TestDbApiHook(unittest.TestCase):
             port=1
         ))
         self.assertEqual("conn_type://login:password@host:1/", self.db_hook.get_uri())
-
-    def test_run_log(self):
-        statement = 'SQL'
-        self.db_hook.run(statement)
-        assert self.db_hook.log.info.call_count == 2

@@ -15,7 +15,6 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-set -euo pipefail
 
 # Use this to sign the tar balls generated from
 # python setup.py sdist --formats=gztar
@@ -23,8 +22,7 @@ set -euo pipefail
 # you will still be required to type in your signing key password
 # or it needs to be available in your keychain
 
-for name in "${@}"
-do
-    gpg --armor --output "${name}.asc" --detach-sig "${name}"
-    gpg --print-md SHA512 "${name}" > "${name}.sha512"
-done
+NAME="${1}"
+
+gpg --armor --output "${NAME}.asc" --detach-sig "${NAME}"
+gpg --print-md SHA512 "${NAME}" > "${NAME}.sha512"

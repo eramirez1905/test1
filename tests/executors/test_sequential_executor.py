@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -17,16 +18,16 @@
 # under the License.
 
 import unittest
-from unittest import mock
+from tests.compat import mock
 
 from airflow.executors.sequential_executor import SequentialExecutor
 
 
-class TestSequentialExecutor(unittest.TestCase):
+class SequentialExecutorTest(unittest.TestCase):
 
     @mock.patch('airflow.executors.sequential_executor.SequentialExecutor.sync')
     @mock.patch('airflow.executors.base_executor.BaseExecutor.trigger_tasks')
-    @mock.patch('airflow.executors.base_executor.Stats.gauge')
+    @mock.patch('airflow.settings.Stats.gauge')
     def test_gauge_executor_metrics(self, mock_stats_gauge, mock_trigger_tasks, mock_sync):
         executor = SequentialExecutor()
         executor.heartbeat()
@@ -34,3 +35,7 @@ class TestSequentialExecutor(unittest.TestCase):
                  mock.call('executor.queued_tasks', mock.ANY),
                  mock.call('executor.running_tasks', mock.ANY)]
         mock_stats_gauge.assert_has_calls(calls)
+
+
+if __name__ == '__main__':
+    unittest.main()

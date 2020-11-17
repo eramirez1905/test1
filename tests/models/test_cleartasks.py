@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -17,24 +18,19 @@
 # under the License.
 
 import datetime
+import os
 import unittest
 
 from airflow import settings
-from airflow.models import DAG, TaskInstance as TI, clear_task_instances
+from airflow.configuration import conf
+from airflow.models import DAG, TaskInstance as TI, clear_task_instances, XCom
 from airflow.operators.dummy_operator import DummyOperator
-from airflow.utils.session import create_session
+from airflow.utils import timezone
 from airflow.utils.state import State
 from tests.models import DEFAULT_DATE
-from tests.test_utils import db
 
 
-class TestClearTasks(unittest.TestCase):
-
-    def setUp(self) -> None:
-        db.clear_db_runs()
-
-    def tearDown(self):
-        db.clear_db_runs()
+class ClearTasksTest(unittest.TestCase):
 
     def test_clear_task_instances(self):
         dag = DAG('test_clear_task_instances', start_date=DEFAULT_DATE,
@@ -46,11 +42,11 @@ class TestClearTasks(unittest.TestCase):
 
         ti0.run()
         ti1.run()
-        with create_session() as session:
-            qry = session.query(TI).filter(
-                TI.dag_id == dag.dag_id).all()
-            clear_task_instances(qry, session, dag=dag)
-
+        session = settings.Session()
+        qry = session.query(TI).filter(
+            TI.dag_id == dag.dag_id).all()
+        clear_task_instances(qry, session, dag=dag)
+        session.commit()
         ti0.refresh_from_db()
         ti1.refresh_from_db()
         # Next try to run will be try 2
@@ -74,11 +70,11 @@ class TestClearTasks(unittest.TestCase):
         self.assertFalse(dag.has_task(task0.task_id))
         self.assertFalse(dag.has_task(task1.task_id))
 
-        with create_session() as session:
-            qry = session.query(TI).filter(
-                TI.dag_id == dag.dag_id).all()
-            clear_task_instances(qry, session)
-
+        session = settings.Session()
+        qry = session.query(TI).filter(
+            TI.dag_id == dag.dag_id).all()
+        clear_task_instances(qry, session)
+        session.commit()
         # When dag is None, max_tries will be maximum of original max_tries or try_number.
         ti0.refresh_from_db()
         ti1.refresh_from_db()
@@ -98,11 +94,11 @@ class TestClearTasks(unittest.TestCase):
         ti0.run()
         ti1.run()
 
-        with create_session() as session:
-            qry = session.query(TI).filter(
-                TI.dag_id == dag.dag_id).all()
-            clear_task_instances(qry, session)
-
+        session = settings.Session()
+        qry = session.query(TI).filter(
+            TI.dag_id == dag.dag_id).all()
+        clear_task_instances(qry, session)
+        session.commit()
         # When dag is None, max_tries will be maximum of original max_tries or try_number.
         ti0.refresh_from_db()
         ti1.refresh_from_db()
@@ -214,19 +210,19 @@ class TestClearTasks(unittest.TestCase):
     def test_operator_clear(self):
         dag = DAG('test_operator_clear', start_date=DEFAULT_DATE,
                   end_date=DEFAULT_DATE + datetime.timedelta(days=10))
-        op1 = DummyOperator(task_id='bash_op', owner='test', dag=dag)
-        op2 = DummyOperator(task_id='dummy_op', owner='test', dag=dag, retries=1)
+        t1 = DummyOperator(task_id='bash_op', owner='test', dag=dag)
+        t2 = DummyOperator(task_id='dummy_op', owner='test', dag=dag, retries=1)
 
-        op2.set_upstream(op1)
+        t2.set_upstream(t1)
 
-        ti1 = TI(task=op1, execution_date=DEFAULT_DATE)
-        ti2 = TI(task=op2, execution_date=DEFAULT_DATE)
+        ti1 = TI(task=t1, execution_date=DEFAULT_DATE)
+        ti2 = TI(task=t2, execution_date=DEFAULT_DATE)
         ti2.run()
         # Dependency not met
         self.assertEqual(ti2.try_number, 1)
         self.assertEqual(ti2.max_tries, 1)
 
-        op2.clear(upstream=True)
+        t2.clear(upstream=True)
         ti1.run()
         ti2.run()
         self.assertEqual(ti1.try_number, 2)
@@ -236,3 +232,106 @@ class TestClearTasks(unittest.TestCase):
         self.assertEqual(ti2.try_number, 2)
         # try_number (0) + retries(1)
         self.assertEqual(ti2.max_tries, 1)
+
+    def test_xcom_disable_pickle_type(self):
+        json_obj = {"key": "value"}
+        execution_date = timezone.utcnow()
+        key = "xcom_test1"
+        dag_id = "test_dag1"
+        task_id = "test_task1"
+
+        conf.set("core", "enable_xcom_pickling", "False")
+
+        XCom.set(key=key,
+                 value=json_obj,
+                 dag_id=dag_id,
+                 task_id=task_id,
+                 execution_date=execution_date)
+
+        ret_value = XCom.get_one(key=key,
+                                 dag_id=dag_id,
+                                 task_id=task_id,
+                                 execution_date=execution_date)
+
+        self.assertEqual(ret_value, json_obj)
+
+        session = settings.Session()
+        ret_value = session.query(XCom).filter(XCom.key == key, XCom.dag_id == dag_id,
+                                               XCom.task_id == task_id,
+                                               XCom.execution_date == execution_date
+                                               ).first().value
+
+        self.assertEqual(ret_value, json_obj)
+
+    def test_xcom_enable_pickle_type(self):
+        json_obj = {"key": "value"}
+        execution_date = timezone.utcnow()
+        key = "xcom_test2"
+        dag_id = "test_dag2"
+        task_id = "test_task2"
+
+        conf.set("core", "enable_xcom_pickling", "True")
+
+        XCom.set(key=key,
+                 value=json_obj,
+                 dag_id=dag_id,
+                 task_id=task_id,
+                 execution_date=execution_date)
+
+        ret_value = XCom.get_one(key=key,
+                                 dag_id=dag_id,
+                                 task_id=task_id,
+                                 execution_date=execution_date)
+
+        self.assertEqual(ret_value, json_obj)
+
+        session = settings.Session()
+        ret_value = session.query(XCom).filter(XCom.key == key, XCom.dag_id == dag_id,
+                                               XCom.task_id == task_id,
+                                               XCom.execution_date == execution_date
+                                               ).first().value
+
+        self.assertEqual(ret_value, json_obj)
+
+    def test_xcom_disable_pickle_type_fail_on_non_json(self):
+        class PickleRce(object):
+            def __reduce__(self):
+                return os.system, ("ls -alt",)
+
+        conf.set("core", "xcom_enable_pickling", "False")
+
+        self.assertRaises(TypeError, XCom.set,
+                          key="xcom_test3",
+                          value=PickleRce(),
+                          dag_id="test_dag3",
+                          task_id="test_task3",
+                          execution_date=timezone.utcnow())
+
+    def test_xcom_get_many(self):
+        json_obj = {"key": "value"}
+        execution_date = timezone.utcnow()
+        key = "xcom_test4"
+        dag_id1 = "test_dag4"
+        task_id1 = "test_task4"
+        dag_id2 = "test_dag5"
+        task_id2 = "test_task5"
+
+        conf.set("core", "xcom_enable_pickling", "True")
+
+        XCom.set(key=key,
+                 value=json_obj,
+                 dag_id=dag_id1,
+                 task_id=task_id1,
+                 execution_date=execution_date)
+
+        XCom.set(key=key,
+                 value=json_obj,
+                 dag_id=dag_id2,
+                 task_id=task_id2,
+                 execution_date=execution_date)
+
+        results = XCom.get_many(key=key,
+                                execution_date=execution_date)
+
+        for result in results:
+            self.assertEqual(result.value, json_obj)

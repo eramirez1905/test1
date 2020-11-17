@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -16,21 +17,13 @@
 # specific language governing permissions and limitations
 # under the License.
 import json
-import re
 import unittest
 from collections import namedtuple
-from unittest import mock
 
-import sqlalchemy
 from cryptography.fernet import Fernet
 from parameterized import parameterized
 
-from airflow import AirflowException
-from airflow.hooks.base_hook import BaseHook
 from airflow.models import Connection, crypto
-from airflow.models.connection import CONN_TYPE_TO_HOOK
-from airflow.providers.sqlite.hooks.sqlite import SqliteHook
-from airflow.utils.module_loading import import_string
 from tests.test_utils.config import conf_vars
 
 ConnectionParts = namedtuple("ConnectionParts", ["conn_type", "login", "password", "host", "port", "schema"])
@@ -39,9 +32,9 @@ ConnectionParts = namedtuple("ConnectionParts", ["conn_type", "login", "password
 class UriTestCaseConfig:
     def __init__(
         self,
-        test_conn_uri: str,
-        test_conn_attributes: dict,
-        description: str,
+        test_conn_uri,
+        test_conn_attributes,
+        description,
     ):
         """
 
@@ -293,7 +286,7 @@ class TestConnection(unittest.TestCase):
 
     # pylint: disable=undefined-variable
     @parameterized.expand([(x,) for x in test_from_uri_params], UriTestCaseConfig.uri_test_name)
-    def test_connection_from_uri(self, test_config: UriTestCaseConfig):
+    def test_connection_from_uri(self, test_config):
 
         connection = Connection(uri=test_config.test_uri)
         for conn_attr, expected_val in test_config.test_conn_attributes.items():
@@ -307,7 +300,7 @@ class TestConnection(unittest.TestCase):
 
     # pylint: disable=undefined-variable
     @parameterized.expand([(x,) for x in test_from_uri_params], UriTestCaseConfig.uri_test_name)
-    def test_connection_get_uri_from_uri(self, test_config: UriTestCaseConfig):
+    def test_connection_get_uri_from_uri(self, test_config):
         """
         This test verifies that when we create a conn_1 from URI, and we generate a URI from that conn, that
         when we create a conn_2 from the generated URI, we get an equivalent conn.
@@ -329,7 +322,7 @@ class TestConnection(unittest.TestCase):
 
     # pylint: disable=undefined-variable
     @parameterized.expand([(x,) for x in test_from_uri_params], UriTestCaseConfig.uri_test_name)
-    def test_connection_get_uri_from_conn(self, test_config: UriTestCaseConfig):
+    def test_connection_get_uri_from_conn(self, test_config):
         """
         This test verifies that if we create conn_1 from attributes (rather than from URI), and we generate a
         URI, that when we create conn_2 from this URI, we get an equivalent conn.
@@ -346,7 +339,7 @@ class TestConnection(unittest.TestCase):
             else:
                 conn_kwargs.update({k: v})
 
-        connection = Connection(conn_id='test_conn', **conn_kwargs)  # type: ignore
+        connection = Connection(conn_id='test_conn', **conn_kwargs)
         gen_uri = connection.get_uri()
         new_conn = Connection(conn_id='test_conn', uri=gen_uri)
         for conn_attr, expected_val in test_config.test_conn_attributes.items():
@@ -434,107 +427,3 @@ class TestConnection(unittest.TestCase):
         self.assertEqual(connection.host, uri_parts.host)
         self.assertEqual(connection.port, uri_parts.port)
         self.assertEqual(connection.schema, uri_parts.schema)
-
-    @mock.patch.dict('os.environ', {
-        'AIRFLOW_CONN_TEST_URI': 'postgres://username:password@ec2.compute.com:5432/the_database',
-    })
-    def test_using_env_var(self):
-        conn = SqliteHook.get_connection(conn_id='test_uri')
-        self.assertEqual('ec2.compute.com', conn.host)
-        self.assertEqual('the_database', conn.schema)
-        self.assertEqual('username', conn.login)
-        self.assertEqual('password', conn.password)
-        self.assertEqual(5432, conn.port)
-
-    @mock.patch.dict('os.environ', {
-        'AIRFLOW_CONN_TEST_URI_NO_CREDS': 'postgres://ec2.compute.com/the_database',
-    })
-    def test_using_unix_socket_env_var(self):
-        conn = SqliteHook.get_connection(conn_id='test_uri_no_creds')
-        self.assertEqual('ec2.compute.com', conn.host)
-        self.assertEqual('the_database', conn.schema)
-        self.assertIsNone(conn.login)
-        self.assertIsNone(conn.password)
-        self.assertIsNone(conn.port)
-
-    def test_param_setup(self):
-        conn = Connection(conn_id='local_mysql', conn_type='mysql',
-                          host='localhost', login='airflow',
-                          password='airflow', schema='airflow')
-        self.assertEqual('localhost', conn.host)
-        self.assertEqual('airflow', conn.schema)
-        self.assertEqual('airflow', conn.login)
-        self.assertEqual('airflow', conn.password)
-        self.assertIsNone(conn.port)
-
-    def test_env_var_priority(self):
-        conn = SqliteHook.get_connection(conn_id='airflow_db')
-        self.assertNotEqual('ec2.compute.com', conn.host)
-
-        with mock.patch.dict('os.environ', {
-            'AIRFLOW_CONN_AIRFLOW_DB': 'postgres://username:password@ec2.compute.com:5432/the_database',
-        }):
-            conn = SqliteHook.get_connection(conn_id='airflow_db')
-            self.assertEqual('ec2.compute.com', conn.host)
-            self.assertEqual('the_database', conn.schema)
-            self.assertEqual('username', conn.login)
-            self.assertEqual('password', conn.password)
-            self.assertEqual(5432, conn.port)
-
-    @mock.patch.dict('os.environ', {
-        'AIRFLOW_CONN_TEST_URI': 'postgres://username:password@ec2.compute.com:5432/the_database',
-        'AIRFLOW_CONN_TEST_URI_NO_CREDS': 'postgres://ec2.compute.com/the_database',
-    })
-    def test_dbapi_get_uri(self):
-        conn = BaseHook.get_connection(conn_id='test_uri')
-        hook = conn.get_hook()
-        self.assertEqual('postgres://username:password@ec2.compute.com:5432/the_database', hook.get_uri())
-        conn2 = BaseHook.get_connection(conn_id='test_uri_no_creds')
-        hook2 = conn2.get_hook()
-        self.assertEqual('postgres://ec2.compute.com/the_database', hook2.get_uri())
-
-    @mock.patch.dict('os.environ', {
-        'AIRFLOW_CONN_TEST_URI': 'postgres://username:password@ec2.compute.com:5432/the_database',
-        'AIRFLOW_CONN_TEST_URI_NO_CREDS': 'postgres://ec2.compute.com/the_database',
-    })
-    def test_dbapi_get_sqlalchemy_engine(self):
-        conn = BaseHook.get_connection(conn_id='test_uri')
-        hook = conn.get_hook()
-        engine = hook.get_sqlalchemy_engine()
-        self.assertIsInstance(engine, sqlalchemy.engine.Engine)
-        self.assertEqual('postgres://username:password@ec2.compute.com:5432/the_database', str(engine.url))
-
-    @mock.patch.dict('os.environ', {
-        'AIRFLOW_CONN_TEST_URI': 'postgres://username:password@ec2.compute.com:5432/the_database',
-        'AIRFLOW_CONN_TEST_URI_NO_CREDS': 'postgres://ec2.compute.com/the_database',
-    })
-    def test_get_connections_env_var(self):
-        conns = SqliteHook.get_connections(conn_id='test_uri')
-        assert len(conns) == 1
-        assert conns[0].host == 'ec2.compute.com'
-        assert conns[0].schema == 'the_database'
-        assert conns[0].login == 'username'
-        assert conns[0].password == 'password'
-        assert conns[0].port == 5432
-
-    def test_connection_mixed(self):
-        with self.assertRaisesRegex(
-            AirflowException,
-            re.escape(
-                "You must create an object using the URI or individual values (conn_type, host, login, "
-                "password, schema, port or extra).You can't mix these two ways to create this object."
-            )
-        ):
-            Connection(conn_id="TEST_ID", uri="mysql://", schema="AAA")
-
-
-class TestConnTypeToHook(unittest.TestCase):
-    def test_enforce_alphabetical_order(self):
-        current_keys = list(CONN_TYPE_TO_HOOK.keys())
-        expected_keys = sorted(current_keys)
-
-        self.assertEqual(expected_keys, current_keys)
-
-    def test_hooks_importable(self):
-        for hook_path, _ in CONN_TYPE_TO_HOOK.values():
-            self.assertTrue(issubclass(import_string(hook_path), BaseHook))

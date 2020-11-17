@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -117,42 +117,12 @@ def check_install_and_setup_requires(setup_context: str) -> None:
         _check_list_sorted(src, f"Order of dependencies in do_setup section: {dependent_requires[0]}")
 
 
-def check_extras_require(setup_context: str) -> None:
-    """
-    Test for an order of dependencies in function do_setup section
-    extras_require in setup.py
-    """
-    pattern_extras_requires = re.compile(
-        r'EXTRAS_REQUIREMENTS: Dict\[str, Iterable\[str\]] = {(.*?)}', re.DOTALL)
-    extras_requires = pattern_extras_requires.findall(setup_context)[0]
-
-    pattern_dependent = re.compile('\'(.*?)\'')
-    src = pattern_dependent.findall(extras_requires)
-    _check_list_sorted(src, "Order of dependencies in: extras_require")
-
-
-def check_provider_requirements(setup_context: str) -> None:
-    """
-    Test for an order of dependencies in function do_setup section
-    providers_require in setup.py
-    """
-    pattern_extras_requires = re.compile(
-        r'PROVIDERS_REQUIREMENTS: Dict\[str, Iterable\[str\]\] = {(.*?)}', re.DOTALL)
-    extras_requires = pattern_extras_requires.findall(setup_context)[0]
-
-    pattern_dependent = re.compile('"(.*?)"')
-    src = pattern_dependent.findall(extras_requires)
-    _check_list_sorted(src, "Order of dependencies in: providers_require")
-
-
 if __name__ == '__main__':
     setup_context_main = setup()
     check_main_dependent_group(setup_context_main)
     check_alias_dependent_group(setup_context_main)
     check_sub_dependent_group(setup_context_main)
     check_install_and_setup_requires(setup_context_main)
-    check_extras_require(setup_context_main)
-    check_provider_requirements(setup_context_main)
 
     print()
     print()

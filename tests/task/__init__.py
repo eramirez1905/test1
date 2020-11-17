@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -18,4 +19,5 @@
 
 # flake8: noqa
 
+from __future__ import absolute_import
 from .task_runner import *

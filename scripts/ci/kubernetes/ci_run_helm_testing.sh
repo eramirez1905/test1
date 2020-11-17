@@ -18,12 +18,11 @@
 
 echo "Running helm tests"
 
-chart_directory="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../../../chart/"
+CHART_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/../../../chart/"
 
-cat chart/files/pod-template-file.yaml > chart/templates/pod-template-file.yaml
+echo "Chart directory is $CHART_DIR"
 
-docker run -w /airflow-chart -v "$chart_directory":/airflow-chart \
+docker run -w /airflow-chart -v "$CHART_DIR":/airflow-chart \
   --entrypoint /bin/sh \
   aneeshkj/helm-unittest \
-  -c "helm repo add stable https://kubernetes-charts.storage.googleapis.com; helm dependency update ; helm unittest ." \
-  && rm chart/templates/pod-template-file.yaml
+  -c "helm repo add stable https://kubernetes-charts.storage.googleapis.com; helm dependency update ; helm unittest ."

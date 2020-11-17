@@ -38,6 +38,6 @@ with dag:
 
     task_c = DummyOperator(task_id="test_task_c")
 
-    task_d = DummyOperator(task_id="test_task_on_execute", on_execute_callback=lambda *args, **kwargs: 1)
+    task_d = DummyOperator(task_id="test_task_on_execute", on_success_callback=lambda *args, **kwargs: 1)
 
     task_e = DummyOperator(task_id="test_task_on_success", on_success_callback=lambda *args, **kwargs: 1)

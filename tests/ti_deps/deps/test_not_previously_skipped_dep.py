@@ -23,7 +23,7 @@ from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.python_operator import BranchPythonOperator
 from airflow.ti_deps.dep_context import DepContext
 from airflow.ti_deps.deps.not_previously_skipped_dep import NotPreviouslySkippedDep
-from airflow.utils.session import create_session
+from airflow.utils.db import create_session
 from airflow.utils.state import State
 
 

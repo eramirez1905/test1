@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -18,7 +19,8 @@
 
 import unittest
 from datetime import datetime
-from unittest import mock
+
+import mock
 
 from airflow.utils import operator_helpers
 
@@ -26,7 +28,7 @@ from airflow.utils import operator_helpers
 class TestOperatorHelpers(unittest.TestCase):
 
     def setUp(self):
-        super().setUp()
+        super(TestOperatorHelpers, self).setUp()
         self.dag_id = 'dag_id'
         self.task_id = 'task_id'
         self.execution_date = '2017-05-21T00:00:00'
@@ -82,3 +84,7 @@ class TestOperatorHelpers(unittest.TestCase):
                 'AIRFLOW_CTX_DAG_EMAIL': 'email1@test.com'
             }
         )
+
+
+if __name__ == '__main__':
+    unittest.main()

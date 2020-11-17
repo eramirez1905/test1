@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -16,22 +17,17 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import inspect
-import re
 import unittest
 
+from airflow.models import Base as airflow_base
+
+from airflow.settings import engine
 from alembic.autogenerate import compare_metadata
-from alembic.config import Config
 from alembic.migration import MigrationContext
-from alembic.script import ScriptDirectory
 from sqlalchemy import MetaData
 
-from airflow.models import Base as airflow_base
-from airflow.settings import engine
-from airflow.utils.db import create_default_connections
 
-
-class TestDb(unittest.TestCase):
+class DbTest(unittest.TestCase):
 
     def test_database_schema_and_sqlalchemy_model_are_in_sync(self):
         all_meta_data = MetaData()
@@ -39,11 +35,17 @@ class TestDb(unittest.TestCase):
             all_meta_data._add_table(table_name, table.schema, table)
 
         # create diff between database schema and SQLAlchemy model
-        mctx = MigrationContext.configure(engine.connect())
-        diff = compare_metadata(mctx, all_meta_data)
+        mc = MigrationContext.configure(engine.connect())
+        diff = compare_metadata(mc, all_meta_data)
 
         # known diffs to ignore
         ignores = [
+            # users.password is not part of User model,
+            # otherwise it would show up in (old) UI
+            lambda t: (t[0] == 'remove_column' and
+                       t[2] == 'users' and
+                       t[3].name == 'password'),
+
             # ignore tables created by celery
             lambda t: (t[0] == 'remove_table' and
                        t[1].name == 'celery_taskmeta'),
@@ -101,18 +103,3 @@ class TestDb(unittest.TestCase):
             diff,
             'Database schema and SQLAlchemy model are not in sync: ' + str(diff)
         )
-
-    def test_only_single_head_revision_in_migrations(self):
-        config = Config()
-        config.set_main_option("script_location", "airflow:migrations")
-        script = ScriptDirectory.from_config(config)
-
-        # This will raise if there are multiple heads
-        # To resolve, use the command `alembic merge`
-        script.get_current_head()
-
-    def test_default_connections_sort(self):
-        pattern = re.compile('conn_id=[\"|\'](.*?)[\"|\']', re.DOTALL)
-        source = inspect.getsource(create_default_connections)
-        src = pattern.findall(source)
-        self.assertListEqual(sorted(src), src)

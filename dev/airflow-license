@@ -16,12 +16,12 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+from __future__ import print_function
 
 import os
 import re
-import string
-
 import slugify
+import string
 
 # order is important
 _licenses = {'MIT': ['Permission is hereby granted free of charge', 'The above copyright notice and this permission notice shall'],

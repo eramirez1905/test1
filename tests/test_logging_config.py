@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -15,19 +16,23 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-import contextlib
-import importlib
-import logging
 import os
-import pathlib
+import six
 import sys
 import tempfile
-import unittest
 
-from mock import patch
-
-from airflow.configuration import conf
+from airflow.configuration import conf, mkdir_p
+from tests.compat import patch
 from tests.test_utils.config import conf_vars
+
+
+if six.PY2:
+    # Need `assertWarns` back-ported from unittest2
+    import unittest2 as unittest
+    from imp import reload
+else:
+    import unittest
+    from importlib import reload
 
 SETTINGS_FILE_VALID = """
 LOGGING_CONFIG = {
@@ -51,6 +56,11 @@ LOGGING_CONFIG = {
         },
     },
     'loggers': {
+        'airflow': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False
+        },
         'airflow.task': {
             'handlers': ['task'],
             'level': 'INFO',
@@ -93,78 +103,56 @@ SETTINGS_FILE_EMPTY = """
 SETTINGS_DEFAULT_NAME = 'custom_airflow_local_settings'
 
 
-def reset_logging():
-    """Reset Logging"""
-    manager = logging.root.manager
-    manager.disabled = logging.NOTSET
-    airflow_loggers = [
-        logger for logger_name, logger in manager.loggerDict.items() if logger_name.startswith('airflow')
-    ]
-    for logger in airflow_loggers:  # pylint: disable=too-many-nested-blocks
-        if isinstance(logger, logging.Logger):
-            logger.setLevel(logging.NOTSET)
-            logger.propagate = True
-            logger.disabled = False
-            logger.filters.clear()
-            handlers = logger.handlers.copy()
-            for handler in handlers:
-                # Copied from `logging.shutdown`.
-                try:
-                    handler.acquire()
-                    handler.flush()
-                    handler.close()
-                except (OSError, ValueError):
-                    pass
-                finally:
-                    handler.release()
-                logger.removeHandler(handler)
-
-
-@contextlib.contextmanager
-def settings_context(content, directory=None, name='LOGGING_CONFIG'):
+class settings_context(object):
     """
     Sets a settings file and puts it in the Python classpath
 
     :param content:
           The content of the settings file
     """
-    initial_logging_config = os.environ.get("AIRFLOW__LOGGING__LOGGING_CONFIG_CLASS", "")
-    try:
-        settings_root = tempfile.mkdtemp()
-        filename = f"{SETTINGS_DEFAULT_NAME}.py"
-        if directory:
+
+    def __init__(self, content, dir=None, name='LOGGING_CONFIG'):
+        self.content = content
+        self.settings_root = tempfile.mkdtemp()
+        filename = "{}.py".format(SETTINGS_DEFAULT_NAME)
+
+        if dir:
             # Replace slashes by dots
-            module = directory.replace('/', '.') + '.' + SETTINGS_DEFAULT_NAME + '.' + name
+            self.module = dir.replace('/', '.') + '.' + SETTINGS_DEFAULT_NAME + '.' + name
 
             # Create the directory structure
-            dir_path = os.path.join(settings_root, directory)
-            pathlib.Path(dir_path).mkdir(parents=True, exist_ok=True)
+            dir_path = os.path.join(self.settings_root, dir)
+            mkdir_p(dir_path)
 
             # Add the __init__ for the directories
             # This is required for Python 2.7
-            basedir = settings_root
-            for part in directory.split('/'):
+            basedir = self.settings_root
+            for part in dir.split('/'):
                 open(os.path.join(basedir, '__init__.py'), 'w').close()
                 basedir = os.path.join(basedir, part)
             open(os.path.join(basedir, '__init__.py'), 'w').close()
 
-            settings_file = os.path.join(dir_path, filename)
+            self.settings_file = os.path.join(dir_path, filename)
         else:
-            module = SETTINGS_DEFAULT_NAME + '.' + name
-            settings_file = os.path.join(settings_root, filename)
+            self.module = SETTINGS_DEFAULT_NAME + '.' + name
+            self.settings_file = os.path.join(self.settings_root, filename)
 
-        with open(settings_file, 'w') as handle:
-            handle.writelines(content)
-        sys.path.append(settings_root)
+    def __enter__(self):
+        with open(self.settings_file, 'w') as handle:
+            handle.writelines(self.content)
+        sys.path.append(self.settings_root)
+        conf.set(
+            'core',
+            'logging_config_class',
+            self.module
+        )
+        return self.settings_file
 
-        # Using environment vars instead of conf_vars so value is accessible
-        # to parent and child processes when using 'spawn' for multiprocessing.
-        os.environ["AIRFLOW__LOGGING__LOGGING_CONFIG_CLASS"] = module
-        yield settings_file
-
-    finally:
-        os.environ["AIRFLOW__LOGGING__LOGGING_CONFIG_CLASS"] = initial_logging_config
-        sys.path.remove(settings_root)
+    def __exit__(self, *exc_info):
+        # shutil.rmtree(self.settings_root)
+        # Reset config
+        conf.set('core', 'logging_config_class', '')
+        sys.path.remove(self.settings_root)
 
 
 class TestLoggingSettings(unittest.TestCase):
@@ -175,27 +163,24 @@ class TestLoggingSettings(unittest.TestCase):
     def tearDown(self):
         # Remove any new modules imported during the test run. This lets us
         # import the same source files for more than one test.
-        from airflow.config_templates import airflow_local_settings
         from airflow.logging_config import configure_logging
+        from airflow.config_templates import airflow_local_settings
 
-        for mod in list(sys.modules):
-            if mod not in self.old_modules:
-                del sys.modules[mod]
-
-        reset_logging()
-        importlib.reload(airflow_local_settings)
+        for m in [m for m in sys.modules if m not in self.old_modules]:
+            del sys.modules[m]
+        reload(airflow_local_settings)
         configure_logging()
 
     # When we try to load an invalid config file, we expect an error
     def test_loading_invalid_local_settings(self):
         from airflow.logging_config import configure_logging, log
         with settings_context(SETTINGS_FILE_INVALID):
-            with patch.object(log, 'error') as mock_info:
+            with patch.object(log, 'warning') as mock_info:
                 # Load config
                 with self.assertRaises(ValueError):
                     configure_logging()
 
-                mock_info.assert_called_once_with(
+                mock_info.assert_called_with(
                     'Unable to load the config, contains a configuration error.'
                 )
 
@@ -207,7 +192,7 @@ class TestLoggingSettings(unittest.TestCase):
             from airflow.logging_config import configure_logging, log
             with patch.object(log, 'info') as mock_info:
                 configure_logging()
-                mock_info.assert_called_once_with(
+                mock_info.assert_called_with(
                     'Successfully imported user-defined logging config from %s',
                     'etc.airflow.config.{}.LOGGING_CONFIG'.format(
                         SETTINGS_DEFAULT_NAME
@@ -220,7 +205,7 @@ class TestLoggingSettings(unittest.TestCase):
             from airflow.logging_config import configure_logging, log
             with patch.object(log, 'info') as mock_info:
                 configure_logging()
-                mock_info.assert_called_once_with(
+                mock_info.assert_called_with(
                     'Successfully imported user-defined logging config from %s',
                     '{}.LOGGING_CONFIG'.format(
                         SETTINGS_DEFAULT_NAME
@@ -237,7 +222,7 @@ class TestLoggingSettings(unittest.TestCase):
     # When the key is not available in the configuration
     def test_when_the_config_key_does_not_exists(self):
         from airflow import logging_config
-        with conf_vars({('logging', 'logging_config_class'): None}):
+        with conf_vars({('core', 'logging_config_class'): None}):
             with patch.object(logging_config.log, 'debug') as mock_debug:
                 logging_config.configure_logging()
                 mock_debug.assert_any_call(
@@ -249,30 +234,35 @@ class TestLoggingSettings(unittest.TestCase):
         from airflow.logging_config import configure_logging, log
         with patch.object(log, 'debug') as mock_info:
             configure_logging()
-            mock_info.assert_called_once_with(
+            mock_info.assert_called_with(
                 'Unable to load custom logging, using default config instead'
             )
 
     def test_1_9_config(self):
         from airflow.logging_config import configure_logging
-        with conf_vars({('logging', 'task_log_reader'): 'file.task'}):
+        with conf_vars({('core', 'task_log_reader'): 'file.task'}):
             with self.assertWarnsRegex(DeprecationWarning, r'file.task'):
                 configure_logging()
-            self.assertEqual(conf.get('logging', 'task_log_reader'), 'task')
+            self.assertEqual(conf.get('core', 'task_log_reader'), 'task')
 
     def test_loading_remote_logging_with_wasb_handler(self):
         """Test if logging can be configured successfully for Azure Blob Storage"""
+        import logging
         from airflow.config_templates import airflow_local_settings
         from airflow.logging_config import configure_logging
         from airflow.utils.log.wasb_task_handler import WasbTaskHandler
 
         with conf_vars({
-            ('logging', 'remote_logging'): 'True',
-            ('logging', 'remote_log_conn_id'): 'some_wasb',
-            ('logging', 'remote_base_log_folder'): 'wasb://some-folder',
+            ('core', 'remote_logging'): 'True',
+            ('core', 'remote_log_conn_id'): 'some_wasb',
+            ('core', 'remote_base_log_folder'): 'wasb://some-folder',
         }):
-            importlib.reload(airflow_local_settings)
+            six.moves.reload_module(airflow_local_settings)
             configure_logging()
 
         logger = logging.getLogger('airflow.task')
         self.assertIsInstance(logger.handlers[0], WasbTaskHandler)
+
+
+if __name__ == '__main__':
+    unittest.main()

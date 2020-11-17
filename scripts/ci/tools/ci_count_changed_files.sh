@@ -21,8 +21,11 @@
 # Parameters
 #  $1: Revision to compare
 #  $2: Pattern to match
+
 # shellcheck source=scripts/ci/libraries/_script_init.sh
 . "$( dirname "${BASH_SOURCE[0]}" )/../libraries/_script_init.sh"
+
+get_environment_for_builds_on_ci
 
 if [[ ${CI_EVENT_TYPE} == "push" ]]; then
     echo
@@ -36,28 +39,28 @@ git remote add target "https://github.com/${CI_TARGET_REPO}"
 git fetch target "${CI_TARGET_BRANCH}:${CI_TARGET_BRANCH}" --depth=1
 
 echo
-echo "Retrieve changed files from ${COMMIT_SHA} comparing to ${CI_TARGET_BRANCH}"
+echo "Retrieve changed files from ${GITHUB_SHA} comparing to ${CI_TARGET_BRANCH}"
 echo
 
-changed_files=$(git diff-tree --no-commit-id --name-only -r "${COMMIT_SHA}" "${CI_TARGET_BRANCH}" || true)
+CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r "${GITHUB_SHA}" "${CI_TARGET_BRANCH}" || true)
 
 echo
 echo "Changed files:"
 echo
-echo "${changed_files}"
+echo "${CHANGED_FILES}"
 echo
 
 echo
 echo "Changed files matching the ${1} pattern"
 echo
-echo "${changed_files}" | grep -E "${1}" || true
+echo "${CHANGED_FILES}" | grep -E "${1}" || true
 echo
 
 echo
 echo "Count changed files matching the ${1} pattern"
 echo
-count_changed_files=$(echo "${changed_files}" | grep -c -E "${1}" || true)
-echo "${count_changed_files}"
+COUNT_CHANGED_FILES=$(echo "${CHANGED_FILES}" | grep -c -E "${2}" || true)
+echo "${COUNT_CHANGED_FILES}"
 echo
 
-exit "${count_changed_files}"
+exit "${COUNT_CHANGED_FILES}"

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -16,19 +17,35 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import unittest
-from datetime import datetime
-from urllib.parse import parse_qs
+import functools
 
 from bs4 import BeautifulSoup
+import mock
+import six
+from six.moves.urllib.parse import parse_qs, quote_plus
 from parameterized import parameterized
 
-from airflow.www import utils
+from airflow.models import DagRun, Log, DagBag
+from airflow.settings import Session
+from airflow.utils.state import State
+from airflow.utils import dates, timezone
+from airflow.www import utils, app as application
 from airflow.www.utils import wrapped_markdown
+from airflow.www_rbac.utils import wrapped_markdown as wrapped_markdown_rbac
 from tests.test_utils.config import conf_vars
 
+if six.PY2:
+    # Need `assertRegex` back-ported from unittest2
+    import unittest2 as unittest
+else:
+    import unittest
 
-class TestUtils(unittest.TestCase):
+
+class UtilsTest(unittest.TestCase):
+
+    def setUp(self):
+        super(UtilsTest, self).setUp()
+
     def test_empty_variable_should_not_be_hidden(self):
         self.assertFalse(utils.should_hide_value_for_key(""))
         self.assertFalse(utils.should_hide_value_for_key(None))
@@ -41,34 +58,6 @@ class TestUtils(unittest.TestCase):
 
     def test_sensitive_variable_should_be_hidden_ic(self):
         self.assertTrue(utils.should_hide_value_for_key("GOOGLE_API_KEY"))
-
-    @parameterized.expand(
-        [
-            ('key', 'TRELLO_KEY', True),
-            ('key', 'TRELLO_API_KEY', True),
-            ('key', 'GITHUB_APIKEY', True),
-            ('key, token', 'TRELLO_TOKEN', True),
-            ('mysecretword, mysensitivekey', 'GITHUB_mysecretword', True),
-        ],
-    )
-    def test_sensitive_variable_fields_should_be_hidden(
-        self, sensitive_variable_fields, key, expected_result
-    ):
-        with conf_vars({('admin', 'sensitive_variable_fields'): str(sensitive_variable_fields)}):
-            self.assertEqual(expected_result, utils.should_hide_value_for_key(key))
-
-    @parameterized.expand(
-        [
-            (None, 'TRELLO_API', False),
-            ('token', 'TRELLO_KEY', False),
-            ('token, mysecretword', 'TRELLO_KEY', False)
-        ],
-    )
-    def test_normal_variable_fields_should_not_be_hidden(
-        self, sensitive_variable_fields, key, expected_result
-    ):
-        with conf_vars({('admin', 'sensitive_variable_fields'): str(sensitive_variable_fields)}):
-            self.assertEqual(expected_result, utils.should_hide_value_for_key(key))
 
     def check_generate_pages_html(self, current_page, total_pages,
                                   window=7, check_middle=False):
@@ -132,18 +121,51 @@ class TestUtils(unittest.TestCase):
         self.assertEqual('search=bash_',
                          utils.get_params(search='bash_'))
 
+    @parameterized.expand([
+        (True, False, ''),
+        (False, True, ''),
+        (True, True, 'showPaused=True'),
+        (False, False, 'showPaused=False'),
+        (None, True, ''),
+        (None, False, ''),
+    ])
+    def test_params_showPaused(self, show_paused, hide_by_default, expected_result):
+        with conf_vars({('webserver', 'hide_paused_dags_by_default'): str(hide_by_default)}):
+            self.assertEqual(expected_result,
+                             utils.get_params(showPaused=show_paused))
+
+    @parameterized.expand([
+        (True, False, True),
+        (False, True, True),
+        (True, True, False),
+        (False, False, False),
+        (None, True, True),
+        (None, False, True),
+    ])
+    def test_should_remove_show_paused_from_url_params(self, show_paused,
+                                                       hide_by_default, expected_result):
+        with conf_vars({('webserver', 'hide_paused_dags_by_default'): str(hide_by_default)}):
+
+            self.assertEqual(
+                expected_result,
+                utils._should_remove_show_paused_from_url_params(
+                    show_paused,
+                    hide_by_default
+                )
+            )
+
     def test_params_none_and_zero(self):
-        query_str = utils.get_params(a=0, b=None, c='true')
+        qs = utils.get_params(a=0, b=None)
         # The order won't be consistent, but that doesn't affect behaviour of a browser
-        pairs = list(sorted(query_str.split('&')))
-        self.assertListEqual(['a=0', 'c=true'], pairs)
+        pairs = list(sorted(qs.split('&')))
+        self.assertListEqual(['a=0', 'b='], pairs)
 
     def test_params_all(self):
-        query = utils.get_params(status='active', page=3, search='bash_')
+        query = utils.get_params(showPaused=False, page=3, search='bash_')
         self.assertEqual(
             {'page': ['3'],
              'search': ['bash_'],
-             'status': ['active']},
+             'showPaused': ['False']},
             parse_qs(query)
         )
 
@@ -151,85 +173,193 @@ class TestUtils(unittest.TestCase):
         self.assertEqual('search=%27%3E%22%2F%3E%3Cimg+src%3Dx+onerror%3Dalert%281%29%3E',
                          utils.get_params(search="'>\"/><img src=x onerror=alert(1)>"))
 
-    def test_state_token(self):
-        # It's shouldn't possible to set these odd values anymore, but lets
-        # ensure they are escaped!
-        html = str(utils.state_token('<script>alert(1)</script>'))
+    # flask_login is loaded by calling flask_login.utils._get_user.
+    @mock.patch("flask_login.utils._get_user")
+    @mock.patch("airflow.settings.Session")
+    def test_action_logging_with_login_user(self, mocked_session, mocked_get_user):
+        fake_username = 'someone'
+        mocked_current_user = mock.MagicMock()
+        mocked_get_user.return_value = mocked_current_user
+        mocked_current_user.user.username = fake_username
+        mocked_session_instance = mock.MagicMock()
+        mocked_session.return_value = mocked_session_instance
 
-        self.assertIn(
-            '&lt;script&gt;alert(1)&lt;/script&gt;',
-            html,
-        )
-        self.assertNotIn(
-            '<script>alert(1)</script>',
-            html,
-        )
+        app = application.create_app(testing=True)
+        # Patching here to avoid errors in applicant.create_app
+        with mock.patch("airflow.models.Log") as mocked_log:
+            with app.test_request_context():
+                @utils.action_logging
+                def some_func():
+                    pass
 
-    def test_task_instance_link(self):
+                some_func()
+                mocked_log.assert_called_once()
+                (args, kwargs) = mocked_log.call_args_list[0]
+                self.assertEqual('some_func', kwargs['event'])
+                self.assertEqual(fake_username, kwargs['owner'])
+                mocked_session_instance.add.assert_called_once()
 
-        from airflow.www.app import cached_app
-        with cached_app(testing=True).test_request_context():
-            html = str(utils.task_instance_link({
-                'dag_id': '<a&1>',
-                'task_id': '<b2>',
-                'execution_date': datetime.now()
-            }))
+    @mock.patch("flask_login.utils._get_user")
+    @mock.patch("airflow.settings.Session")
+    def test_action_logging_with_invalid_user(self, mocked_session, mocked_get_user):
+        anonymous_username = 'anonymous'
 
-        self.assertIn('%3Ca%261%3E', html)
-        self.assertIn('%3Cb2%3E', html)
-        self.assertNotIn('<a&1>', html)
-        self.assertNotIn('<b2>', html)
+        # When the user returned by flask login_manager._load_user
+        # is invalid.
+        mocked_current_user = mock.MagicMock()
+        mocked_get_user.return_value = mocked_current_user
+        mocked_current_user.user = None
+        mocked_session_instance = mock.MagicMock()
+        mocked_session.return_value = mocked_session_instance
 
-    def test_dag_link(self):
-        from airflow.www.app import cached_app
-        with cached_app(testing=True).test_request_context():
-            html = str(utils.dag_link({
-                'dag_id': '<a&1>',
-                'execution_date': datetime.now()
-            }))
+        app = application.create_app(testing=True)
+        # Patching here to avoid errors in applicant.create_app
+        with mock.patch("airflow.models.Log") as mocked_log:
+            with app.test_request_context():
+                @utils.action_logging
+                def some_func():
+                    pass
 
-        self.assertIn('%3Ca%261%3E', html)
-        self.assertNotIn('<a&1>', html)
+                some_func()
+                mocked_log.assert_called_once()
+                (args, kwargs) = mocked_log.call_args_list[0]
+                self.assertEqual('some_func', kwargs['event'])
+                self.assertEqual(anonymous_username, kwargs['owner'])
+                mocked_session_instance.add.assert_called_once()
 
-    def test_dag_run_link(self):
-        from airflow.www.app import cached_app
-        with cached_app(testing=True).test_request_context():
-            html = str(utils.dag_run_link({
-                'dag_id': '<a&1>',
-                'run_id': '<b2>',
-                'execution_date': datetime.now()
-            }))
+    # flask_login.current_user would be AnonymousUserMixin
+    # when there's no user_id in the flask session.
+    @mock.patch("airflow.settings.Session")
+    def test_action_logging_with_anonymous_user(self, mocked_session):
+        anonymous_username = 'anonymous'
 
-        self.assertIn('%3Ca%261%3E', html)
-        self.assertIn('%3Cb2%3E', html)
-        self.assertNotIn('<a&1>', html)
-        self.assertNotIn('<b2>', html)
+        mocked_session_instance = mock.MagicMock()
+        mocked_session.return_value = mocked_session_instance
+
+        app = application.create_app(testing=True)
+        # Patching here to avoid errors in applicant.create_app
+        with mock.patch("airflow.models.Log") as mocked_log:
+            with app.test_request_context():
+                @utils.action_logging
+                def some_func():
+                    pass
+
+                some_func()
+                mocked_log.assert_called_once()
+                (args, kwargs) = mocked_log.call_args_list[0]
+                self.assertEqual('some_func', kwargs['event'])
+                self.assertEqual(anonymous_username, kwargs['owner'])
+                mocked_session_instance.add.assert_called_once()
+
+    def test_get_python_source_from_method(self):
+        class AMockClass(object):
+            def a_method(self):
+                """ A method """
+                pass
+
+        mocked_class = AMockClass()
+
+        result = utils.get_python_source(mocked_class.a_method)
+        self.assertIn('A method', result)
+
+    def test_get_python_source_from_class(self):
+        class AMockClass(object):
+            def __call__(self):
+                """ A __call__ method """
+                pass
+
+        mocked_class = AMockClass()
+
+        result = utils.get_python_source(mocked_class)
+        self.assertIn('A __call__ method', result)
+
+    def test_get_python_source_from_partial_func(self):
+        def a_function(arg_x, arg_y):
+            """ A function with two args """
+            pass
+
+        partial_function = functools.partial(a_function, arg_x=1)
+
+        result = utils.get_python_source(partial_function)
+        self.assertIn('A function with two args', result)
+
+    def test_get_python_source_from_none(self):
+        result = utils.get_python_source(None)
+        self.assertIn('No source code available', result)
 
 
-class TestAttrRenderer(unittest.TestCase):
+class TestDecorators(unittest.TestCase):
+    EXAMPLE_DAG_DEFAULT_DATE = dates.days_ago(2)
+    run_id = "test_{}".format(DagRun.id_for_date(EXAMPLE_DAG_DEFAULT_DATE))
+
+    @classmethod
+    def setUpClass(cls):
+        cls.dagbag = DagBag(include_examples=True)
+        app = application.create_app(testing=True)
+        app.config['WTF_CSRF_METHODS'] = []
+        cls.app = app.test_client()
 
     def setUp(self):
-        self.attr_renderer = utils.get_attr_renderer()
+        self.session = Session()
+        self.cleanup_dagruns()
+        self.prepare_dagruns()
 
-    def test_python_callable(self):
-        def example_callable(unused_self):
-            print("example")
-        rendered = self.attr_renderer["python_callable"](example_callable)
-        self.assertIn('&quot;example&quot;', rendered)
+    def cleanup_dagruns(self):
+        DR = DagRun
+        dag_ids = 'example_bash_operator'
+        (self.session
+             .query(DR)
+             .filter(DR.dag_id == dag_ids)
+             .filter(DR.run_id == self.run_id)
+             .delete(synchronize_session='fetch'))
+        self.session.commit()
 
-    def test_python_callable_none(self):
-        rendered = self.attr_renderer["python_callable"](None)
-        self.assertEqual("", rendered)
+    def prepare_dagruns(self):
+        self.bash_dag = self.dagbag.dags['example_bash_operator']
+        self.bash_dag.sync_to_db()
 
-    def test_markdown(self):
-        markdown = "* foo\n* bar"
-        rendered = self.attr_renderer["doc_md"](markdown)
-        self.assertIn("<li>foo</li>", rendered)
-        self.assertIn("<li>bar</li>", rendered)
+        self.bash_dagrun = self.bash_dag.create_dagrun(
+            run_id=self.run_id,
+            execution_date=self.EXAMPLE_DAG_DEFAULT_DATE,
+            start_date=timezone.utcnow(),
+            state=State.RUNNING)
 
-    def test_markdown_none(self):
-        rendered = self.attr_renderer["python_callable"](None)
-        self.assertEqual("", rendered)
+    def check_last_log(self, dag_id, event, execution_date=None):
+        qry = self.session.query(Log.dag_id, Log.task_id, Log.event, Log.execution_date,
+                                 Log.owner, Log.extra)
+        qry = qry.filter(Log.dag_id == dag_id, Log.event == event)
+        if execution_date:
+            qry = qry.filter(Log.execution_date == execution_date)
+        logs = qry.order_by(Log.dttm.desc()).limit(5).all()
+        self.assertGreaterEqual(len(logs), 1)
+        self.assertTrue(logs[0].extra)
+
+    def test_action_logging_get(self):
+        url = '/admin/airflow/graph?dag_id=example_bash_operator&execution_date={}'.format(
+            quote_plus(self.EXAMPLE_DAG_DEFAULT_DATE.isoformat().encode('utf-8')))
+        self.app.get(url, follow_redirects=True)
+
+        # In mysql backend, this commit() is needed to write down the logs
+        self.session.commit()
+        self.check_last_log("example_bash_operator", event="graph",
+                            execution_date=self.EXAMPLE_DAG_DEFAULT_DATE)
+
+    def test_action_logging_post(self):
+        form = dict(
+            task_id="runme_1",
+            dag_id="example_bash_operator",
+            execution_date=self.EXAMPLE_DAG_DEFAULT_DATE.isoformat().encode('utf-8'),
+            upstream="false",
+            downstream="false",
+            future="false",
+            past="false",
+            only_failed="false",
+        )
+        self.app.post("/admin/airflow/clear", data=form)
+        # In mysql backend, this commit() is needed to write down the logs
+        self.session.commit()
+        self.check_last_log("example_bash_operator", event="clear",
+                            execution_date=self.EXAMPLE_DAG_DEFAULT_DATE)
 
 
 class TestWrappedMarkdown(unittest.TestCase):
@@ -243,3 +373,20 @@ class TestWrappedMarkdown(unittest.TestCase):
         self.assertEqual(
             '''<div class="rich_doc a_class" ><p><em>italic</em>
 <strong>bold</strong></p></div>''', rendered)
+
+
+class TestWrappedMarkdownRbac(unittest.TestCase):
+
+    def test_wrapped_markdown_with_docstring_curly_braces(self):
+        rendered = wrapped_markdown_rbac("{braces}", css_class="a_class")
+        self.assertEqual('<div class="rich_doc a_class" ><p>{braces}</p></div>', rendered)
+
+    def test_wrapped_markdown_with_some_markdown(self):
+        rendered = wrapped_markdown_rbac("*italic*\n**bold**\n", css_class="a_class")
+        self.assertEqual(
+            '''<div class="rich_doc a_class" ><p><em>italic</em>
+<strong>bold</strong></p></div>''', rendered)
+
+
+if __name__ == '__main__':
+    unittest.main()

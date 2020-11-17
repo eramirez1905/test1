@@ -15,16 +15,15 @@
     specific language governing permissions and limitations
     under the License.
 
-Experimental REST API Reference
-===============================
+REST API Reference
+==================
 
 Airflow exposes an REST API. It is available through the webserver. Endpoints are
 available at ``/api/experimental/``.
 
 .. warning::
 
-  This REST API is deprecated since version 2.0. Please consider using :doc:`the stable REST API <stable-rest-api-ref>`.
-  For more information on migration, see `UPDATING.md <https://github.com/apache/airflow/blob/master/UPDATING.md>`_
+  The API structure is not stable. We expect the endpoint definitions to change.
 
 Endpoints
 ---------
@@ -32,30 +31,17 @@ Endpoints
 .. http:post:: /api/experimental/dags/<DAG_ID>/dag_runs
 
   Creates a dag_run for a given dag id.
-  Note: If execution_date is not specified in the body, airflow by default creates only one DAG per second for a given DAG_ID.
-  In order to create multiple DagRun within one second, you should set parameter ``"replace_microseconds"`` to ``"false"`` (boolean as string).
-
-  The execution_date must be specified with the format ``YYYY-mm-DDTHH:MM:SS.ssssss``.
 
   **Trigger DAG with config, example:**
 
   .. code-block:: bash
 
     curl -X POST \
-        'http://localhost:8080/api/experimental/dags/<DAG_ID>/dag_runs' \
-        --header 'Cache-Control: no-cache' \
-        --header 'Content-Type: application/json' \
-        --data '{"conf":"{\"key\":\"value\"}"}'
+      http://localhost:8080/api/experimental/dags/<DAG_ID>/dag_runs \
+      -H 'Cache-Control: no-cache' \
+      -H 'Content-Type: application/json' \
+      -d '{"conf":"{\"key\":\"value\"}"}'
 
-  **Trigger DAG with milliseconds precision, example:**
-
-  .. code-block:: bash
-
-    curl -X POST  \
-        'http://localhost:8080/api/experimental/dags/<DAG_ID>/dag_runs' \
-        --header 'Content-Type: application/json' \
-        --header 'Cache-Control: no-cache' \
-        --data '{"replace_microseconds":"false"}'
 
 .. http:get:: /api/experimental/dags/<DAG_ID>/dag_runs
 
@@ -115,7 +101,3 @@ Endpoints
 .. http:delete:: /api/experimental/pools/<string:name>
 
   Delete pool.
-
-.. http:get:: /api/experimental/lineage/<DAG_ID>/<string:execution_date>/
-
-  Returns the lineage information for the dag.

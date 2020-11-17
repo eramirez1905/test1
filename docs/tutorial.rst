@@ -30,7 +30,7 @@ Example Pipeline definition
 Here is an example of a basic pipeline definition. Do not worry if this looks
 complicated, a line by line explanation follows below.
 
-.. exampleinclude:: /../airflow/example_dags/tutorial.py
+.. exampleinclude:: ../airflow/example_dags/tutorial.py
     :language: python
     :start-after: [START tutorial]
     :end-before: [END tutorial]
@@ -60,13 +60,10 @@ Importing Modules
 An Airflow pipeline is just a Python script that happens to define an
 Airflow DAG object. Let's start by importing the libraries we will need.
 
-.. exampleinclude:: /../airflow/example_dags/tutorial.py
+.. exampleinclude:: ../airflow/example_dags/tutorial.py
     :language: python
     :start-after: [START import_module]
     :end-before: [END import_module]
-
-
-See :doc:`modules_management` for details on how Python and Airflow manage modules.
 
 Default Arguments
 -----------------
@@ -75,7 +72,7 @@ explicitly pass a set of arguments to each task's constructor
 (which would become redundant), or (better!) we can define a dictionary
 of default parameters that we can use when creating tasks.
 
-.. exampleinclude:: /../airflow/example_dags/tutorial.py
+.. exampleinclude:: ../airflow/example_dags/tutorial.py
     :language: python
     :start-after: [START default_args]
     :end-before: [END default_args]
@@ -96,7 +93,7 @@ that defines the ``dag_id``, which serves as a unique identifier for your DAG.
 We also pass the default argument dictionary that we just defined and
 define a ``schedule_interval`` of 1 day for the DAG.
 
-.. exampleinclude:: /../airflow/example_dags/tutorial.py
+.. exampleinclude:: ../airflow/example_dags/tutorial.py
     :language: python
     :start-after: [START instantiate_dag]
     :end-before: [END instantiate_dag]
@@ -107,7 +104,7 @@ Tasks are generated when instantiating operator objects. An object
 instantiated from an operator is called a constructor. The first argument
 ``task_id`` acts as a unique identifier for the task.
 
-.. exampleinclude:: /../airflow/example_dags/tutorial.py
+.. exampleinclude:: ../airflow/example_dags/tutorial.py
     :language: python
     :start-after: [START basic_task]
     :end-before: [END basic_task]
@@ -142,7 +139,7 @@ this feature exists, get you familiar with double curly brackets, and
 point to the most common template variable: ``{{ ds }}`` (today's "date
 stamp").
 
-.. exampleinclude:: /../airflow/example_dags/tutorial.py
+.. exampleinclude:: ../airflow/example_dags/tutorial.py
     :language: python
     :start-after: [START jinja_template]
     :end-before: [END jinja_template]
@@ -169,7 +166,7 @@ Using that same DAG constructor call, it is possible to define
 ``user_defined_macros`` which allow you to specify your own variables.
 For example, passing ``dict(foo='bar')`` to this argument allows you
 to use ``{{ foo }}`` in your templates. Moreover, specifying
-``user_defined_filters`` allows you to register your own filters. For example,
+``user_defined_filters`` allow you to register you own filters. For example,
 passing ``dict(hello=lambda name: 'Hello %s' % name)`` to this argument allows
 you to use ``{{ 'world' | hello }}`` in your templates. For more information
 regarding custom filters have a look at the
@@ -184,7 +181,7 @@ We can add documentation for DAG or each single task. DAG documentation only sup
 markdown so far and task documentation support plain text, markdown, reStructuredText,
 json, yaml
 
-.. exampleinclude:: /../airflow/example_dags/tutorial.py
+.. exampleinclude:: ../airflow/example_dags/tutorial.py
     :language: python
     :start-after: [START documentation]
     :end-before: [END documentation]
@@ -231,7 +228,7 @@ Recap
 Alright, so we have a pretty basic DAG. At this point your code should look
 something like this:
 
-.. exampleinclude:: /../airflow/example_dags/tutorial.py
+.. exampleinclude:: ../airflow/example_dags/tutorial.py
     :language: python
     :start-after: [START tutorial]
     :end-before: [END tutorial]
@@ -265,17 +262,14 @@ Let's run a few commands to validate this script further.
 
 .. code-block:: bash
 
-    # initialize the database tables
-    airflow db init
-
     # print the list of active DAGs
-    airflow dags list
+    airflow list_dags
 
-    # prints the list of tasks in the "tutorial" DAG
-    airflow tasks list tutorial
+    # prints the list of tasks the "tutorial" dag_id
+    airflow list_tasks tutorial
 
-    # prints the hierarchy of tasks in the "tutorial" DAG
-    airflow tasks list tutorial --tree
+    # prints the hierarchy of tasks in the tutorial DAG
+    airflow list_tasks tutorial --tree
 
 
 Testing
@@ -291,10 +285,10 @@ or as soon as its dependencies are met).
     # command layout: command subcommand dag_id task_id date
 
     # testing print_date
-    airflow tasks test tutorial print_date 2015-06-01
+    airflow test tutorial print_date 2015-06-01
 
     # testing sleep
-    airflow tasks test tutorial sleep 2015-06-01
+    airflow test tutorial sleep 2015-06-01
 
 Now remember what we did with templating earlier? See how this template
 gets rendered and executed by running this command:
@@ -302,17 +296,17 @@ gets rendered and executed by running this command:
 .. code-block:: bash
 
     # testing templated
-    airflow tasks test tutorial templated 2015-06-01
+    airflow test tutorial templated 2015-06-01
 
 This should result in displaying a verbose log of events and ultimately
 running your bash command and printing the result.
 
-Note that the ``airflow tasks test`` command runs task instances locally, outputs
+Note that the ``airflow test`` command runs task instances locally, outputs
 their log to stdout (on screen), doesn't bother with dependencies, and
 doesn't communicate state (running, success, failed, ...) to the database.
 It simply allows testing a single task instance.
 
-The same applies to ``airflow dags test [dag_id] [execution_date]``, but on a DAG level. It performs a single
+The same applies to ``airflow test [dag_id] [execution_date]``, but on a DAG level. It performs a single
 DAG run of the given DAG id. While it does take task dependencies into account, no state is registered in the
 database. It is convenient for locally testing a full run of your DAG, given that e.g. if one of your tasks
 expects data at some location, it is available.
@@ -346,9 +340,7 @@ which are used to populate the run schedule with task instances from this dag.
     # airflow webserver --debug &
 
     # start your backfill on a date range
-    airflow dags backfill tutorial \
-        --start-date 2015-06-01 \
-        --end-date 2015-06-07
+    airflow backfill tutorial -s 2015-06-01 -e 2015-06-07
 
 What's Next?
 -------------

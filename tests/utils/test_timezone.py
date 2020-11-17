@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -17,19 +18,18 @@
 # under the License.
 
 import datetime
-import unittest
-
 import pendulum
+import unittest
 
 from airflow.utils import timezone
 
-CET = pendulum.tz.timezone("Europe/Paris")
-EAT = pendulum.tz.timezone('Africa/Nairobi')  # Africa/Nairobi
-ICT = pendulum.tz.timezone('Asia/Bangkok')  # Asia/Bangkok
+CET = pendulum.timezone("Europe/Paris")
+EAT = pendulum.timezone('Africa/Nairobi')  # Africa/Nairobi
+ICT = pendulum.timezone('Asia/Bangkok')  # Asia/Bangkok
 UTC = timezone.utc
 
 
-class TestTimezone(unittest.TestCase):
+class TimezoneTest(unittest.TestCase):
     def test_is_aware(self):
         self.assertTrue(timezone.is_localized(datetime.datetime(2011, 9, 1, 13, 20, 30, tzinfo=EAT)))
         self.assertFalse(timezone.is_localized(datetime.datetime(2011, 9, 1, 13, 20, 30)))

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -16,11 +17,19 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import unittest
 import warnings
-from unittest import mock
 
-from airflow.utils.log.logging_mixin import StreamLogWriter, set_context
+import six
+
+from airflow.operators.bash_operator import BashOperator
+from airflow.utils.log.logging_mixin import set_context, StreamLogWriter
+from tests.compat import mock
+
+if six.PY2:
+    # Need `assertWarns` back-ported from unittest2
+    import unittest2 as unittest
+else:
+    import unittest
 
 
 class TestLoggingMixin(unittest.TestCase):
@@ -28,6 +37,17 @@ class TestLoggingMixin(unittest.TestCase):
         warnings.filterwarnings(
             action='always'
         )
+
+    def test_log(self):
+        op = BashOperator(
+            task_id='task-1',
+            bash_command='exit 0'
+        )
+        with self.assertWarns(DeprecationWarning) as cm:
+            op.logger.info('Some arbitrary line')
+        warning = cm.warning
+        assert 'Initializing logger for airflow.operators.bash_operator.BashOperator' \
+            ' using logger(), which will be replaced by .log in Airflow 2.0' == str(warning.args[0])
 
     def test_set_context(self):
         handler1 = mock.MagicMock()
@@ -43,8 +63,8 @@ class TestLoggingMixin(unittest.TestCase):
         value = "test"
         set_context(log, value)
 
-        handler1.set_context.assert_called_once_with(value)
-        handler2.set_context.assert_called_once_with(value)
+        handler1.set_context.assert_called_with(value)
+        handler2.set_context.assert_called_with(value)
 
     def tearDown(self):
         warnings.resetwarnings()

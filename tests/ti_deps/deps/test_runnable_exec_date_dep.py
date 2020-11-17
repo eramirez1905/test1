@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -17,10 +18,9 @@
 # under the License.
 
 import unittest
-from unittest.mock import Mock
-
 import pytest
 from freezegun import freeze_time
+from mock import Mock
 
 from airflow.models import DAG, TaskInstance
 from airflow.operators.dummy_operator import DummyOperator
@@ -57,7 +57,7 @@ def test_exec_date_dep(allow_trigger_in_future, schedule_interval, execution_dat
         assert RunnableExecDateDep().is_met(ti=ti) == is_met
 
 
-class TestRunnableExecDateDep(unittest.TestCase):
+class RunnableExecDateDepTest(unittest.TestCase):
 
     def _get_task_instance(self, execution_date, dag_end_date=None, task_end_date=None):
         dag = Mock(end_date=dag_end_date)

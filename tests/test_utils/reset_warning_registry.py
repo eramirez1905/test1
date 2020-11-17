@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -18,7 +19,6 @@
 
 import re
 import sys
-from typing import Dict, Match, Optional
 
 
 # We need to explicitly clear the warning registry context
@@ -31,7 +31,7 @@ from typing import Dict, Match, Optional
 # Proposed fix from Stack overflow, which refers to the Python bug-page
 # noqa
 # https://stackoverflow.com/questions/19428761/python-showing-once-warnings-again-resetting-all-warning-registries
-class reset_warning_registry:  # pylint: disable=invalid-name
+class reset_warning_registry(object):
     """
     context manager which archives & clears warning registry for duration of
     context.
@@ -42,10 +42,10 @@ class reset_warning_registry:  # pylint: disable=invalid-name
     """
 
     #: regexp for filtering which modules are reset
-    _pattern = None  # type: Optional[Match[str]]
+    _pattern = None
 
     #: dict mapping module name -> old registry contents
-    _backup = None  # type: Optional[Dict]
+    _backup = None
 
     def __init__(self, pattern=None):
         self._pattern = re.compile(pattern or ".*")

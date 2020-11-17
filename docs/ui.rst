@@ -28,7 +28,7 @@ DAGs View
 .........
 List of the DAGs in your environment, and a set of shortcuts to useful pages.
 You can see exactly how many tasks succeeded, failed, or are currently
-running at a glance. To hide completed tasks set show_recent_stats_for_completed_runs = False
+running at a glance.
 
 In order to filter DAGs (e.g by team), you can add tags in each dag.
 The filter is saved in a cookie and can be reset by the reset button.
@@ -78,13 +78,6 @@ The variable view allows you to list, create, edit or delete the key-value pair
 of a variable used during jobs. Value of a variable will be hidden if the key contains
 any words in ('password', 'secret', 'passwd', 'authorization', 'api_key', 'apikey', 'access_token')
 by default, but can be configured to show in clear-text.
-
-It's also can be configured to extend this list by using the following configurations option:
-
-.. code-block:: ini
-
-    [admin]
-    hide_sensitive_variable_fields = comma_seperated_sensitive_variable_fields_list
 
 ------------
 

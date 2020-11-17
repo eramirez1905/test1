@@ -15,17 +15,16 @@
 # specific language governing permissions and limitations
 # under the License.
 
-from typing import Optional
-from unittest import mock
+from tests.compat import MagicMock
 
 
 class MockDBConnection:
     def __init__(self, extra_dejson=None, *args, **kwargs):
         self.extra_dejson = extra_dejson
-        self.get_records = mock.MagicMock(return_value=[['test_record']])
+        self.get_records = MagicMock(return_value=[['test_record']])
 
         output = kwargs.get('output', ['' for _ in range(10)])
-        self.readline = mock.MagicMock(
+        self.readline = MagicMock(
             side_effect=[line.encode() for line in output])
 
     def status(self, *args, **kwargs):
@@ -35,14 +34,14 @@ class MockDBConnection:
 class MockStdOut:
     def __init__(self, *args, **kwargs):
         output = kwargs.get('output', ['' for _ in range(10)])
-        self.readline = mock.MagicMock(
+        self.readline = MagicMock(
             side_effect=[line.encode() for line in output])
 
 
 class MockSubProcess:
     PIPE = -1
     STDOUT = -2
-    returncode: Optional[int] = None
+    returncode = None
 
     def __init__(self, *args, **kwargs):
         self.stdout = MockStdOut(*args, **kwargs)

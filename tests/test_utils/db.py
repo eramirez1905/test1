@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -15,15 +16,13 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-from airflow.jobs.base_job import BaseJob
 from airflow.models import (
-    Connection, DagModel, DagRun, DagTag, Log, Pool, RenderedTaskInstanceFields, SlaMiss, TaskFail,
-    TaskInstance, TaskReschedule, Variable, XCom, errors,
+    Connection, DagModel, DagRun, DagTag, Pool, RenderedTaskInstanceFields, SlaMiss, TaskInstance, Variable,
+    errors,
 )
 from airflow.models.dagcode import DagCode
-from airflow.models.serialized_dag import SerializedDagModel
-from airflow.utils.db import add_default_pool_if_not_exists, create_default_connections
-from airflow.utils.session import create_session
+from airflow.utils.db import add_default_pool_if_not_exists, create_default_connections, \
+    create_session
 
 
 def clear_db_runs():
@@ -36,11 +35,6 @@ def clear_db_dags():
     with create_session() as session:
         session.query(DagTag).delete()
         session.query(DagModel).delete()
-
-
-def clear_db_serialized_dags():
-    with create_session() as session:
-        session.query(SerializedDagModel).delete()
 
 
 def clear_db_sla_miss():
@@ -59,11 +53,10 @@ def clear_db_pools():
         add_default_pool_if_not_exists(session)
 
 
-def clear_db_connections(add_default_connections_back=True):
+def clear_db_connections():
     with create_session() as session:
         session.query(Connection).delete()
-        if add_default_connections_back:
-            create_default_connections(session)
+        create_default_connections(session)
 
 
 def clear_db_variables():
@@ -85,33 +78,3 @@ def set_default_pool_slots(slots):
 def clear_rendered_ti_fields():
     with create_session() as session:
         session.query(RenderedTaskInstanceFields).delete()
-
-
-def clear_db_import_errors():
-    with create_session() as session:
-        session.query(errors.ImportError).delete()
-
-
-def clear_db_xcom():
-    with create_session() as session:
-        session.query(XCom).delete()
-
-
-def clear_db_logs():
-    with create_session() as session:
-        session.query(Log).delete()
-
-
-def clear_db_jobs():
-    with create_session() as session:
-        session.query(BaseJob).delete()
-
-
-def clear_db_task_fail():
-    with create_session() as session:
-        session.query(TaskFail).delete()
-
-
-def clear_db_task_reschedule():
-    with create_session() as session:
-        session.query(TaskReschedule).delete()

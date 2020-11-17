@@ -19,7 +19,10 @@
 import datetime
 import unittest
 
-import mock
+import six
+
+from tests.compat import mock
+
 import pytest
 
 from airflow.exceptions import AirflowException
@@ -30,9 +33,9 @@ from airflow.operators.check_operator import (
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.sql import BranchSQLOperator
 from airflow.utils import timezone
-from airflow.utils.session import create_session
+from airflow.utils.db import create_session
 from airflow.utils.state import State
-from tests.providers.apache.hive import TestHiveEnvironment
+from tests.hooks.test_hive_hook import TestHiveEnvironment
 
 DEFAULT_DATE = timezone.datetime(2016, 1, 1)
 INTERVAL = datetime.timedelta(hours=12)
@@ -137,7 +140,7 @@ class TestValueCheckOperator(unittest.TestCase):
         operator = self._construct_operator(
             "select value from tab1 limit 1;", 5, 1)
 
-        with self.assertRaisesRegex(AirflowException, "Tolerance:100.0%"):
+        with six.assertRaisesRegex(self, AirflowException, "Tolerance:100.0%"):
             operator.execute()
 
 
@@ -152,7 +155,7 @@ class TestIntervalCheckOperator(unittest.TestCase):
         )
 
     def test_invalid_ratio_formula(self):
-        with self.assertRaisesRegex(AirflowException, "Invalid diff_method"):
+        with six.assertRaisesRegex(self, AirflowException, "Invalid diff_method"):
             self._construct_operator(
                 table="test_table",
                 metric_thresholds={"f1": 1, },
@@ -200,8 +203,7 @@ class TestIntervalCheckOperator(unittest.TestCase):
                 [2, 2, 2, 2],  # reference
                 [1, 1, 1, 1],  # current
             ]
-
-            yield from rows
+            return rows
 
         mock_hook.get_first.side_effect = returned_row()
         mock_get_db_hook.return_value = mock_hook
@@ -213,7 +215,7 @@ class TestIntervalCheckOperator(unittest.TestCase):
             ignore_zero=True,
         )
 
-        with self.assertRaisesRegex(AirflowException, "f0, f1, f2"):
+        with six.assertRaisesRegex(self, AirflowException, "f0, f1, f2"):
             operator.execute()
 
     @mock.patch.object(IntervalCheckOperator, "get_db_hook")
@@ -226,7 +228,7 @@ class TestIntervalCheckOperator(unittest.TestCase):
                 [1, 1, 1, 1],  # current
             ]
 
-            yield from rows
+            return rows
 
         mock_hook.get_first.side_effect = returned_row()
         mock_get_db_hook.return_value = mock_hook
@@ -238,7 +240,7 @@ class TestIntervalCheckOperator(unittest.TestCase):
             ignore_zero=True,
         )
 
-        with self.assertRaisesRegex(AirflowException, "f0, f1"):
+        with six.assertRaisesRegex(self, AirflowException, "f0, f1"):
             operator.execute()
 
 
@@ -276,7 +278,7 @@ class TestThresholdCheckOperator(unittest.TestCase):
             "Select avg(val) from table1 limit 1", 20, 100
         )
 
-        with self.assertRaisesRegex(AirflowException, "10.*20.0.*100.0"):
+        with six.assertRaisesRegex(self, AirflowException, "10.*20.0.*100.0"):
             operator.execute()
 
     @mock.patch.object(ThresholdCheckOperator, "get_db_hook")
@@ -299,7 +301,7 @@ class TestThresholdCheckOperator(unittest.TestCase):
         operator = self._construct_operator(
             "Select 10", "Select 20", "Select 100")
 
-        with self.assertRaisesRegex(AirflowException, "10.*20.*100"):
+        with six.assertRaisesRegex(self, AirflowException, "10.*20.*100"):
             operator.execute()
 
     @mock.patch.object(ThresholdCheckOperator, "get_db_hook")
@@ -320,7 +322,7 @@ class TestThresholdCheckOperator(unittest.TestCase):
 
         operator = self._construct_operator("Select 155", "Select 45", 100)
 
-        with self.assertRaisesRegex(AirflowException, "155.*45.*100.0"):
+        with six.assertRaisesRegex(self, AirflowException, "155.*45.*100.0"):
             operator.execute()
 
 
@@ -331,14 +333,14 @@ class TestSqlBranch(TestHiveEnvironment, unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        super().setUpClass()
+        super(TestSqlBranch, cls).setUpClass()
 
         with create_session() as session:
             session.query(DagRun).delete()
             session.query(TI).delete()
 
     def setUp(self):
-        super().setUp()
+        super(TestSqlBranch, self).setUp()
         self.dag = DAG(
             "sql_branch_operator_test",
             default_args={"owner": "airflow", "start_date": DEFAULT_DATE},
@@ -349,14 +351,14 @@ class TestSqlBranch(TestHiveEnvironment, unittest.TestCase):
         self.branch_3 = None
 
     def tearDown(self):
-        super().tearDown()
+        super(TestSqlBranch, self).tearDown()
 
         with create_session() as session:
             session.query(DagRun).delete()
             session.query(TI).delete()
 
     def test_unsupported_conn_type(self):
-        """Check if BranchSQLOperator throws an exception for unsupported connection type """
+        """ Check if BranchSQLOperator throws an exception for unsupported connection type """
         op = BranchSQLOperator(
             task_id="make_choice",
             conn_id="redis_default",
@@ -371,7 +373,7 @@ class TestSqlBranch(TestHiveEnvironment, unittest.TestCase):
                    end_date=DEFAULT_DATE, ignore_ti_state=True)
 
     def test_invalid_conn(self):
-        """Check if BranchSQLOperator throws an exception for invalid connection """
+        """ Check if BranchSQLOperator throws an exception for invalid connection """
         op = BranchSQLOperator(
             task_id="make_choice",
             conn_id="invalid_connection",
@@ -386,7 +388,7 @@ class TestSqlBranch(TestHiveEnvironment, unittest.TestCase):
                    end_date=DEFAULT_DATE, ignore_ti_state=True)
 
     def test_invalid_follow_task_true(self):
-        """Check if BranchSQLOperator throws an exception for invalid connection """
+        """ Check if BranchSQLOperator throws an exception for invalid connection """
         op = BranchSQLOperator(
             task_id="make_choice",
             conn_id="invalid_connection",
@@ -401,7 +403,7 @@ class TestSqlBranch(TestHiveEnvironment, unittest.TestCase):
                    end_date=DEFAULT_DATE, ignore_ti_state=True)
 
     def test_invalid_follow_task_false(self):
-        """Check if BranchSQLOperator throws an exception for invalid connection """
+        """ Check if BranchSQLOperator throws an exception for invalid connection """
         op = BranchSQLOperator(
             task_id="make_choice",
             conn_id="invalid_connection",
@@ -417,7 +419,7 @@ class TestSqlBranch(TestHiveEnvironment, unittest.TestCase):
 
     @pytest.mark.backend("mysql")
     def test_sql_branch_operator_mysql(self):
-        """Check if BranchSQLOperator works with backend """
+        """ Check if BranchSQLOperator works with backend """
         branch_op = BranchSQLOperator(
             task_id="make_choice",
             conn_id="mysql_default",
@@ -432,7 +434,7 @@ class TestSqlBranch(TestHiveEnvironment, unittest.TestCase):
 
     @pytest.mark.backend("postgres")
     def test_sql_branch_operator_postgres(self):
-        """Check if BranchSQLOperator works with backend """
+        """ Check if BranchSQLOperator works with backend """
         branch_op = BranchSQLOperator(
             task_id="make_choice",
             conn_id="postgres_default",
@@ -447,7 +449,7 @@ class TestSqlBranch(TestHiveEnvironment, unittest.TestCase):
 
     @mock.patch("airflow.operators.sql.BaseHook")
     def test_branch_single_value_with_dag_run(self, mock_hook):
-        """Check BranchSQLOperator branch operation """
+        """ Check BranchSQLOperator branch operation """
         branch_op = BranchSQLOperator(
             task_id="make_choice",
             conn_id="mysql_default",
@@ -486,11 +488,11 @@ class TestSqlBranch(TestHiveEnvironment, unittest.TestCase):
             elif ti.task_id == "branch_2":
                 self.assertEqual(ti.state, State.SKIPPED)
             else:
-                raise ValueError(f"Invalid task id {ti.task_id} found!")
+                raise ValueError("Invalid task id {task_id} found!".format(task_id=ti.task_id))
 
     @mock.patch("airflow.operators.sql.BaseHook")
     def test_branch_true_with_dag_run(self, mock_hook):
-        """Check BranchSQLOperator branch operation """
+        """ Check BranchSQLOperator branch operation """
         branch_op = BranchSQLOperator(
             task_id="make_choice",
             conn_id="mysql_default",
@@ -530,11 +532,11 @@ class TestSqlBranch(TestHiveEnvironment, unittest.TestCase):
                 elif ti.task_id == "branch_2":
                     self.assertEqual(ti.state, State.SKIPPED)
                 else:
-                    raise ValueError(f"Invalid task id {ti.task_id} found!")
+                    raise ValueError("Invalid task id {task_id} found!".format(task_id=ti.task_id))
 
     @mock.patch("airflow.operators.sql.BaseHook")
     def test_branch_false_with_dag_run(self, mock_hook):
-        """Check BranchSQLOperator branch operation """
+        """ Check BranchSQLOperator branch operation """
         branch_op = BranchSQLOperator(
             task_id="make_choice",
             conn_id="mysql_default",
@@ -574,11 +576,11 @@ class TestSqlBranch(TestHiveEnvironment, unittest.TestCase):
                 elif ti.task_id == "branch_2":
                     self.assertEqual(ti.state, State.NONE)
                 else:
-                    raise ValueError(f"Invalid task id {ti.task_id} found!")
+                    raise ValueError("Invalid task id {task_id} found!".format(task_id=ti.task_id))
 
     @mock.patch("airflow.operators.sql.BaseHook")
     def test_branch_list_with_dag_run(self, mock_hook):
-        """Checks if the BranchSQLOperator supports branching off to a list of tasks."""
+        """ Checks if the BranchSQLOperator supports branching off to a list of tasks."""
         branch_op = BranchSQLOperator(
             task_id="make_choice",
             conn_id="mysql_default",
@@ -620,11 +622,11 @@ class TestSqlBranch(TestHiveEnvironment, unittest.TestCase):
             elif ti.task_id == "branch_3":
                 self.assertEqual(ti.state, State.SKIPPED)
             else:
-                raise ValueError(f"Invalid task id {ti.task_id} found!")
+                raise ValueError("Invalid task id {task_id} found!".format(task_id=ti.task_id))
 
     @mock.patch("airflow.operators.sql.BaseHook")
     def test_invalid_query_result_with_dag_run(self, mock_hook):
-        """Check BranchSQLOperator branch operation """
+        """ Check BranchSQLOperator branch operation """
         branch_op = BranchSQLOperator(
             task_id="make_choice",
             conn_id="mysql_default",
@@ -657,7 +659,7 @@ class TestSqlBranch(TestHiveEnvironment, unittest.TestCase):
 
     @mock.patch("airflow.operators.sql.BaseHook")
     def test_with_skip_in_branch_downstream_dependencies(self, mock_hook):
-        """Test SQL Branch with skipping all downstream dependencies """
+        """ Test SQL Branch with skipping all downstream dependencies """
         branch_op = BranchSQLOperator(
             task_id="make_choice",
             conn_id="mysql_default",
@@ -697,11 +699,11 @@ class TestSqlBranch(TestHiveEnvironment, unittest.TestCase):
                 elif ti.task_id == "branch_2":
                     self.assertEqual(ti.state, State.NONE)
                 else:
-                    raise ValueError(f"Invalid task id {ti.task_id} found!")
+                    raise ValueError("Invalid task id {task_id} found!".format(task_id=ti.task_id))
 
     @mock.patch("airflow.operators.sql.BaseHook")
     def test_with_skip_in_branch_downstream_dependencies2(self, mock_hook):
-        """Test skipping downstream dependency for false condition"""
+        """ Test skipping downstream dependency for false condition"""
         branch_op = BranchSQLOperator(
             task_id="make_choice",
             conn_id="mysql_default",
@@ -741,4 +743,4 @@ class TestSqlBranch(TestHiveEnvironment, unittest.TestCase):
                 elif ti.task_id == "branch_2":
                     self.assertEqual(ti.state, State.NONE)
                 else:
-                    raise ValueError(f"Invalid task id {ti.task_id} found!")
+                    raise ValueError("Invalid task id {task_id} found!".format(task_id=ti.task_id))

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -16,8 +17,10 @@
 # specific language governing permissions and limitations
 # under the License.
 
+import mock
 import unittest
-from unittest import mock
+
+import six
 
 from airflow.www import validators
 
@@ -25,7 +28,7 @@ from airflow.www import validators
 class TestGreaterEqualThan(unittest.TestCase):
 
     def setUp(self):
-        super().setUp()
+        super(TestGreaterEqualThan, self).setUp()
         self.form_field_mock = mock.MagicMock(data='2017-05-06')
         self.form_field_mock.gettext.side_effect = lambda msg: msg
         self.other_field_mock = mock.MagicMock(data='2017-05-05')
@@ -45,7 +48,8 @@ class TestGreaterEqualThan(unittest.TestCase):
         return validator(self.form_mock, self.form_field_mock)
 
     def test_field_not_found(self):
-        self.assertRaisesRegex(
+        six.assertRaisesRegex(
+            self,
             validators.ValidationError,
             "^Invalid field name 'some'.$",
             self._validate,
@@ -74,7 +78,8 @@ class TestGreaterEqualThan(unittest.TestCase):
     def test_validation_raises(self):
         self.form_field_mock.data = '2017-05-04'
 
-        self.assertRaisesRegex(
+        six.assertRaisesRegex(
+            self,
             validators.ValidationError,
             "^Field must be greater than or equal to other field.$",
             self._validate,
@@ -83,7 +88,8 @@ class TestGreaterEqualThan(unittest.TestCase):
     def test_validation_raises_custom_message(self):
         self.form_field_mock.data = '2017-05-04'
 
-        self.assertRaisesRegex(
+        six.assertRaisesRegex(
+            self,
             validators.ValidationError,
             "^This field must be greater than or equal to MyField.$",
             self._validate,
@@ -91,43 +97,5 @@ class TestGreaterEqualThan(unittest.TestCase):
         )
 
 
-class TestValidJson(unittest.TestCase):
-
-    def setUp(self):
-        super().setUp()
-        self.form_field_mock = mock.MagicMock(data='{"valid":"True"}')
-        self.form_field_mock.gettext.side_effect = lambda msg: msg
-        self.form_mock = mock.MagicMock(spec_set=dict)
-
-    def _validate(self, message=None):
-
-        validator = validators.ValidJson(message=message)
-
-        return validator(self.form_mock, self.form_field_mock)
-
-    def test_form_field_is_none(self):
-        self.form_field_mock.data = None
-
-        self.assertIsNone(self._validate())
-
-    def test_validation_pass(self):
-        self.assertIsNone(self._validate())
-
-    def test_validation_raises_default_message(self):
-        self.form_field_mock.data = '2017-05-04'
-
-        self.assertRaisesRegex(
-            validators.ValidationError,
-            "JSON Validation Error:.*",
-            self._validate,
-        )
-
-    def test_validation_raises_custom_message(self):
-        self.form_field_mock.data = '2017-05-04'
-
-        self.assertRaisesRegex(
-            validators.ValidationError,
-            "Invalid JSON",
-            self._validate,
-            message="Invalid JSON: {}",
-        )
+if __name__ == '__main__':
+    unittest.main()

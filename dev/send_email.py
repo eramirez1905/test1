@@ -37,9 +37,14 @@ except ModuleNotFoundError:
 
 SMTP_PORT = 587
 SMTP_SERVER = "mail-relay.apache.org"
+PROJECT_NAME = "Airflow"
+PROJECT_MODULE = "airflow"
+PROJECT_DESCRIPTION = "Apache Airflow - A platform to programmatically author, " \
+                      "schedule, and monitor workflows"
+TWITTER_HANDLE = "@ApacheAirflow"
 MAILING_LIST = {
-    "dev": "dev@airflow.apache.org",
-    "users": "users@airflow.apache.org"
+    "dev": f"dev@{PROJECT_MODULE}.apache.org",
+    "users": f"users@{PROJECT_MODULE}.apache.org"
 }
 
 
@@ -127,7 +132,7 @@ class BaseParameters:
         self.password = password
         self.version = version
         self.version_rc = version_rc
-        self.template_arguments = {}
+        self.template_arguments = dict()
 
     def __repr__(self):
         return f"Apache Credentials: {self.email}/{self.username}/{self.version}/{self.version_rc}"
@@ -195,9 +200,13 @@ def cli(
     base_parameters = BaseParameters(
         name, apache_email, apache_username, apache_password, version, version_rc
     )
+    base_parameters.template_arguments["project_name"] = PROJECT_NAME
+    base_parameters.template_arguments["project_module"] = PROJECT_MODULE
+    base_parameters.template_arguments["project_description"] = PROJECT_DESCRIPTION
     base_parameters.template_arguments["version"] = base_parameters.version
     base_parameters.template_arguments["version_rc"] = base_parameters.version_rc
     base_parameters.template_arguments["sender_email"] = base_parameters.email
+    base_parameters.template_arguments["twitter_handle"] = TWITTER_HANDLE
     base_parameters.template_arguments["release_manager"] = base_parameters.name
     ctx.obj = base_parameters
 

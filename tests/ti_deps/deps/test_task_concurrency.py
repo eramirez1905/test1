@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -18,15 +19,14 @@
 
 import unittest
 from datetime import datetime
-from unittest.mock import Mock
+from mock import Mock
 
-from airflow.models import DAG
-from airflow.models.baseoperator import BaseOperator
+from airflow.models import DAG, BaseOperator
 from airflow.ti_deps.dep_context import DepContext
 from airflow.ti_deps.deps.task_concurrency_dep import TaskConcurrencyDep
 
 
-class TestTaskConcurrencyDep(unittest.TestCase):
+class TaskConcurrencyDepTest(unittest.TestCase):
 
     def _get_task(self, **kwargs):
         return BaseOperator(task_id='test_task', dag=DAG('test_dag'), **kwargs)

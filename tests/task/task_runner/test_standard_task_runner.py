@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -16,23 +17,23 @@
 # specific language governing permissions and limitations
 # under the License.
 import getpass
+import mock
 import os
+import psutil
 import time
 import unittest
-from logging.config import dictConfig
-from unittest import mock
-
-import psutil
 
 from airflow import models, settings
-from airflow.jobs.local_task_job import LocalTaskJob
+from airflow.jobs import LocalTaskJob
 from airflow.models import TaskInstance as TI
-from airflow.task.task_runner.standard_task_runner import StandardTaskRunner
+from airflow.task.task_runner import StandardTaskRunner
 from airflow.utils import timezone
 from airflow.utils.state import State
-from tests.test_utils.db import clear_db_runs
 
-TEST_DAG_FOLDER = os.environ['AIRFLOW__CORE__DAGS_FOLDER']
+from logging.config import dictConfig
+
+from tests.test_core import TEST_DAG_FOLDER
+from tests.test_utils.db import clear_db_runs
 
 DEFAULT_DATE = timezone.datetime(2016, 1, 1)
 
@@ -75,7 +76,7 @@ class TestStandardTaskRunner(unittest.TestCase):
         local_task_job.task_instance = mock.MagicMock()
         local_task_job.task_instance.run_as_user = None
         local_task_job.task_instance.command_as_list.return_value = [
-            'airflow', 'tasks', 'test', 'test_on_kill', 'task1', '2016-01-01'
+            'airflow', 'test', 'test_on_kill', 'task1', '2016-01-01'
         ]
 
         runner = StandardTaskRunner(local_task_job)
@@ -86,12 +87,12 @@ class TestStandardTaskRunner(unittest.TestCase):
         self.assertGreater(pgid, 0)
         self.assertNotEqual(pgid, os.getpgid(0), "Task should be in a different process group to us")
 
-        processes = list(self._procs_in_pgroup(pgid))
+        procs = list(self._procs_in_pgroup(pgid))
 
         runner.terminate()
 
-        for process in processes:
-            self.assertFalse(psutil.pid_exists(process.pid), "{} is still alive".format(process))
+        for p in procs:
+            self.assertFalse(psutil.pid_exists(p.pid), "{} is still alive".format(p))
 
         self.assertIsNotNone(runner.return_code())
 
@@ -100,7 +101,7 @@ class TestStandardTaskRunner(unittest.TestCase):
         local_task_job.task_instance = mock.MagicMock()
         local_task_job.task_instance.run_as_user = getpass.getuser()
         local_task_job.task_instance.command_as_list.return_value = [
-            'airflow', 'tasks', 'test', 'test_on_kill', 'task1', '2016-01-01'
+            'airflow', 'test', 'test_on_kill', 'task1', '2016-01-01'
         ]
 
         runner = StandardTaskRunner(local_task_job)
@@ -112,12 +113,12 @@ class TestStandardTaskRunner(unittest.TestCase):
         self.assertGreater(pgid, 0)
         self.assertNotEqual(pgid, os.getpgid(0), "Task should be in a different process group to us")
 
-        processes = list(self._procs_in_pgroup(pgid))
+        procs = list(self._procs_in_pgroup(pgid))
 
         runner.terminate()
 
-        for process in processes:
-            self.assertFalse(psutil.pid_exists(process.pid), "{} is still alive".format(process))
+        for p in procs:
+            self.assertFalse(psutil.pid_exists(p.pid), "{} is still alive".format(p))
 
         self.assertIsNotNone(runner.return_code())
 
@@ -153,14 +154,14 @@ class TestStandardTaskRunner(unittest.TestCase):
         runner = StandardTaskRunner(job1)
         runner.start()
 
-        # give the task some time to startup
+        # Give the task some time to startup
         time.sleep(3)
 
         pgid = os.getpgid(runner.process.pid)
         self.assertGreater(pgid, 0)
         self.assertNotEqual(pgid, os.getpgid(0), "Task should be in a different process group to us")
 
-        processes = list(self._procs_in_pgroup(pgid))
+        procs = list(self._procs_in_pgroup(pgid))
 
         runner.terminate()
 
@@ -173,14 +174,18 @@ class TestStandardTaskRunner(unittest.TestCase):
         with open(path, "r") as f:
             self.assertEqual("ON_KILL_TEST", f.readline())
 
-        for process in processes:
-            self.assertFalse(psutil.pid_exists(process.pid), "{} is still alive".format(process))
+        for p in procs:
+            self.assertFalse(psutil.pid_exists(p.pid), "{} is still alive".format(p))
 
     @staticmethod
     def _procs_in_pgroup(pgid):
-        for proc in psutil.process_iter(attrs=['pid', 'name']):
+        for p in psutil.process_iter(attrs=['pid', 'name']):
             try:
-                if os.getpgid(proc.pid) == pgid and proc.pid != 0:
-                    yield proc
+                if os.getpgid(p.pid) == pgid and p.pid != 0:
+                    yield p
             except OSError:
                 pass
+
+
+if __name__ == '__main__':
+    unittest.main()

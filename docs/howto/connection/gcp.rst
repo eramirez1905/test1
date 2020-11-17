@@ -19,16 +19,16 @@
 
 .. _howto/connection:gcp:
 
-Google Cloud Connection
+Google Cloud Platform Connection
 ================================
 
-The Google Cloud connection type enables the :ref:`Google Cloud Integrations
+The Google Cloud Platform connection type enables the :ref:`GCP Integrations
 <GCP>`.
 
-Authenticating to Google Cloud
-------------------------------
+Authenticating to GCP
+---------------------
 
-There are three ways to connect to Google Cloud using Airflow.
+There are three ways to connect to GCP using Airflow.
 
 1. Use `Application Default Credentials
    <https://google-auth.readthedocs.io/en/latest/reference/google.auth.html#google.auth.default>`_,
@@ -38,13 +38,33 @@ There are three ways to connect to Google Cloud using Airflow.
    file (JSON format) on disk - ``Keyfile Path``.
 3. Use a service account key file (JSON format) from connection configuration - ``Keyfile JSON``.
 
-Only one authorization method can be used at a time. If you need to manage multiple keys then you should
-configure multiple connections.
-
 Default Connection IDs
 ----------------------
 
-All hooks and operators related to Google Cloud use ``google_cloud_default`` by default.
+The following connection IDs are used by default.
+
+``bigquery_default``
+    Used by the :class:`~airflow.contrib.hooks.bigquery_hook.BigQueryHook`
+    hook.
+
+``google_cloud_datastore_default``
+    Used by the :class:`~airflow.contrib.hooks.datastore_hook.DatastoreHook`
+    hook.
+
+``google_cloud_default``
+    Used by those hooks:
+
+    * :class:`~airflow.contrib.hooks.gcp_api_base_hook.GoogleCloudBaseHook`
+    * :class:`~airflow.contrib.hooks.gcp_dataflow_hook.DataFlowHook`
+    * :class:`~airflow.contrib.hooks.gcp_dataproc_hook.DataProcHook`
+    * :class:`~airflow.contrib.hooks.gcp_mlengine_hook.MLEngineHook`
+    * :class:`~airflow.contrib.hooks.gcs_hook.GoogleCloudStorageHook`
+    * :class:`~airflow.contrib.hooks.gcp_bigtable_hook.BigtableHook`
+    * :class:`~airflow.contrib.hooks.gcp_compute_hook.GceHook`
+    * :class:`~airflow.contrib.hooks.gcp_function_hook.GcfHook`
+    * :class:`~airflow.contrib.hooks.gcp_spanner_hook.CloudSpannerHook`
+    * :class:`~airflow.contrib.hooks.gcp_sql_hook.CloudSqlHook`
+
 
 Configuring the Connection
 --------------------------
@@ -63,7 +83,7 @@ Keyfile Path
 Keyfile JSON
     Contents of a `service account
     <https://cloud.google.com/docs/authentication/#service_accounts>`_ key
-    file (JSON format) on disk.
+    file (JSON format) on disk. It is recommended to :doc:`Secure your connections <../secure-connections>` if using this method to authenticate.
 
     Not required if using application default credentials.
 
@@ -100,108 +120,3 @@ Number of Retries
     .. code-block:: bash
 
        export AIRFLOW_CONN_GOOGLE_CLOUD_DEFAULT='google-cloud-platform://?extra__google_cloud_platform__key_path=%2Fkeys%2Fkey.json&extra__google_cloud_platform__scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcloud-platform&extra__google_cloud_platform__project=airflow&extra__google_cloud_platform__num_retries=5'
-
-Direct impersonation of a service account
------------------------------------------
-
-Google operators support `direct impersonation of a service account
-<https://cloud.google.com/iam/docs/understanding-service-accounts#directly_impersonating_a_service_account>`_
-via ``impersonation_chain`` argument (``google_impersonation_chain`` in case of operators
-that also communicate with services of other cloud providers).
-
-For example:
-
-.. code-block:: python
-
-        import os
-
-        from airflow.providers.google.cloud.operators.bigquery import BigQueryCreateEmptyDatasetOperator
-
-        IMPERSONATION_CHAIN = "impersonated_account@your_project_id.iam.gserviceaccount.com"
-
-        create_dataset = BigQueryCreateEmptyDatasetOperator(
-            task_id="create-dataset",
-            gcp_conn_id="google_cloud_default",
-            dataset_id="test_dataset",
-            location="southamerica-east1",
-            impersonation_chain=IMPERSONATION_CHAIN,
-        )
-
-In order for this example to work, the account ``impersonated_account`` must grant the
-``Service Account Token Creator`` IAM role to the service account specified in the
-``google_cloud_default`` Connection. This will allow to generate ``impersonated_account``'s
-access token, which will allow to act on its behalf using its permissions. ``impersonated_account``
-does not even need to have a generated key.
-
-.. warning::
-  :class:`~airflow.providers.google.cloud.operators.kubernetes_engine.GKEStartPodOperator`,
-  :class:`~airflow.providers.google.cloud.operators.dataflow.DataflowCreateJavaJobOperator` and
-  :class:`~airflow.providers.google.cloud.operators.dataflow.DataflowCreatePythonJobOperator`
-  do not support direct impersonation as of now.
-
-In case of operators that connect to multiple Google services, all hooks use the same value of
-``impersonation_chain`` (if applicable). You can also impersonate accounts from projects
-other than the project of the originating account. In that case, the project id of the impersonated
-account will be used as the default project id in operator's logic, unless you have explicitly
-specified the Project Id in Connection's configuration or in operator's arguments.
-
-Impersonation can also be used in chain: if the service account specified in Connection has
-``Service Account Token Creator`` role granted on account A, and account A has this role on account
-B, then we are able to impersonate account B.
-
-For example, with the following ``terraform`` setup...
-
-.. code-block:: terraform
-
-        terraform {
-          required_version = "> 0.11.14"
-        }
-        provider "google" {}
-        variable "project_id" {
-          type = "string"
-        }
-        resource "google_service_account" "sa_1" {
-          account_id   = "impersonation-chain-1"
-          project = "${var.project_id}"
-        }
-        resource "google_service_account" "sa_2" {
-          account_id   = "impersonation-chain-2"
-          project = "${var.project_id}"
-        }
-        resource "google_service_account" "sa_3" {
-          account_id   = "impersonation-chain-3"
-          project = "${var.project_id}"
-        }
-        resource "google_service_account" "sa_4" {
-          account_id   = "impersonation-chain-4"
-          project = "${var.project_id}"
-        }
-        resource "google_service_account_iam_member" "sa_4_member" {
-          service_account_id = "${google_service_account.sa_4.name}"
-          role               = "roles/iam.serviceAccountTokenCreator"
-          member             = "serviceAccount:${google_service_account.sa_3.email}"
-        }
-        resource "google_service_account_iam_member" "sa_3_member" {
-          service_account_id = "${google_service_account.sa_3.name}"
-          role               = "roles/iam.serviceAccountTokenCreator"
-          member             = "serviceAccount:${google_service_account.sa_2.email}"
-        }
-        resource "google_service_account_iam_member" "sa_2_member" {
-          service_account_id = "${google_service_account.sa_2.name}"
-          role               = "roles/iam.serviceAccountTokenCreator"
-          member             = "serviceAccount:${google_service_account.sa_1.email}"
-        }
-
-...we should configure Airflow Connection to use ``impersonation-chain-1`` account's key and provide
-following value for ``impersonation_chain`` argument...
-
-.. code-block:: python
-
-        PROJECT_ID = os.environ.get("TF_VAR_project_id", "your_project_id")
-        IMPERSONATION_CHAIN = [
-            f"impersonation-chain-2@{PROJECT_ID}.iam.gserviceaccount.com",
-            f"impersonation-chain-3@{PROJECT_ID}.iam.gserviceaccount.com",
-            f"impersonation-chain-4@{PROJECT_ID}.iam.gserviceaccount.com",
-        ]
-
-...then requests will be executed using ``impersonation-chain-4`` account's privileges.

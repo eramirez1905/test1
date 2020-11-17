@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -18,15 +19,15 @@
 
 """Unit tests for SerializedDagModel."""
 
+import six
 import unittest
 
-from airflow import DAG, example_dags as example_dags_module
+from airflow import example_dags as example_dags_module
+from airflow.serialization.serialized_objects import SerializedDAG
 from airflow.models import DagBag
 from airflow.models.dagcode import DagCode
 from airflow.models.serialized_dag import SerializedDagModel as SDM
-from airflow.serialization.serialized_objects import SerializedDAG
-from airflow.utils.session import create_session
-from tests.test_utils.asserts import assert_queries_count
+from airflow.utils import db
 
 
 # To move it to a shared module.
@@ -37,7 +38,7 @@ def make_example_dags(module):
 
 
 def clear_db_serialized_dags():
-    with create_session() as session:
+    with db.create_session() as session:
         session.query(SDM).delete()
 
 
@@ -65,7 +66,7 @@ class SerializedDagModelTest(unittest.TestCase):
         """DAGs can be written into database."""
         example_dags = self._write_example_dags()
 
-        with create_session() as session:
+        with db.create_session() as session:
             for dag in example_dags.values():
                 self.assertTrue(SDM.has_dag(dag.dag_id))
                 result = session.query(
@@ -82,7 +83,7 @@ class SerializedDagModelTest(unittest.TestCase):
         example_bash_op_dag = example_dags.get("example_bash_operator")
         SDM.write_dag(dag=example_bash_op_dag)
 
-        with create_session() as session:
+        with db.create_session() as session:
             s_dag = session.query(SDM).get(example_bash_op_dag.dag_id)
 
             # Test that if DAG is not changed, Serialized DAG is not re-written and last_updated
@@ -95,7 +96,7 @@ class SerializedDagModelTest(unittest.TestCase):
 
             # Update DAG
             example_bash_op_dag.tags += ["new_tag"]
-            self.assertCountEqual(example_bash_op_dag.tags, ["example", "new_tag"])
+            six.assertCountEqual(self, example_bash_op_dag.tags, ["example", "new_tag"])
 
             SDM.write_dag(dag=example_bash_op_dag)
             s_dag_2 = session.query(SDM).get(example_bash_op_dag.dag_id)
@@ -139,10 +140,3 @@ class SerializedDagModelTest(unittest.TestCase):
         example_dag_files.remove(dag_removed_by_file.full_filepath)
         SDM.remove_deleted_dags(example_dag_files)
         self.assertFalse(SDM.has_dag(dag_removed_by_file.dag_id))
-
-    def test_bulk_sync_to_db(self):
-        dags = [
-            DAG("dag_1"), DAG("dag_2"), DAG("dag_3"),
-        ]
-        with assert_queries_count(10):
-            SDM.bulk_sync_to_db(dags)

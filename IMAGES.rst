@@ -238,7 +238,7 @@ from the latest sources so that we are sure that latest dependencies are install
 
 The production image is a multi-segment image. The first segment "airflow-build-image" contains all the
 build essentials and related dependencies that allow to install airflow locally. By default the image is
-build from a released version of Airflow from GitHub, but by providing some extra arguments you can also
+build from a released version of Airflow from Github, but by providing some extra arguments you can also
 build it from local sources. This is particularly useful in CI environment where we are using the image
 to run Kubernetes tests. See below for the list of arguments that should be provided to build
 production image from the local sources.
@@ -275,6 +275,8 @@ The following build arguments (``--build-arg`` in docker build command) can be u
 +------------------------------------------+------------------------------------------+------------------------------------------+
 | ``PIP_NO_CACHE_DIR``                     | ``true``                                 | if true, then no pip cache will be       |
 |                                          |                                          | stored                                   |
++------------------------------------------+------------------------------------------+------------------------------------------+
+| ``PIP_VERSION``                          | ``19.0.2``                               | version of PIP to use                    |
 +------------------------------------------+------------------------------------------+------------------------------------------+
 | ``HOME``                                 | ``/root``                                | Home directory of the root user (CI      |
 |                                          |                                          | image has root user as default)          |
@@ -383,7 +385,7 @@ The following build arguments (``--build-arg`` in docker build command) can be u
 | ``AIRFLOW_BRANCH``                       | ``master``                               | the branch from which PIP dependencies   |
 |                                          |                                          | are pre-installed initially              |
 +------------------------------------------+------------------------------------------+------------------------------------------+
-| ``AIRFLOW_CONSTRAINTS_REFERENCE``        | ``constraints-master``                   | reference (branch or tag) from GitHub    |
+| ``AIRFLOW_CONSTRAINTS_REFERENCE``        | ``constraints-master``                   | reference (branch or tag) from Github    |
 |                                          |                                          | repository from which constraints are    |
 |                                          |                                          | used. By default it is set to            |
 |                                          |                                          | ``constraints-master`` but can be        |
@@ -406,6 +408,9 @@ The following build arguments (``--build-arg`` in docker build command) can be u
 | ``ADDITIONAL_RUNTIME_DEPS``              |                                          | additional apt runtime dependencies to   |
 |                                          |                                          | install                                  |
 +------------------------------------------+------------------------------------------+------------------------------------------+
+| ``EMBEDDED_DAGS``                        | ``empty``                                | Folder containing dags embedded into the |
+|                                          |                                          | image in the ${AIRFLOW_HOME}/dags dir    |
++------------------------------------------+------------------------------------------+------------------------------------------+
 | ``AIRFLOW_HOME``                         | ``/opt/airflow``                         | Airflow’s HOME (that’s where logs and    |
 |                                          |                                          | sqlite databases are stored)             |
 +------------------------------------------+------------------------------------------+------------------------------------------+
@@ -417,6 +422,8 @@ The following build arguments (``--build-arg`` in docker build command) can be u
 |                                          |                                          | OpenShift Guidelines compatibility       |
 +------------------------------------------+------------------------------------------+------------------------------------------+
 | ``AIRFLOW_USER_HOME_DIR``                | ``/home/airflow``                        | Home directory of the Airflow user       |
++------------------------------------------+------------------------------------------+------------------------------------------+
+| ``PIP_VERSION``                          | ``19.0.2``                               | version of PIP to use                    |
 +------------------------------------------+------------------------------------------+------------------------------------------+
 | ``CASS_DRIVER_BUILD_CONCURRENCY``        | ``8``                                    | Number of processors to use for          |
 |                                          |                                          | cassandra PIP install (speeds up         |
@@ -450,17 +457,13 @@ production image. There are three types of build:
 |                                   | "==1.10.10"                       |
 +-----------------------------------+-----------------------------------+
 | ``AIRFLOW_CONSTRAINTS_REFERENCE`` | reference (branch or tag) from    |
-|                                   | GitHub where constraints file     |
+|                                   | Github where constraints file     |
 |                                   | is taken from. By default it is   |
 |                                   | ``constraints-master`` but can be |
 |                                   | ``constraints-1-10`` for 1.10.*   |
 |                                   | constraint or if you want to      |
 |                                   | point to specific varsion         |
 |                                   | ``constraints-1.10.12             |
-+-----------------------------------+-----------------------------------+
-| ``SLUGIFY_USES_TEXT_UNIDECODE``   | In case of of installing airflow  |
-|                                   | 1.10.2 or 1.10.1 you need to      |
-|                                   | set this arg to ``yes``.          |
 +-----------------------------------+-----------------------------------+
 | ``AIRFLOW_WWW``                   | In case of Airflow 2.0 it should  |
 |                                   | be "www", in case of Airflow 1.10 |
@@ -491,7 +494,7 @@ of 2.0 currently):
   docker build .
 
 This builds the production image in version 3.7 with default extras from 1.10.12 tag and
-constraints taken from constraints-1-10-12 branch in GitHub.
+constraints taken from constraints-1-10-12 branch in Github.
 
 .. code-block:: bash
 
@@ -505,7 +508,7 @@ constraints taken from constraints-1-10-12 branch in GitHub.
     --build-arg AIRFLOW_SOURCES_TO="/empty"
 
 This builds the production image in version 3.7 with default extras from 1.10.12 Pypi package and
-constraints taken from 1.10.12 tag in GitHub and pre-installed pip dependencies from the top
+constraints taken from 1.10.12 tag in Github and pre-installed pip dependencies from the top
 of v1-10-test branch.
 
 .. code-block:: bash
@@ -603,7 +606,7 @@ Running the CI image
 ====================
 
 The entrypoint in the CI image contains all the initialisation needed for tests to be immediately executed.
-It is copied from ``scripts/in_container/entrypoint_ci.sh``.
+It is copied from ``scripts/ci/in_container/entrypoint_ci.sh``.
 
 The default behaviour is that you are dropped into bash shell. However if RUN_TESTS variable is
 set to "true", then tests passed as arguments are executed
@@ -639,14 +642,14 @@ Using the PROD image
 ====================
 
 The entrypoint in the PROD image contains all the initialisation needed for tests to be immediately executed.
-It is copied from ``scripts/in_container/entrypoint_prod.sh``.
+It is copied from ``scripts/ci/in_container/entrypoint_prod.sh``.
 
 The PROD image entrypoint works as follows:
 
 * In case the user is not "airflow" (with undefined user id) and the group id of the user is set to 0 (root),
   then the user is dynamically added to /etc/passwd at entry using USER_NAME variable to define the user name.
   This is in order to accommodate the
-  `OpenShift Guidelines <https://docs.openshift.com/enterprise/3.0/creating_images/guidelines.html>`_
+  `OpenShift Guidelines<https://docs.openshift.com/enterprise/3.0/creating_images/guidelines.html>`_
 
 * If ``AIRFLOW__CORE__SQL_ALCHEMY_CONN`` variable is passed to the container and it is either mysql or postgres
   SQL alchemy connection, then the connection is checked and the script waits until the database is reachable.
@@ -705,9 +708,9 @@ The PROD image entrypoint works as follows:
       info                Show information about current Airflow and environment
       kerberos            Start a kerberos ticket renewer
       plugins             Dump information about loaded plugins
-      rotate-fernet-key   Rotate encrypted connection credentials and variables
+      rotate_fernet_key   Rotate encrypted connection credentials and variables
       scheduler           Start a scheduler instance
-      sync-perm           Update permissions for existing roles and DAGs
+      sync_perm           Update permissions for existing roles and DAGs
       version             Show the version
       webserver           Start a Airflow webserver instance
 

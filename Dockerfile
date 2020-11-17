@@ -35,12 +35,14 @@
 #
 ARG AIRFLOW_VERSION="1.10.12"
 ARG AIRFLOW_EXTRAS="async,aws,gcp,kubernetes,mysql,postgres,redis,slack,ssh,statsd,virtualenv"
-ARG ADDITIONAL_AIRFLOW_EXTRAS=""
-ARG ADDITIONAL_PYTHON_DEPS="requests-oauthlib==1.1.0 multidict yarl google-api-core==1.22.1 oauthlib==2.1.0 Flask-OAuthlib==0.9.5 protobuf>=3.12.0 grpcio==1.33.2 slackclient==2.0.0 google-cloud-dataproc==1.0.1 argcomplete==1.11.1 apache-airflow-backport-providers-google apache-airflow-backport-providers-amazon apache-airflow-backport-providers-slack "
+ARG ADDITIONAL_AIRFLOW_EXTRAS="requests-oauthlib==1.1.0 multidict yarl google-api-core==1.22.1 oauthlib==2.1.0 Flask-OAuthlib==0.9.5 protobuf>=3.12.0 grpcio==1.33.2 slackclient==2.0.0 google-cloud-dataproc==1.0.1 argcomplete==1.11.1 apache-airflow-backport-providers-google apache-airflow-backport-providers-amazon apache-airflow-backport-providers-slack "
+ARG ADDITIONAL_PYTHON_DEPS=""
+
 ARG AIRFLOW_HOME=/opt/airflow
 ARG AIRFLOW_UID="50000"
 ARG AIRFLOW_GID="50000"
 
+ARG PIP_VERSION="19.0.2"
 ARG CASS_DRIVER_BUILD_CONCURRENCY="8"
 
 ARG PYTHON_BASE_IMAGE="python:3.7-slim-buster"
@@ -51,6 +53,12 @@ ARG PYTHON_MAJOR_MINOR_VERSION="3.7"
 ##############################################################################################
 FROM ${PYTHON_BASE_IMAGE} as airflow-build-image
 SHELL ["/bin/bash", "-o", "pipefail", "-e", "-u", "-x", "-c"]
+
+LABEL org.apache.airflow.distro="debian"
+LABEL org.apache.airflow.distro.version="buster"
+LABEL org.apache.airflow.module="airflow"
+LABEL org.apache.airflow.component="airflow"
+LABEL org.apache.airflow.image="airflow-build-image"
 
 ARG PYTHON_BASE_IMAGE
 ENV PYTHON_BASE_IMAGE=${PYTHON_BASE_IMAGE}
@@ -88,6 +96,7 @@ RUN curl --fail --location https://deb.nodesource.com/setup_10.x | bash - \
            apt-utils \
            build-essential \
            ca-certificates \
+           curl \
            gnupg \
            dirmngr \
            freetds-bin \
@@ -144,6 +153,11 @@ RUN KEY="A4A9406876FCBD3C456770C88C718D3B5072E1F5" \
     && apt-get autoremove -yqq --purge \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
+ARG PIP_VERSION
+ENV PIP_VERSION=${PIP_VERSION}
+
+RUN pip install --upgrade pip==${PIP_VERSION}
+
 ARG AIRFLOW_REPO=apache/airflow
 ENV AIRFLOW_REPO=${AIRFLOW_REPO}
 
@@ -151,22 +165,18 @@ ARG AIRFLOW_BRANCH=master
 ENV AIRFLOW_BRANCH=${AIRFLOW_BRANCH}
 
 ARG AIRFLOW_EXTRAS
-ARG ADDITIONAL_AIRFLOW_EXTRAS=""
+ARG ADDITIONAL_AIRFLOW_EXTRAS="requests-oauthlib==1.1.0 multidict yarl google-api-core==1.22.1 oauthlib==2.1.0 Flask-OAuthlib==0.9.5 protobuf>=3.12.0 grpcio==1.33.2 slackclient==2.0.0 google-cloud-dataproc==1.0.1 argcomplete==1.11.1 apache-airflow-backport-providers-google apache-airflow-backport-providers-amazon apache-airflow-backport-providers-slack "
 ENV AIRFLOW_EXTRAS=${AIRFLOW_EXTRAS}${ADDITIONAL_AIRFLOW_EXTRAS:+,}${ADDITIONAL_AIRFLOW_EXTRAS}
 
 ARG AIRFLOW_CONSTRAINTS_REFERENCE="constraints-master"
 ARG AIRFLOW_CONSTRAINTS_URL="https://raw.githubusercontent.com/apache/airflow/${AIRFLOW_CONSTRAINTS_REFERENCE}/constraints-${PYTHON_MAJOR_MINOR_VERSION}.txt"
 ENV AIRFLOW_CONSTRAINTS_URL=${AIRFLOW_CONSTRAINTS_URL}
 
-ENV PATH=${PATH}:/root/.local/bin
-RUN mkdir -p /root/.local/bin
-
 # In case of Production build image segment we want to pre-install master version of airflow
 # dependencies from github so that we do not have to always reinstall it from the scratch.
 RUN pip install --user \
     "https://github.com/${AIRFLOW_REPO}/archive/${AIRFLOW_BRANCH}.tar.gz#egg=apache-airflow[${AIRFLOW_EXTRAS}]" \
-        #--constraint "${AIRFLOW_CONSTRAINTS_URL}" && pip uninstall --yes apache-airflow;
-        && pip uninstall --yes apache-airflow;
+        --constraint "${AIRFLOW_CONSTRAINTS_URL}" && pip uninstall --yes apache-airflow;
 
 ARG AIRFLOW_SOURCES_FROM="."
 ENV AIRFLOW_SOURCES_FROM=${AIRFLOW_SOURCES_FROM}
@@ -182,7 +192,7 @@ ENV CASS_DRIVER_BUILD_CONCURRENCY=${CASS_DRIVER_BUILD_CONCURRENCY}
 ARG AIRFLOW_VERSION
 ENV AIRFLOW_VERSION=${AIRFLOW_VERSION}
 
-ARG ADDITIONAL_PYTHON_DEPS="requests-oauthlib==1.1.0 multidict yarl google-api-core==1.22.1 oauthlib==2.1.0 Flask-OAuthlib==0.9.5 protobuf>=3.12.0 grpcio==1.33.2 slackclient==2.0.0 google-cloud-dataproc==1.0.1 argcomplete==1.11.1 apache-airflow-backport-providers-google apache-airflow-backport-providers-amazon apache-airflow-backport-providers-slack "
+ARG ADDITIONAL_PYTHON_DEPS=""
 ENV ADDITIONAL_PYTHON_DEPS=${ADDITIONAL_PYTHON_DEPS}
 
 ARG AIRFLOW_INSTALL_SOURCES="."
@@ -191,16 +201,14 @@ ENV AIRFLOW_INSTALL_SOURCES=${AIRFLOW_INSTALL_SOURCES}
 ARG AIRFLOW_INSTALL_VERSION=""
 ENV AIRFLOW_INSTALL_VERSION=${AIRFLOW_INSTALL_VERSION}
 
-ARG SLUGIFY_USES_TEXT_UNIDECODE=""
-ENV SLUGIFY_USES_TEXT_UNIDECODE=${SLUGIFY_USES_TEXT_UNIDECODE}
-
 WORKDIR /opt/airflow
 
-RUN pip install --user "${AIRFLOW_INSTALL_SOURCES}[${AIRFLOW_EXTRAS}]${AIRFLOW_INSTALL_VERSION}" && \
-    #--constraint "${AIRFLOW_CONSTRAINTS_URL}" && \
-    #if [ -n "${ADDITIONAL_PYTHON_DEPS}" ]; then pip install --user ${ADDITIONAL_PYTHON_DEPS} fi && \
-    pip install --user ${ADDITIONAL_PYTHON_DEPS} && \
-    #--constraint "${AIRFLOW_CONSTRAINTS_URL}"; fi && \
+ENV PATH=${PATH}:/root/.local/bin
+
+RUN pip install --user "${AIRFLOW_INSTALL_SOURCES}[${AIRFLOW_EXTRAS}]${AIRFLOW_INSTALL_VERSION}" \
+    --constraint "${AIRFLOW_CONSTRAINTS_URL}" && \
+    if [ -n "${ADDITIONAL_PYTHON_DEPS}" ]; then pip install --user ${ADDITIONAL_PYTHON_DEPS} \
+    --constraint "${AIRFLOW_CONSTRAINTS_URL}"; fi && \
     find /root/.local/ -name '*.pyc' -print0 | xargs -0 rm -r && \
     find /root/.local/ -type d -name '__pycache__' -print0 | xargs -0 rm -r
 
@@ -220,20 +228,6 @@ RUN AIRFLOW_SITE_PACKAGE="/root/.local/lib/python${PYTHON_MAJOR_MINOR_VERSION}/s
 # make sure that all directories and files in .local are also group accessible
 RUN find /root/.local -executable -print0 | xargs --null chmod g+x && \
     find /root/.local -print0 | xargs --null chmod g+rw
-
-LABEL org.apache.airflow.distro="debian"
-LABEL org.apache.airflow.distro.version="buster"
-LABEL org.apache.airflow.module="airflow"
-LABEL org.apache.airflow.component="airflow"
-LABEL org.apache.airflow.image="airflow-build-image"
-
-ARG BUILD_ID
-ENV BUILD_ID=${BUILD_ID}
-ARG COMMIT_SHA
-ENV COMMIT_SHA=${COMMIT_SHA}
-
-LABEL org.apache.airflow.buildImage.buildId=${BUILD_ID}
-LABEL org.apache.airflow.buildImage.commitSha=${COMMIT_SHA}
 
 ##############################################################################################
 # This is the actual Airflow image - much smaller than the build one. We copy
@@ -326,6 +320,10 @@ RUN KEY="A4A9406876FCBD3C456770C88C718D3B5072E1F5" \
     && apt-get autoremove -yqq --purge \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
+ARG PIP_VERSION
+ENV PIP_VERSION=${PIP_VERSION}
+RUN pip install --upgrade pip==${PIP_VERSION}
+
 ENV AIRFLOW_UID=${AIRFLOW_UID}
 ENV AIRFLOW_GID=${AIRFLOW_GID}
 
@@ -353,8 +351,13 @@ RUN mkdir -pv "${AIRFLOW_HOME}"; \
 
 COPY --chown=airflow:root --from=airflow-build-image /root/.local "${AIRFLOW_USER_HOME_DIR}/.local"
 
-COPY --chown=airflow:root scripts/in_container/prod/entrypoint_prod.sh /entrypoint
-COPY --chown=airflow:root scripts/in_container/prod/clean-logs.sh /clean-logs
+COPY scripts/prod/entrypoint_prod.sh /entrypoint
+COPY scripts/prod/clean-logs.sh /clean-logs
+
+ARG EMBEDDED_DAGS="empty"
+
+COPY --chown=airflow:root ${EMBEDDED_DAGS}/ ${AIRFLOW_HOME}/dags/
+
 RUN chmod a+x /entrypoint /clean-logs
 
 # Make /etc/passwd root-group-writeable so that user can be dynamically added by OpenShift
@@ -370,20 +373,5 @@ EXPOSE 8080
 
 USER ${AIRFLOW_UID}
 
-ARG BUILD_ID
-ENV BUILD_ID=${BUILD_ID}
-ARG COMMIT_SHA
-ENV COMMIT_SHA=${COMMIT_SHA}
-
-LABEL org.apache.airflow.distro="debian"
-LABEL org.apache.airflow.distro.version="buster"
-LABEL org.apache.airflow.module="airflow"
-LABEL org.apache.airflow.component="airflow"
-LABEL org.apache.airflow.image="airflow"
-LABEL org.apache.airflow.uid="${AIRFLOW_UID}"
-LABEL org.apache.airflow.gid="${AIRFLOW_GID}"
-LABEL org.apache.airflow.mainImage.buildId=${BUILD_ID}
-LABEL org.apache.airflow.mainImage.commitSha=${COMMIT_SHA}
-
 ENTRYPOINT ["/usr/bin/dumb-init", "--", "/entrypoint"]
-CMD ["--help"]
+CMD ["airflow", "--help"]

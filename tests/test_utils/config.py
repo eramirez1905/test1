@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -16,14 +17,17 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import contextlib
+try:
+    from contextdecorator import contextmanager
+except ImportError:
+    from contextlib import contextmanager
 import os
 
-from airflow import settings
 from airflow.configuration import conf
+from airflow import settings
 
 
-@contextlib.contextmanager
+@contextmanager
 def conf_vars(overrides):
     original = {}
     original_env_vars = {}
@@ -53,23 +57,3 @@ def conf_vars(overrides):
         for env, value in original_env_vars.items():
             os.environ[env] = value
         settings.configure_vars()
-
-
-@contextlib.contextmanager
-def env_vars(overrides):
-    orig_vars = {}
-    new_vars = []
-    for (section, key), value in overrides.items():
-        env = conf._env_var_name(section, key)
-        if env in os.environ:
-            orig_vars[env] = os.environ.pop(env, '')
-        else:
-            new_vars.append(env)
-        os.environ[env] = value
-    try:
-        yield
-    finally:
-        for env, value in orig_vars.items():
-            os.environ[env] = value
-        for env in new_vars:
-            os.environ.pop(env)

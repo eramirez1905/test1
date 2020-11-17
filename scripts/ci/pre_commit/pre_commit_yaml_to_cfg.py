@@ -24,7 +24,8 @@ import os
 
 import yaml
 
-FILE_HEADER = """#
+FILE_HEADER = """# -*- coding: utf-8 -*-
+#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -56,7 +57,8 @@ FILE_HEADER = """#
 """
 
 
-def read_default_config_yaml(file_path: str) -> dict:
+def read_default_config_yaml(file_path):
+    # type: (str) -> dict
     """
     Read Airflow configs from YAML file
 
@@ -69,74 +71,59 @@ def read_default_config_yaml(file_path: str) -> dict:
         return yaml.safe_load(config_file)
 
 
-def write_config(yaml_config_file_path: str, default_cfg_file_path: str):
+def write_config(yaml_config_file_path, default_cfg_file_path):
+    # type: (str, str) -> None
     """
     Write config to default_airflow.cfg file
 
     :param yaml_config_file_path: Full path to config.yaml
     :param default_cfg_file_path: Full path to default_airflow.cfg
     """
-    print(f"Converting {yaml_config_file_path} to {default_cfg_file_path}")
     with open(default_cfg_file_path, 'w') as configfile:
         configfile.writelines(FILE_HEADER)
         config_yaml = read_default_config_yaml(yaml_config_file_path)
 
         for section in config_yaml:  # pylint: disable=too-many-nested-blocks
-            _write_section(configfile, section)
+            section_name = section["name"]
+            configfile.write("\n[{}]\n".format(section_name))
 
+            section_description = None
+            if section["description"] is not None:
+                section_description = list(
+                    filter(lambda x: (x is not None) or x != "", section["description"].splitlines()))
+            if section_description:
+                configfile.write("\n")
+                for single_line_desc in section_description:
+                    if single_line_desc == "":
+                        configfile.write("#\n")
+                    else:
+                        configfile.write("# {}\n".format(single_line_desc))
 
-def _write_section(configfile, section):
-    section_name = section["name"]
-    configfile.write(f"\n[{section_name}]\n")
-    section_description = None
-    if section["description"] is not None:
-        section_description = list(
-            filter(lambda x: (x is not None) or x != "", section["description"].splitlines()))
-    if section_description:
-        configfile.write("\n")
-        for single_line_desc in section_description:
-            if single_line_desc == "":
-                configfile.write("#\n")
-            else:
-                configfile.write(f"# {single_line_desc}\n")
-    for idx, option in enumerate(section["options"]):
-        _write_option(configfile, idx, option)
+            for idx, option in enumerate(section["options"]):
+                option_description = None
+                if option["description"] is not None:
+                    option_description = list(
+                        filter(lambda x: x is not None, option["description"].splitlines()))
 
+                if option_description:
+                    if idx != 0:
+                        configfile.write("\n")
+                    for single_line_desc in option_description:
+                        if single_line_desc == "":
+                            configfile.write("#\n")
+                        else:
+                            configfile.write("# {}\n".format(single_line_desc))
 
-def _write_option(configfile, idx, option):
-    option_description = None
-    if option["description"] is not None:
-        option_description = list(
-            filter(lambda x: x is not None, option["description"].splitlines()))
+                if option["example"]:
+                    if not str(option["name"]).endswith("_template"):
+                        option["example"] = option["example"].replace("{", "{{").replace("}", "}}")
+                    configfile.write("# Example: {} = {}\n".format(option["name"], option["example"]))
 
-    if option_description:
-        if idx != 0:
-            configfile.write("\n")
-        for single_line_desc in option_description:
-            if single_line_desc == "":
-                configfile.write("#\n")
-            else:
-                configfile.write(f"# {single_line_desc}\n")
-
-    if option["example"]:
-        if not str(option["name"]).endswith("_template"):
-            option["example"] = option["example"].replace("{", "{{").replace("}", "}}")
-        configfile.write("# Example: {} = {}\n".format(option["name"], option["example"]))
-
-    if option["default"] is not None:
-        if not isinstance(option["default"], str):
-            raise Exception(
-                "Key \"default\" in element with name=\"{}\" has an invalid type. "
-                "Current type: {}".format(option["name"], type(option["default"]))
-            )
-        # Remove trailing whitespace on empty string
-        if option["default"]:
-            value = " " + option["default"]
-        else:
-            value = ""
-        configfile.write("{} ={}\n".format(option["name"], value))
-    else:
-        configfile.write("# {} =\n".format(option["name"]))
+                configfile.write("{}{} ={}\n".format(
+                    "# " if option["default"] is None else "",
+                    option["name"],
+                    " " + option["default"] if option["default"] else "")
+                )
 
 
 if __name__ == '__main__':
@@ -151,16 +138,3 @@ if __name__ == '__main__':
         yaml_config_file_path=airflow_config_yaml_file_path,
         default_cfg_file_path=airflow_default_config_path
     )
-
-    providers_dir = os.path.join(
-        os.path.dirname(__file__),
-        os.pardir, os.pardir, os.pardir,
-        "airflow", "providers")
-    for root, dir_names, file_names in os.walk(providers_dir):
-        for file_name in file_names:
-            if root.endswith("config_templates") and file_name == 'config.yml' and \
-                    os.path.isfile(os.path.join(root, "default_config.cfg")):
-                write_config(
-                    yaml_config_file_path=os.path.join(root, "config.yml"),
-                    default_cfg_file_path=os.path.join(root, "default_config.cfg")
-                )

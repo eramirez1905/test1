@@ -17,8 +17,7 @@
 # under the License.
 
 DOCS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-readonly DOCS_DIR
-
 (cd "${DOCS_DIR}"/_build/html || exit;
-    python -m http.server 8000
+# The below command works on both Python 2 and Python 3
+python -m http.server 8000 && python -m SimpleHTTPServer 8000
 )

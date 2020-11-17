@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -16,21 +17,19 @@
 # specific language governing permissions and limitations
 # under the License.
 
+from __future__ import print_function, unicode_literals
+
 import datetime
 import unittest
 
 from freezegun import freeze_time
 
-from airflow import settings
-from airflow.models import DagRun, TaskInstance
-from airflow.models.dag import DAG
-from airflow.operators.dummy_operator import DummyOperator
+from airflow import DAG, settings
+from airflow.models import TaskInstance
 from airflow.operators.latest_only_operator import LatestOnlyOperator
+from airflow.operators.dummy_operator import DummyOperator
 from airflow.utils import timezone
-from airflow.utils.session import create_session
 from airflow.utils.state import State
-from airflow.utils.trigger_rule import TriggerRule
-from airflow.utils.types import DagRunType
 
 DEFAULT_DATE = timezone.datetime(2016, 1, 1)
 END_DATE = timezone.datetime(2016, 1, 2)
@@ -47,19 +46,42 @@ def get_task_instances(task_id):
         .all()
 
 
-class TestLatestOnlyOperator(unittest.TestCase):
+class LatestOnlyOperatorTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        from tests.compat import MagicMock
+        from airflow.jobs import SchedulerJob
 
-    def setUp(self):
-        super().setUp()
-        self.dag = DAG(
+        cls.dag = DAG(
             'test_dag',
             default_args={
                 'owner': 'airflow',
                 'start_date': DEFAULT_DATE},
             schedule_interval=INTERVAL)
-        with create_session() as session:
-            session.query(DagRun).delete()
-            session.query(TaskInstance).delete()
+
+        cls.dag.create_dagrun(
+            run_id="manual__1",
+            execution_date=DEFAULT_DATE,
+            state=State.RUNNING
+        )
+
+        cls.dag.create_dagrun(
+            run_id="manual__2",
+            execution_date=timezone.datetime(2016, 1, 1, 12),
+            state=State.RUNNING
+        )
+
+        cls.dag.create_dagrun(
+            run_id="manual__3",
+            execution_date=END_DATE,
+            state=State.RUNNING
+        )
+
+        cls.dag_file_processor = SchedulerJob(dag_ids=[], log=MagicMock())
+
+    def setUp(self):
+        super(LatestOnlyOperatorTest, self).setUp()
+        self.addCleanup(self.dag.clear)
         freezer = freeze_time(FROZEN_NOW)
         freezer.start()
         self.addCleanup(freezer.stop)
@@ -70,7 +92,7 @@ class TestLatestOnlyOperator(unittest.TestCase):
             dag=self.dag)
         task.run(start_date=DEFAULT_DATE, end_date=DEFAULT_DATE)
 
-    def test_skipping_non_latest(self):
+    def test_skipping(self):
         latest_task = LatestOnlyOperator(
             task_id='latest',
             dag=self.dag)
@@ -80,42 +102,16 @@ class TestLatestOnlyOperator(unittest.TestCase):
         downstream_task2 = DummyOperator(
             task_id='downstream_2',
             dag=self.dag)
-        downstream_task3 = DummyOperator(
-            task_id='downstream_3',
-            trigger_rule=TriggerRule.NONE_FAILED,
-            dag=self.dag)
 
         downstream_task.set_upstream(latest_task)
         downstream_task2.set_upstream(downstream_task)
-        downstream_task3.set_upstream(downstream_task)
-
-        self.dag.create_dagrun(
-            run_type=DagRunType.SCHEDULED,
-            start_date=timezone.utcnow(),
-            execution_date=DEFAULT_DATE,
-            state=State.RUNNING,
-        )
-
-        self.dag.create_dagrun(
-            run_type=DagRunType.SCHEDULED,
-            start_date=timezone.utcnow(),
-            execution_date=timezone.datetime(2016, 1, 1, 12),
-            state=State.RUNNING,
-        )
-
-        self.dag.create_dagrun(
-            run_type=DagRunType.SCHEDULED,
-            start_date=timezone.utcnow(),
-            execution_date=END_DATE,
-            state=State.RUNNING,
-        )
 
         latest_task.run(start_date=DEFAULT_DATE, end_date=END_DATE)
         downstream_task.run(start_date=DEFAULT_DATE, end_date=END_DATE)
         downstream_task2.run(start_date=DEFAULT_DATE, end_date=END_DATE)
-        downstream_task3.run(start_date=DEFAULT_DATE, end_date=END_DATE)
 
         latest_instances = get_task_instances('latest')
+        self.dag_file_processor._process_task_instances(self.dag, task_instances_list=latest_instances)
         exec_date_to_latest_state = {
             ti.execution_date: ti.state for ti in latest_instances}
         self.assertEqual({
@@ -125,6 +121,7 @@ class TestLatestOnlyOperator(unittest.TestCase):
             exec_date_to_latest_state)
 
         downstream_instances = get_task_instances('downstream')
+        self.dag_file_processor._process_task_instances(self.dag, task_instances_list=downstream_instances)
         exec_date_to_downstream_state = {
             ti.execution_date: ti.state for ti in downstream_instances}
         self.assertEqual({
@@ -134,24 +131,16 @@ class TestLatestOnlyOperator(unittest.TestCase):
             exec_date_to_downstream_state)
 
         downstream_instances = get_task_instances('downstream_2')
+        self.dag_file_processor._process_task_instances(self.dag, task_instances_list=downstream_instances)
         exec_date_to_downstream_state = {
             ti.execution_date: ti.state for ti in downstream_instances}
         self.assertEqual({
-            timezone.datetime(2016, 1, 1): None,
-            timezone.datetime(2016, 1, 1, 12): None,
+            timezone.datetime(2016, 1, 1): 'skipped',
+            timezone.datetime(2016, 1, 1, 12): 'skipped',
             timezone.datetime(2016, 1, 2): 'success'},
             exec_date_to_downstream_state)
 
-        downstream_instances = get_task_instances('downstream_3')
-        exec_date_to_downstream_state = {
-            ti.execution_date: ti.state for ti in downstream_instances}
-        self.assertEqual({
-            timezone.datetime(2016, 1, 1): 'success',
-            timezone.datetime(2016, 1, 1, 12): 'success',
-            timezone.datetime(2016, 1, 2): 'success'},
-            exec_date_to_downstream_state)
-
-    def test_not_skipping_external(self):
+    def test_skipping_dagrun(self):
         latest_task = LatestOnlyOperator(
             task_id='latest',
             dag=self.dag)
@@ -165,35 +154,13 @@ class TestLatestOnlyOperator(unittest.TestCase):
         downstream_task.set_upstream(latest_task)
         downstream_task2.set_upstream(downstream_task)
 
-        self.dag.create_dagrun(
-            run_type=DagRunType.MANUAL,
-            start_date=timezone.utcnow(),
-            execution_date=DEFAULT_DATE,
-            state=State.RUNNING,
-            external_trigger=True,
-        )
-
-        self.dag.create_dagrun(
-            run_type=DagRunType.MANUAL,
-            start_date=timezone.utcnow(),
-            execution_date=timezone.datetime(2016, 1, 1, 12),
-            state=State.RUNNING,
-            external_trigger=True,
-        )
-
-        self.dag.create_dagrun(
-            run_type=DagRunType.MANUAL,
-            start_date=timezone.utcnow(),
-            execution_date=END_DATE,
-            state=State.RUNNING,
-            external_trigger=True,
-        )
-
         latest_task.run(start_date=DEFAULT_DATE, end_date=END_DATE)
         downstream_task.run(start_date=DEFAULT_DATE, end_date=END_DATE)
         downstream_task2.run(start_date=DEFAULT_DATE, end_date=END_DATE)
 
         latest_instances = get_task_instances('latest')
+        self.dag_file_processor._process_task_instances(self.dag, task_instances_list=latest_instances)
+
         exec_date_to_latest_state = {
             ti.execution_date: ti.state for ti in latest_instances}
         self.assertEqual({
@@ -203,19 +170,22 @@ class TestLatestOnlyOperator(unittest.TestCase):
             exec_date_to_latest_state)
 
         downstream_instances = get_task_instances('downstream')
+        self.dag_file_processor._process_task_instances(self.dag, task_instances_list=downstream_instances)
+
         exec_date_to_downstream_state = {
             ti.execution_date: ti.state for ti in downstream_instances}
         self.assertEqual({
-            timezone.datetime(2016, 1, 1): 'success',
-            timezone.datetime(2016, 1, 1, 12): 'success',
+            timezone.datetime(2016, 1, 1): 'skipped',
+            timezone.datetime(2016, 1, 1, 12): 'skipped',
             timezone.datetime(2016, 1, 2): 'success'},
             exec_date_to_downstream_state)
 
         downstream_instances = get_task_instances('downstream_2')
+        self.dag_file_processor._process_task_instances(self.dag, task_instances_list=downstream_instances)
         exec_date_to_downstream_state = {
             ti.execution_date: ti.state for ti in downstream_instances}
         self.assertEqual({
-            timezone.datetime(2016, 1, 1): 'success',
-            timezone.datetime(2016, 1, 1, 12): 'success',
+            timezone.datetime(2016, 1, 1): 'skipped',
+            timezone.datetime(2016, 1, 1, 12): 'skipped',
             timezone.datetime(2016, 1, 2): 'success'},
             exec_date_to_downstream_state)

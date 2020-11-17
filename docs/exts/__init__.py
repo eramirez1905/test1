@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # flake8: noqa
 # Disable Flake8 because of all the sphinx imports
 #

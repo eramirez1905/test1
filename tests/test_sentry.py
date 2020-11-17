@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -17,18 +18,18 @@
 # under the License.
 
 import datetime
-import importlib
 import unittest
-from unittest.mock import MagicMock, Mock
-
+from tests.compat import Mock, MagicMock
 from freezegun import freeze_time
+
 from sentry_sdk import configure_scope
 
 from airflow.models import TaskInstance
 from airflow.settings import Session
+from airflow.sentry import ConfiguredSentry
 from airflow.utils import timezone
 from airflow.utils.state import State
-from tests.test_utils.config import conf_vars
+
 
 EXECUTION_DATE = timezone.utcnow()
 DAG_ID = "test_dag"
@@ -36,6 +37,7 @@ TASK_ID = "test_task"
 OPERATOR = "test_operator"
 TRY_NUMBER = 1
 STATE = State.SUCCESS
+DURATION = None
 TEST_SCOPE = {
     "dag_id": DAG_ID,
     "task_id": TASK_ID,
@@ -47,7 +49,7 @@ TASK_DATA = {
     "task_id": TASK_ID,
     "state": STATE,
     "operator": OPERATOR,
-    "duration": None,
+    "duration": DURATION,
 }
 
 CRUMB_DATE = datetime.datetime(2019, 5, 15)
@@ -61,11 +63,9 @@ CRUMB = {
 
 
 class TestSentryHook(unittest.TestCase):
-    @conf_vars({('sentry', 'sentry_on'): 'True'})
     def setUp(self):
-        from airflow import sentry
-        importlib.reload(sentry)
-        self.sentry = sentry.ConfiguredSentry()
+
+        self.sentry = ConfiguredSentry()
 
         # Mock the Dag
         self.dag = Mock(dag_id=DAG_ID, params=[])

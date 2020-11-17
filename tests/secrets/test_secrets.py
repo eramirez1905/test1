@@ -17,10 +17,10 @@
 # under the License.
 #
 import unittest
-from unittest import mock
+from tests.compat import mock
 
-from airflow.configuration import ensure_secrets_loaded, initialize_secrets_backends
-from airflow.models import Connection, Variable
+from airflow.models import Variable
+from airflow.secrets import ensure_secrets_loaded, get_connections, get_variable, initialize_secrets_backends
 from tests.test_utils.config import conf_vars
 from tests.test_utils.db import clear_db_variables
 
@@ -30,7 +30,7 @@ class TestConnectionsFromSecrets(unittest.TestCase):
     @mock.patch("airflow.secrets.environment_variables.EnvironmentVariablesBackend.get_connections")
     def test_get_connections_second_try(self, mock_env_get, mock_meta_get):
         mock_env_get.side_effect = [[]]  # return empty list
-        Connection.get_connections_from_secrets("fake_conn_id")
+        get_connections("fake_conn_id")
         mock_meta_get.assert_called_once_with(conn_id="fake_conn_id")
         mock_env_get.assert_called_once_with(conn_id="fake_conn_id")
 
@@ -38,13 +38,13 @@ class TestConnectionsFromSecrets(unittest.TestCase):
     @mock.patch("airflow.secrets.environment_variables.EnvironmentVariablesBackend.get_connections")
     def test_get_connections_first_try(self, mock_env_get, mock_meta_get):
         mock_env_get.side_effect = [["something"]]  # returns nonempty list
-        Connection.get_connections_from_secrets("fake_conn_id")
+        get_connections("fake_conn_id")
         mock_env_get.assert_called_once_with(conn_id="fake_conn_id")
         mock_meta_get.not_called()
 
     @conf_vars({
         ("secrets", "backend"):
-            "airflow.providers.amazon.aws.secrets.systems_manager.SystemsManagerParameterStoreBackend",
+            "airflow.contrib.secrets.aws_systems_manager.SystemsManagerParameterStoreBackend",
         ("secrets", "backend_kwargs"): '{"connections_prefix": "/airflow", "profile_name": null}',
     })
     def test_initialize_secrets_backends(self):
@@ -56,7 +56,7 @@ class TestConnectionsFromSecrets(unittest.TestCase):
 
     @conf_vars({
         ("secrets", "backend"):
-            "airflow.providers.amazon.aws.secrets.systems_manager.SystemsManagerParameterStoreBackend",
+            "airflow.contrib.secrets.aws_systems_manager.SystemsManagerParameterStoreBackend",
         ("secrets", "backend_kwargs"): '{"use_ssl": false}',
     })
     def test_backends_kwargs(self):
@@ -70,13 +70,13 @@ class TestConnectionsFromSecrets(unittest.TestCase):
 
     @conf_vars({
         ("secrets", "backend"):
-            "airflow.providers.amazon.aws.secrets.systems_manager.SystemsManagerParameterStoreBackend",
+            "airflow.contrib.secrets.aws_systems_manager.SystemsManagerParameterStoreBackend",
         ("secrets", "backend_kwargs"): '{"connections_prefix": "/airflow", "profile_name": null}',
     })
     @mock.patch.dict('os.environ', {
         'AIRFLOW_CONN_TEST_MYSQL': 'mysql://airflow:airflow@host:5432/airflow',
     })
-    @mock.patch("airflow.providers.amazon.aws.secrets.systems_manager."
+    @mock.patch("airflow.contrib.secrets.aws_systems_manager."
                 "SystemsManagerParameterStoreBackend.get_conn_uri")
     def test_backend_fallback_to_env_var(self, mock_get_uri):
         mock_get_uri.return_value = None
@@ -85,7 +85,7 @@ class TestConnectionsFromSecrets(unittest.TestCase):
         backend_classes = [backend.__class__.__name__ for backend in backends]
         self.assertIn('SystemsManagerParameterStoreBackend', backend_classes)
 
-        uri = Connection.get_connections_from_secrets(conn_id="test_mysql")
+        uri = get_connections(conn_id="test_mysql")
 
         # Assert that SystemsManagerParameterStoreBackend.get_conn_uri was called
         mock_get_uri.assert_called_once_with(conn_id='test_mysql')
@@ -95,10 +95,10 @@ class TestConnectionsFromSecrets(unittest.TestCase):
 
 class TestVariableFromSecrets(unittest.TestCase):
 
-    def setUp(self) -> None:
+    def setUp(self):
         clear_db_variables()
 
-    def tearDown(self) -> None:
+    def tearDown(self):
         clear_db_variables()
 
     @mock.patch("airflow.secrets.metastore.MetastoreBackend.get_variable")
@@ -109,7 +109,7 @@ class TestVariableFromSecrets(unittest.TestCase):
         Metastore DB
         """
         mock_env_get.return_value = None
-        Variable.get_variable_from_secrets("fake_var_key")
+        get_variable("fake_var_key")
         mock_meta_get.assert_called_once_with(key="fake_var_key")
         mock_env_get.assert_called_once_with(key="fake_var_key")
 
@@ -121,7 +121,7 @@ class TestVariableFromSecrets(unittest.TestCase):
         Metastore DB
         """
         mock_env_get.return_value = [["something"]]  # returns nonempty list
-        Variable.get_variable_from_secrets("fake_var_key")
+        get_variable("fake_var_key")
         mock_env_get.assert_called_once_with(key="fake_var_key")
         mock_meta_get.not_called()
 
@@ -132,3 +132,7 @@ class TestVariableFromSecrets(unittest.TestCase):
         """
         variable_value = Variable.get(key="test_var", default_var="new")
         self.assertEqual("new", variable_value)
+
+
+if __name__ == "__main__":
+    unittest.main()

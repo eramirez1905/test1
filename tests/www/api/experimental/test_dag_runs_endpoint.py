@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -37,7 +38,7 @@ class TestDagRunsEndpoint(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        super().setUpClass()
+        super(TestDagRunsEndpoint, cls).setUpClass()
         session = Session()
         session.query(DagRun).delete()
         session.commit()
@@ -48,7 +49,7 @@ class TestDagRunsEndpoint(unittest.TestCase):
             SerializedDagModel.write_dag(dag)
 
     def setUp(self):
-        super().setUp()
+        super(TestDagRunsEndpoint, self).setUp()
         app = application.create_app(testing=True)
         self.app = app.test_client()
 
@@ -57,7 +58,7 @@ class TestDagRunsEndpoint(unittest.TestCase):
         session.query(DagRun).delete()
         session.commit()
         session.close()
-        super().tearDown()
+        super(TestDagRunsEndpoint, self).tearDown()
 
     def test_get_dag_runs_success(self):
         with conf_vars(
@@ -158,3 +159,7 @@ class TestDagRunsEndpoint(unittest.TestCase):
 
             self.assertIsInstance(data, list)
             self.assertEqual(len(data), 0)
+
+
+if __name__ == '__main__':
+    unittest.main()

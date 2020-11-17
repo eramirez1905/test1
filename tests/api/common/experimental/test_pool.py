@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -15,17 +16,20 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-
-import random
-import string
-import unittest
+import six
 
 from airflow import models
+from airflow.models.pool import Pool
 from airflow.api.common.experimental import pool as pool_api
 from airflow.exceptions import AirflowBadRequest, PoolNotFound
-from airflow.models.pool import Pool
-from airflow.utils.session import create_session
+from airflow.utils.db import create_session
 from tests.test_utils.db import clear_db_pools
+
+if six.PY2:
+    # Need `assertWarns` back-ported from unittest2
+    import unittest2 as unittest
+else:
+    import unittest
 
 
 class TestPool(unittest.TestCase):
@@ -52,17 +56,18 @@ class TestPool(unittest.TestCase):
         self.assertEqual(pool.pool, self.pools[0].pool)
 
     def test_get_pool_non_existing(self):
-        self.assertRaisesRegex(PoolNotFound,
-                               "^Pool 'test' doesn't exist$",
-                               pool_api.get_pool,
-                               name='test')
+        six.assertRaisesRegex(self, PoolNotFound,
+                              "^Pool 'test' doesn't exist$",
+                              pool_api.get_pool,
+                              name='test')
 
     def test_get_pool_bad_name(self):
         for name in ('', '    '):
-            self.assertRaisesRegex(AirflowBadRequest,
-                                   "^Pool name shouldn't be empty$",
-                                   pool_api.get_pool,
-                                   name=name)
+            six.assertRaisesRegex(self,
+                                  AirflowBadRequest,
+                                  "^Pool name shouldn't be empty$",
+                                  pool_api.get_pool,
+                                  name=name)
 
     def test_get_pools(self):
         pools = sorted(pool_api.get_pools(),
@@ -92,30 +97,21 @@ class TestPool(unittest.TestCase):
 
     def test_create_pool_bad_name(self):
         for name in ('', '    '):
-            self.assertRaisesRegex(AirflowBadRequest,
-                                   "^Pool name shouldn't be empty$",
-                                   pool_api.create_pool,
-                                   name=name,
-                                   slots=5,
-                                   description='')
-
-    def test_create_pool_name_too_long(self):
-        long_name = ''.join(random.choices(string.ascii_lowercase, k=300))
-        column_length = models.Pool.pool.property.columns[0].type.length
-        self.assertRaisesRegex(AirflowBadRequest,
-                               "^Pool name can't be more than %d characters$" % column_length,
-                               pool_api.create_pool,
-                               name=long_name,
-                               slots=5,
-                               description='')
+            six.assertRaisesRegex(self,
+                                  AirflowBadRequest,
+                                  "^Pool name shouldn't be empty$",
+                                  pool_api.create_pool,
+                                  name=name,
+                                  slots=5,
+                                  description='')
 
     def test_create_pool_bad_slots(self):
-        self.assertRaisesRegex(AirflowBadRequest,
-                               "^Bad value for `slots`: foo$",
-                               pool_api.create_pool,
-                               name='foo',
-                               slots='foo',
-                               description='')
+        six.assertRaisesRegex(self, AirflowBadRequest,
+                              "^Bad value for `slots`: foo$",
+                              pool_api.create_pool,
+                              name='foo',
+                              slots='foo',
+                              description='')
 
     def test_delete_pool(self):
         pool = pool_api.delete_pool(name=self.pools[-1].pool)
@@ -124,19 +120,25 @@ class TestPool(unittest.TestCase):
             self.assertEqual(session.query(models.Pool).count(), self.TOTAL_POOL_COUNT - 1)
 
     def test_delete_pool_non_existing(self):
-        self.assertRaisesRegex(pool_api.PoolNotFound,
-                               "^Pool 'test' doesn't exist$",
-                               pool_api.delete_pool,
-                               name='test')
+        six.assertRaisesRegex(self, pool_api.PoolNotFound,
+                              "^Pool 'test' doesn't exist$",
+                              pool_api.delete_pool,
+                              name='test')
 
     def test_delete_pool_bad_name(self):
         for name in ('', '    '):
-            self.assertRaisesRegex(AirflowBadRequest,
-                                   "^Pool name shouldn't be empty$",
-                                   pool_api.delete_pool,
-                                   name=name)
+            six.assertRaisesRegex(self,
+                                  AirflowBadRequest,
+                                  "^Pool name shouldn't be empty$",
+                                  pool_api.delete_pool,
+                                  name=name)
 
     def test_delete_default_pool_not_allowed(self):
-        with self.assertRaisesRegex(AirflowBadRequest,
-                                    "^default_pool cannot be deleted$"):
+        with six.assertRaisesRegex(self,
+                                   AirflowBadRequest,
+                                   "^default_pool cannot be deleted$"):
             pool_api.delete_pool(Pool.DEFAULT_POOL_NAME)
+
+
+if __name__ == '__main__':
+    unittest.main()

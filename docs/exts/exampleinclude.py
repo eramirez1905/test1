@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # flake8: noqa
 # Disable Flake8 because of all the sphinx imports
 #
@@ -24,11 +25,13 @@ from os import path
 
 from docutils import nodes
 from docutils.parsers.rst import directives
+from six import text_type
 from sphinx import addnodes
 from sphinx.directives.code import LiteralIncludeReader
 from sphinx.locale import _
 from sphinx.pycode import ModuleAnalyzer
-from sphinx.util import logging, parselinenos
+from sphinx.util import logging
+from sphinx.util import parselinenos
 from sphinx.util.docutils import SphinxDirective
 from sphinx.util.nodes import set_source_info
 
@@ -126,10 +129,10 @@ class ExampleInclude(SphinxDirective):
 
             return [retnode]
         except Exception as exc:  # pylint: disable=broad-except
-            return [document.reporter.warning(str(exc), line=self.lineno)]
+            return [document.reporter.warning(text_type(exc), line=self.lineno)]
 
 
-# pylint: disable=protected-access
+# noinspection PyProtectedMember
 def register_source(app, env, modname):
     """
     Registers source code.
@@ -139,22 +142,23 @@ def register_source(app, env, modname):
     :param modname: name of the module to load
     :return: True if the code is registered successfully, False otherwise
     """
-    entry = env._viewcode_modules.get(modname, None)
+    entry = env._viewcode_modules.get(modname, None)  # type: ignore
     if entry is False:
         print("[%s] Entry is false for " % modname)
         return False
 
     code_tags = app.emit_firstresult("viewcode-find-source", modname)
     if code_tags is None:
+        # noinspection PyBroadException
         try:
             analyzer = ModuleAnalyzer.for_module(modname)
         except Exception as ex:  # pylint: disable=broad-except
             logger.info("Module \"%s\" could not be loaded. Full source will not be available. \"%s\"",
                         modname, ex)
-            env._viewcode_modules[modname] = False
+            env._viewcode_modules[modname] = False  # type: ignore
             return False
 
-        if not isinstance(analyzer.code, str):
+        if not isinstance(analyzer.code, text_type):
             code = analyzer.code.decode(analyzer.encoding)
         else:
             code = analyzer.code
@@ -167,10 +171,9 @@ def register_source(app, env, modname):
 
     if entry is None or entry[0] != code:
         entry = code, tags, {}, ""
-        env._viewcode_modules[modname] = entry
+        env._viewcode_modules[modname] = entry  # type: ignore
 
     return True
-# pylint: enable=protected-access
 
 
 def create_node(env, relative_path, show_button):
@@ -206,7 +209,7 @@ def create_node(env, relative_path, show_button):
     return paragraph
 
 
-# pylint: disable=protected-access
+# noinspection PyProtectedMember
 def doctree_read(app, doctree):
     """
     Reads documentation tree for the application and register sources in the generated documentation.
@@ -219,7 +222,7 @@ def doctree_read(app, doctree):
     """
     env = app.builder.env
     if not hasattr(env, "_viewcode_modules"):
-        env._viewcode_modules = {}
+        env._viewcode_modules = {}  # type: ignore
 
     if app.builder.name == "singlehtml":
         return
@@ -234,7 +237,6 @@ def doctree_read(app, doctree):
         onlynode = create_node(env, relative_path, show_button)
 
         objnode.replace_self(onlynode)
-# pylint: enable=protected-access
 
 
 def setup(app):
@@ -249,5 +251,5 @@ def setup(app):
     app.add_config_value("exampleinclude_sourceroot", None, "env")
     if not airflow_theme_is_available:
         # Sphinx airflow theme has its own styles.
-        app.add_css_file('exampleinclude.css')
+        app.add_stylesheet('exampleinclude.css')
     return {"version": "builtin", "parallel_read_safe": False, "parallel_write_safe": False}
