@@ -345,7 +345,6 @@ ENV AIRFLOW_HOME=${AIRFLOW_HOME}
 RUN mkdir -pv "${AIRFLOW_HOME}"; \
     mkdir -pv "${AIRFLOW_HOME}/dags"; \
     mkdir -pv "${AIRFLOW_HOME}/logs"; \
-    chown -R "airflow." /opt/airflow/ \
     chown -R "airflow." "${AIRFLOW_USER_HOME_DIR}" "${AIRFLOW_HOME}"; \
     find "${AIRFLOW_HOME}" -executable -print0 | xargs --null chmod g+x && \
         find "${AIRFLOW_HOME}" -print0 | xargs --null chmod g+rw
@@ -359,7 +358,7 @@ ARG EMBEDDED_DAGS="empty"
 
 COPY --chown=airflow. docker/airflow ${AIRFLOW_HOME}/
 COPY --chown=airflow. dags ${AIRFLOW_HOME}/dags
-COPY --chown=airflow. src/datahub ${AIRFLOW_HOME}/src/datahub
+COPY --chown=airflow. src ${AIRFLOW_HOME}/src
 COPY docker/rootdir /
 COPY --chown=airflow. ${EMBEDDED_DAGS}/ ${AIRFLOW_HOME}/dags/
 
