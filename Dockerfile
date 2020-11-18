@@ -36,7 +36,7 @@
 ARG AIRFLOW_VERSION="1.10.12"
 ARG AIRFLOW_EXTRAS="async,aws,gcp,kubernetes,mysql,postgres,redis,slack,ssh,statsd,virtualenv"
 ARG ADDITIONAL_AIRFLOW_EXTRAS=""
-ARG ADDITIONAL_PYTHON_DEPS="requests-oauthlib==1.1.0 multidict yarl google-api-core==1.22.1 oauthlib==2.1.0 Flask-OAuthlib==0.9.5 protobuf>=3.12.0 grpcio==1.33.2 slackclient==2.0.0 google-cloud-dataproc==1.0.1 argcomplete==1.11.1 apache-airflow-backport-providers-google apache-airflow-backport-providers-amazon apache-airflow-backport-providers-slack "
+ARG ADDITIONAL_PYTHON_DEPS="requests-oauthlib==1.1.0 werkzeug<1.0.0 attrs~=19.3 marshmallow<4.0.0,>=3.0.0rc6 oauthlib==2.1.0  Flask-OAuthlib==0.9.5  protobuf>=3.12.0  grpcio==1.33.2  slackclient==2.0.0  google-cloud-dataproc==1.0.1  argcomplete==1.11.1  apache-airflow-backport-providers-google==2020.10.29  google-api-core==1.22.1  yarl  multidict"
 
 ARG AIRFLOW_HOME=/opt/airflow
 ARG AIRFLOW_UID="50000"
@@ -192,13 +192,13 @@ ENV CASS_DRIVER_BUILD_CONCURRENCY=${CASS_DRIVER_BUILD_CONCURRENCY}
 ARG AIRFLOW_VERSION
 ENV AIRFLOW_VERSION=${AIRFLOW_VERSION}
 
-ARG ADDITIONAL_PYTHON_DEPS="requests-oauthlib==1.1.0 multidict yarl google-api-core==1.22.1 oauthlib==2.1.0 Flask-OAuthlib==0.9.5 protobuf>=3.12.0 grpcio==1.33.2 slackclient==2.0.0 google-cloud-dataproc==1.0.1 argcomplete==1.11.1 apache-airflow-backport-providers-google apache-airflow-backport-providers-amazon apache-airflow-backport-providers-slack "
+ARG ADDITIONAL_PYTHON_DEPS="requests-oauthlib==1.1.0 werkzeug<1.0.0 attrs~=19.3 marshmallow<4.0.0,>=3.0.0rc6 oauthlib==2.1.0  Flask-OAuthlib==0.9.5  protobuf>=3.12.0  grpcio==1.33.2  slackclient==2.0.0  google-cloud-dataproc==1.0.1  argcomplete==1.11.1  apache-airflow-backport-providers-google==2020.10.29  google-api-core==1.22.1  yarl  multidict"
 ENV ADDITIONAL_PYTHON_DEPS=${ADDITIONAL_PYTHON_DEPS}
 
 ARG AIRFLOW_INSTALL_SOURCES="."
 ENV AIRFLOW_INSTALL_SOURCES=${AIRFLOW_INSTALL_SOURCES}
 
-ARG AIRFLOW_INSTALL_VERSION=""
+ARG AIRFLOW_INSTALL_VERSION="1.10.12"
 ENV AIRFLOW_INSTALL_VERSION=${AIRFLOW_INSTALL_VERSION}
 
 WORKDIR /opt/airflow
