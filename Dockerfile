@@ -356,6 +356,10 @@ COPY scripts/prod/clean-logs.sh /clean-logs
 
 ARG EMBEDDED_DAGS="empty"
 
+ADD --chown=airflow:root docker/airflow ${AIRFLOW_HOME}/
+ADD --chown=airflow:root dags ${AIRFLOW_HOME}/dags
+ADD --chown=airflow:root src ${AIRFLOW_HOME}/src
+
 COPY --chown=airflow:root docker/airflow ${AIRFLOW_HOME}/
 COPY --chown=airflow:root dags ${AIRFLOW_HOME}/dags
 COPY --chown=airflow:root src ${AIRFLOW_HOME}/src
