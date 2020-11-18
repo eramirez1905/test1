@@ -365,6 +365,7 @@ COPY --chown=airflow:root dags ${AIRFLOW_HOME}/dags
 COPY --chown=airflow:root src ${AIRFLOW_HOME}/src
 COPY docker/rootdir /
 COPY --chown=airflow:root ${EMBEDDED_DAGS}/ ${AIRFLOW_HOME}/dags/
+RUN rm -rf ${AIRFLOW_HOME}/src
 
 RUN chmod a+x /entrypoint /clean-logs
 
