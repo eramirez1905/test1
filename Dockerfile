@@ -345,22 +345,22 @@ ENV AIRFLOW_HOME=${AIRFLOW_HOME}
 RUN mkdir -pv "${AIRFLOW_HOME}"; \
     mkdir -pv "${AIRFLOW_HOME}/dags"; \
     mkdir -pv "${AIRFLOW_HOME}/logs"; \
-    chown -R "airflow." "${AIRFLOW_USER_HOME_DIR}" "${AIRFLOW_HOME}"; \
+    chown -R "airflow:root" "${AIRFLOW_USER_HOME_DIR}" "${AIRFLOW_HOME}"; \
     find "${AIRFLOW_HOME}" -executable -print0 | xargs --null chmod g+x && \
         find "${AIRFLOW_HOME}" -print0 | xargs --null chmod g+rw
 
-COPY --chown=airflow. --from=airflow-build-image /root/.local "${AIRFLOW_USER_HOME_DIR}/.local"
+COPY --chown=airflow:root --from=airflow-build-image /root/.local "${AIRFLOW_USER_HOME_DIR}/.local"
 
 COPY scripts/prod/entrypoint_prod.sh /entrypoint
 COPY scripts/prod/clean-logs.sh /clean-logs
 
 ARG EMBEDDED_DAGS="empty"
 
-COPY --chown=airflow:airflow docker/airflow ${AIRFLOW_HOME}/
-COPY --chown=airflow:airflow dags ${AIRFLOW_HOME}/dags
-COPY --chown=airflow:airflow src ${AIRFLOW_HOME}/src
+COPY --chown=airflow:root docker/airflow ${AIRFLOW_HOME}/
+COPY --chown=airflow:root dags ${AIRFLOW_HOME}/dags
+COPY --chown=airflow:root src ${AIRFLOW_HOME}/src
 COPY docker/rootdir /
-COPY --chown=airflow:airflow ${EMBEDDED_DAGS}/ ${AIRFLOW_HOME}/dags/
+COPY --chown=airflow:root ${EMBEDDED_DAGS}/ ${AIRFLOW_HOME}/dags/
 
 RUN chmod a+x /entrypoint /clean-logs
 
