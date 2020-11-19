@@ -35,13 +35,12 @@ ARG AIRFLOW_CONSTRAINTS_URL="https://raw.githubusercontent.com/apache/airflow/${
 
 
 RUN pip install --user ${ADDITIONAL_PYTHON_DEPS} \
-     --constraint "${AIRFLOW_CONSTRAINTS_URL}" && \
      find /root/.local/ -name '*.pyc' -print0 | xargs -0 rm -r && \
      find /root/.local/ -type d -name '__pycache__' -print0 | xargs -0 rm -r
 
-RUN curl -o /tmp/aws-iam-authenticator https://amazon-eks.s3.us-west-2.amazonaws.com/1.18.8/2020-09-18/bin/linux/amd64/aws-iam-authenticator \
-    && chmod +x /tmp/aws-iam-authenticator \
-    && mv /tmp/aws-iam-authenticator /usr/local/bin
+# RUN curl -o /tmp/aws-iam-authenticator https://amazon-eks.s3.us-west-2.amazonaws.com/1.18.8/2020-09-18/bin/linux/amd64/aws-iam-authenticator \
+#     && chmod +x /tmp/aws-iam-authenticator \
+#     && mv /tmp/aws-iam-authenticator /usr/local/bin
 
 USER airflow
 
