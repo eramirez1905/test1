@@ -35,7 +35,7 @@ USER airflow
 
 COPY requirements.txt ${AIRFLOW_HOME}/requirements.txt
 RUN pip install --user -r "${AIRFLOW_HOME}/requirements.txt" \
-  && rm -rf /home/airflow/.cache
+  && rm -rf /opt/airflow/.cache
 
 COPY --chown=airflow docker/airflow ${AIRFLOW_HOME}/
 COPY --chown=airflow dags ${AIRFLOW_HOME}/dags
