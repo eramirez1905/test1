@@ -13,19 +13,19 @@ RUN pip install --upgrade pip==${PIP_VERSION}
 
 RUN set -ex \
     # https://airflow.readthedocs.io/en/latest/installation.html
-    && su airflow -l -c "$(which pip) install --user apache-airflow[emr,s3,kubernetes,gcp_api,google_auth,statsd]==$AIRFLOW_VERSION \
+    && su airflow -l -c "$(which pip) install --user apache-airflow[async,aws,gcp,kubernetes,mysql,postgres,redis,slack,ssh,statsd,virtualenv]==$AIRFLOW_VERSION \
       --constraint https://raw.githubusercontent.com/apache/airflow/$AIRFLOW_VERSION/requirements/requirements-python3.7.txt" \
     && curl -L https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -o /usr/local/bin/jq \
     && chmod +x /usr/local/bin/jq \
     && rm -rf \
-        /home/airflow/.cache \
+        /opt/airflow/.cache \
         /tmp/* \
         /var/tmp/* \
         /usr/share/man \
         /usr/share/doc \
         /usr/share/doc-base
 
-# RUN pip install --user ${ADDITIONAL_PYTHON_DEPS} 
+RUN pip install --user ${ADDITIONAL_PYTHON_DEPS} 
 
 # RUN curl -o /tmp/aws-iam-authenticator https://amazon-eks.s3.us-west-2.amazonaws.com/1.18.8/2020-09-18/bin/linux/amd64/aws-iam-authenticator \
 #     && chmod +x /tmp/aws-iam-authenticator \
