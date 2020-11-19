@@ -10,4 +10,4 @@ steps:
   args: ['push', 'us.gcr.io/$PROJECT_ID/datahub-testing:$COMMIT_SHA']
 images:
 - 'us.gcr.io/$PROJECT_ID/datahub-testing:$COMMIT_SHA'
-timeout: '1200s'
+timeout: "3600s"

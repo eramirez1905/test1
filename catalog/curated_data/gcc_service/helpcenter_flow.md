@@ -1,0 +1,41 @@
+# Help Center Flow
+
+|Column | Type | Description|
+| :--- | :--- | :--- | 
+|source | STRING | N/A|
+|flow_session_id | STRING | N/A|
+|flow_session_start | TIMESTAMP | N/A|
+|country | STRING | N/A|
+|language | STRING | N/A|
+|brand | STRING | N/A|
+|os | STRING | N/A|
+|customer_id | STRING | N/A|
+|successful_session | INTEGER | N/A|
+|order_session | INTEGER | N/A|
+|is_chat_created | BOOLEAN | N/A|
+|sum_chat_requested | INTEGER | N/A|
+|sum_chat_connected | INTEGER | N/A|
+|sum_chat_created | INTEGER | N/A|
+|sum_chat_established | INTEGER | N/A|
+|sum_messages_agent | INTEGER | N/A|
+|sum_messages_user | INTEGER | N/A|
+|sum_missed_chats | INTEGER | N/A|
+|sum_dropped_chats | INTEGER | N/A|
+|sum_dropped_chats_5s | INTEGER | N/A|
+|sum_chats_routed_to_case | INTEGER | N/A|
+|sum_ht_served_sf | INTEGER | N/A|
+|sum_served_chats_sf | INTEGER | N/A|
+|chat_ids | STRING | N/A|
+|chat_platform | STRING | N/A|
+|chat_ccr_array | STRING | N/A|
+|order_ids | STRING | N/A|
+|count_orders | INTEGER | N/A|
+|delivery_type_array | STRING | N/A|
+|is_ticket_created | BOOLEAN | N/A|
+|sum_ticket_created | INTEGER | N/A|
+|ticket_ids | STRING | N/A|
+|ticket_platform | STRING | N/A|
+|ticket_ccr_array | STRING | N/A|
+|region | STRING | N/A|
+|management_entity | STRING | N/A|
+|global_entity_id | STRING | N/A|
