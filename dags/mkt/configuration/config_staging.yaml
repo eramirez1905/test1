@@ -1,3 +1,0 @@
-slack:
-  channel: '#mkt-airflow-staging'
-  channel_errors: '#mkt-airflow-staging'

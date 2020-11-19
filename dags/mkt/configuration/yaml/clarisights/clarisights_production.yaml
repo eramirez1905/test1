@@ -1,4 +1,0 @@
-clarisights_exports:
-  campaign_costs:
-    s3_bucket: mkt-export-to-bq
-    redshift_schema: mkt_clarisights

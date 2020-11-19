@@ -1,8 +1,0 @@
-teams:
-  data-engineering:
-    channel_errors: '#ful-airflow-data-eng-alerts'
-
-slack:
-  channel: '#log-airflow'
-  channel_errors: '#log-airflow-alerts'
-  has_mentions: true
