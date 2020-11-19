@@ -1,0 +1,20 @@
+tenacity
+freezegun
+scikit-learn
+HiYaPyCo
+slackclient==2.0.0
+gspread
+tabulate
+cerberus
+flake8==3.7.8
+simple_salesforce==0.75.3
+jira==2.0.1.0rc1
+pytest
+pytest-xdist
+yamllint==1.23.0
+oauthlib==2.1.0
+requests-oauthlib==1.1.0
+# httplib2 0.17.0 has a bug on the debug function https://github.com/httplib2/httplib2/commit/59586b5f0ccfa9d570d8c7d908d00d34cf1f3c89
+httplib2==0.18.0
+snapshottest==0.6.0
+pytest-mock==3.3.*
