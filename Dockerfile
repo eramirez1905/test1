@@ -6,6 +6,10 @@ ARG AIRFLOW_VERSION="1.10.12"
 ARG AIRFLOW_EXTRAS="async,aws,gcp,kubernetes,mysql,postgres,redis,slack,ssh,statsd,virtualenv"
 ARG ADDITIONAL_PYTHON_DEPS="requests-oauthlib==1.1.0 werkzeug<1.0.0 attrs~=19.3 marshmallow<4.0.0,>=3.0.0rc6 oauthlib==2.1.0  Flask-OAuthlib==0.9.5  protobuf>=3.12.0  grpcio==1.33.2  slackclient==2.0.0  google-cloud-dataproc==1.0.1  argcomplete==1.11.1  apache-airflow-backport-providers-google==2020.10.29  google-api-core==1.22.1  yarl  multidict"
 ARG AIRFLOW_HOME=/opt/airflow
+ARG PIP_VERSION="20.2.4"
+ENV PIP_VERSION=${PIP_VERSION}
+
+RUN pip install --upgrade pip==${PIP_VERSION}
 
 RUN set -ex \
     # https://airflow.readthedocs.io/en/latest/installation.html
@@ -21,8 +25,7 @@ RUN set -ex \
         /usr/share/doc \
         /usr/share/doc-base
 
-ARG PIP_VERSION="20.2.4"
-ENV PIP_VERSION=${PIP_VERSION}
+
 ARG AIRFLOW_INSTALL_VERSION=""
 ENV AIRFLOW_INSTALL_VERSION=${AIRFLOW_INSTALL_VERSION}
 ARG AIRFLOW_INSTALL_SOURCES=""
@@ -30,18 +33,15 @@ ENV AIRFLOW_INSTALL_SOURCES=${AIRFLOW_INSTALL_SOURCES}
 ARG AIRFLOW_CONSTRAINTS_REFERENCE="constraints-master"
 ARG AIRFLOW_CONSTRAINTS_URL="https://raw.githubusercontent.com/apache/airflow/${AIRFLOW_CONSTRAINTS_REFERENCE}/constraints-${PYTHON_MAJOR_MINOR_VERSION}.txt"
 
-RUN pip install --upgrade pip==${PIP_VERSION}
 
-RUN pip install --user "${AIRFLOW_INSTALL_SOURCES}[${AIRFLOW_EXTRAS}]${AIRFLOW_INSTALL_VERSION}" \
-     --constraint "${AIRFLOW_CONSTRAINTS_URL}" && \
-     if [ -n "${ADDITIONAL_PYTHON_DEPS}" ]; then pip install --user ${ADDITIONAL_PYTHON_DEPS} \
+RUN pip install --user ${ADDITIONAL_PYTHON_DEPS} \
      --constraint "${AIRFLOW_CONSTRAINTS_URL}"; fi && \
      find /root/.local/ -name '*.pyc' -print0 | xargs -0 rm -r && \
      find /root/.local/ -type d -name '__pycache__' -print0 | xargs -0 rm -r
 
-# RUN curl -o /tmp/aws-iam-authenticator https://amazon-eks.s3.us-west-2.amazonaws.com/1.18.8/2020-09-18/bin/linux/amd64/aws-iam-authenticator \
-#     && chmod +x /tmp/aws-iam-authenticator \
-#     && mv /tmp/aws-iam-authenticator /usr/local/bin
+RUN curl -o /tmp/aws-iam-authenticator https://amazon-eks.s3.us-west-2.amazonaws.com/1.18.8/2020-09-18/bin/linux/amd64/aws-iam-authenticator \
+    && chmod +x /tmp/aws-iam-authenticator \
+    && mv /tmp/aws-iam-authenticator /usr/local/bin
 
 USER airflow
 
