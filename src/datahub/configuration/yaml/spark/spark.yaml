@@ -1,0 +1,64 @@
+spark_conf: &spark_common_conf
+  version: 20.42.0
+  main_class: ''
+
+dataproc:
+  project_id: 'fulfillment-dwh-staging'
+  region: 'europe-west1'
+  zones: ['europe-west1-b', 'europe-west1-c', 'europe-west1-d']
+  subnetwork: ''
+  storage_bucket: 'fulfilment-dwh-staging-data'
+  default:
+    spark_cluster:
+      driver_node: n1-standard-2
+      worker_node: n1-standard-2
+      num_workers: 2
+
+  _base_job: &dataproc_jobs_base
+    enabled: false
+    <<: *spark_common_conf
+    jar_path: 'gs://fulfilment-dwh-production-data/spark-job-releases/spark-jobs-assembly-{version}.jar'
+
+  export_cloud_sql:
+    <<: *dataproc_jobs_base
+    default:
+      spark_cluster:
+        driver_node: n1-standard-2
+        worker_node: n1-standard-2
+        num_workers: 2
+
+  export_cloud_sql_backfill:
+    <<: *dataproc_jobs_base
+    default:
+      spark_cluster:
+        driver_node: n1-standard-2
+        worker_node: n1-standard-2
+        num_workers: 2
+
+databricks:
+  default:
+    spark_cluster:
+      driver_node: c5.xlarge
+      worker_node: c5.xlarge
+      num_workers: 1
+
+  _base_job: &jobs_base
+    enabled: false
+    <<: *spark_common_conf
+    jar_path: dbfs:/jobs/jars/spark-jobs-assembly-{version}.jar
+
+  export_read_replica:
+    <<: *jobs_base
+    default:
+      spark_cluster:
+        driver_node: c5.xlarge
+        worker_node: r5.large
+        num_workers: 1
+
+  export_read_replica_backfill:
+    <<: *jobs_base
+    default:
+      spark_cluster:
+        driver_node: c5.2xlarge
+        worker_node: r5.2xlarge
+        num_workers: 3

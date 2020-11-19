@@ -1,0 +1,5 @@
+[mysqld]
+explicit_defaults_for_timestamp = 1
+
+; Increase max_allowed_packet to allow store_serialized_dags to store huge BLOBs
+max_allowed_packet = 16MB

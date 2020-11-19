@@ -1,0 +1,7 @@
+ncr:
+  ncr_schema: "mkt_ncr"
+  ncr_s3_bucket: "mkt-ncr"
+  ncr_s3_conn_id: "s3_mkt_ncr"
+  ncr_brands:
+    "tb":
+      braze_conn_id: "braze_tb"

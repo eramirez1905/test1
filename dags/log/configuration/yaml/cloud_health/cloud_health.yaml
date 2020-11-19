@@ -1,0 +1,22 @@
+cloud_health:
+  reports:
+    standards:
+      - type: cost
+        name: rds
+        interval: daily
+        dimensions:
+          - time
+          - Groupset-2886218027909
+        measures:
+          - rds_cost_total
+        filters: []
+      - type: containers
+        name: cost_history
+        interval: daily
+        dimensions:
+          - time
+          - Groupset-2886218027909
+        measures:
+          - cost
+        filters:
+          - Groupset-2886218025040:select:2886218270026,2886218270024,2886218270023,2886218270027,2886218270022,2886218270025,2886218270029,2886218270033,2886218270037,2886218270035,2886218270036,2886218294361,2886218302907,2886218270032,2886218303327,2886218301377

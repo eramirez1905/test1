@@ -1,0 +1,568 @@
+google_dataset_iam:
+  fulfillment-dwh-production:
+    # logistics
+    cl:
+      READER:
+        userByEmail:
+          - shiny-dashboard@log-optimisation.iam.gserviceaccount.com
+          - cron-app@logistics-data-feature-store.iam.gserviceaccount.com
+    dl:
+      READER:
+        userByEmail:
+          - shiny-dashboard@log-optimisation.iam.gserviceaccount.com
+          - cron-app@logistics-data-feature-store.iam.gserviceaccount.com
+    raw:
+      READER:
+        userByEmail:
+          - shiny-dashboard@log-optimisation.iam.gserviceaccount.com
+
+    fs:
+      READER:
+        userByEmail:
+          - cron-app@logistics-data-feature-store.iam.gserviceaccount.com
+
+    # Dmart
+    cl_dmart:
+      READER:
+        userByEmail:
+          - ekin.oecalan@deliveryhero.com
+          - mykyta.liubchych@deliveryhero.com
+          - datamart-bigquery-production@dh-darkstores-live.iam.gserviceaccount.com
+        groupByEmail:
+          - data_insights_qcommerce@deliveryhero.com
+    dl_dmart:
+      READER:
+        userByEmail:
+          - ekin.oecalan@deliveryhero.com
+          - mykyta.liubchych@deliveryhero.com
+          - datamart-bigquery-production@dh-darkstores-live.iam.gserviceaccount.com
+        groupByEmail:
+          - data_insights_qcommerce@deliveryhero.com
+    hl_dmart:
+      READER:
+        userByEmail:
+          - ekin.oecalan@deliveryhero.com
+          - mykyta.liubchych@deliveryhero.com
+          - datamart-bigquery-production@dh-darkstores-live.iam.gserviceaccount.com
+    raw_dmart:
+      READER:
+        userByEmail:
+          - ekin.oecalan@deliveryhero.com
+          - mykyta.liubchych@deliveryhero.com
+          - datamart-bigquery-production@dh-darkstores-live.iam.gserviceaccount.com
+        groupByEmail:
+          - data_insights_qcommerce@deliveryhero.com
+
+    # Pandora
+    staging_pandora:
+      WRITER:
+        userByEmail:
+          - pd-datahub@dh-pandora-bi.iam.gserviceaccount.com
+    cl_pandora:
+      WRITER:
+        userByEmail:
+          - pd-datahub@dh-pandora-bi.iam.gserviceaccount.com
+    dl_pandora:
+      WRITER:
+        userByEmail:
+          - pd-datahub@dh-pandora-bi.iam.gserviceaccount.com
+    hl_pandora:
+      WRITER:
+        userByEmail:
+          - pd-datahub@dh-pandora-bi.iam.gserviceaccount.com
+    raw_pandora:
+      WRITER:
+        userByEmail:
+          - pd-datahub@dh-pandora-bi.iam.gserviceaccount.com
+    acl_pandora:
+      WRITER:
+        userByEmail:
+          - pd-datahub@dh-pandora-bi.iam.gserviceaccount.com
+    curated_data_filtered_pandora:
+      OWNER:
+        userByEmail:
+          - pd-datahub@dh-pandora-bi.iam.gserviceaccount.com
+    curated_data_shared_pandora:
+      OWNER:
+        userByEmail:
+          - pd-datahub@dh-pandora-bi.iam.gserviceaccount.com
+
+    # Global Contact Center service
+    staging_gcc_service:
+      WRITER:
+        userByEmail:
+          - pd-datahub@dh-pandora-bi.iam.gserviceaccount.com
+    raw_gcc_service:
+      WRITER:
+        userByEmail:
+          - pd-datahub@dh-pandora-bi.iam.gserviceaccount.com
+    dl_gcc_service:
+      WRITER:
+        userByEmail:
+          - pd-datahub@dh-pandora-bi.iam.gserviceaccount.com
+    hl_gcc_service:
+      WRITER:
+        userByEmail:
+          - pd-datahub@dh-pandora-bi.iam.gserviceaccount.com
+    cl_gcc_service:
+      WRITER:
+        userByEmail:
+          - pd-datahub@dh-pandora-bi.iam.gserviceaccount.com
+    acl_gcc_service:
+      WRITER:
+        userByEmail:
+          - pd-datahub@dh-pandora-bi.iam.gserviceaccount.com
+    curated_data_filtered_gcc_service:
+      OWNER:
+        userByEmail:
+          - pd-datahub@dh-pandora-bi.iam.gserviceaccount.com
+    curated_data_shared_gcc_service:
+      OWNER:
+        userByEmail:
+          - pd-datahub@dh-pandora-bi.iam.gserviceaccount.com
+
+    # pandata
+    pandata_intermediate:
+      READER:
+        groupByEmail:
+          - data_advanced_users@foodpanda.com
+          - data_members@foodpanda.com
+    pandata_raw_dynamodb:
+      READER:
+        groupByEmail:
+          - data_advanced_users@foodpanda.com
+          - data_members@foodpanda.com
+          - dh_fuze@foodpanda.com
+    pandata_curated:
+      READER:
+        groupByEmail:
+          - data_advanced_users@foodpanda.com
+          - data_members@foodpanda.com
+          - data_users@foodpanda.com
+
+    # PedidosYa
+    staging_peya:
+      WRITER:
+        groupByEmail:
+          - data-origins@pedidosya.com
+        userByEmail:
+          - datahub-airflow-pro@peya-datahub-pro.iam.gserviceaccount.com
+          - datahub-airflow-stg@peya-datahub-stg.iam.gserviceaccount.com
+    cl_peya:
+      WRITER:
+        groupByEmail:
+          - data-origins@pedidosya.com
+        userByEmail:
+          - datahub-airflow-pro@peya-datahub-pro.iam.gserviceaccount.com
+          - datahub-airflow-stg@peya-datahub-stg.iam.gserviceaccount.com
+    dl_peya:
+      WRITER:
+        groupByEmail:
+          - data-origins@pedidosya.com
+        userByEmail:
+          - datahub-airflow-pro@peya-datahub-pro.iam.gserviceaccount.com
+          - datahub-airflow-stg@peya-datahub-stg.iam.gserviceaccount.com
+    hl_peya:
+      WRITER:
+        groupByEmail:
+          - data-origins@pedidosya.com
+        userByEmail:
+          - datahub-airflow-pro@peya-datahub-pro.iam.gserviceaccount.com
+    raw_peya:
+      WRITER:
+        groupByEmail:
+          - data-origins@pedidosya.com
+        userByEmail:
+          - datahub-airflow-pro@peya-datahub-pro.iam.gserviceaccount.com
+          - datahub-airflow-stg@peya-datahub-stg.iam.gserviceaccount.com
+    acl_peya:
+      WRITER:
+        groupByEmail:
+          - data-origins@pedidosya.com
+        userByEmail:
+          - datahub-airflow-pro@peya-datahub-pro.iam.gserviceaccount.com
+          - datahub-airflow-stg@peya-datahub-stg.iam.gserviceaccount.com
+    curated_data_filtered_peya:
+      OWNER:
+        groupByEmail:
+          - data-origins@pedidosya.com
+        userByEmail:
+          - datahub-airflow-pro@peya-datahub-pro.iam.gserviceaccount.com
+          - datahub-airflow-stg@peya-datahub-stg.iam.gserviceaccount.com
+    curated_data_shared_peya:
+      OWNER:
+        groupByEmail:
+          - data-origins@pedidosya.com
+        userByEmail:
+          - datahub-airflow-pro@peya-datahub-pro.iam.gserviceaccount.com
+          - datahub-airflow-stg@peya-datahub-stg.iam.gserviceaccount.com
+
+    # Central DWH
+    staging_central_dwh:
+      WRITER:
+        groupByEmail:
+          - datawarehouse@deliveryhero.com
+    raw_central_dwh:
+      WRITER:
+        groupByEmail:
+          - datawarehouse@deliveryhero.com
+    dl_central_dwh:
+      WRITER:
+        groupByEmail:
+          - datawarehouse@deliveryhero.com
+    hl_central_dwh:
+      WRITER:
+        groupByEmail:
+          - datawarehouse@deliveryhero.com
+    cl_central_dwh:
+      WRITER:
+        groupByEmail:
+          - datawarehouse@deliveryhero.com
+    acl_central_dwh:
+      WRITER:
+        groupByEmail:
+          - datawarehouse@deliveryhero.com
+    curated_data_filtered_central_dwh:
+      OWNER:
+        groupByEmail:
+          - datawarehouse@deliveryhero.com
+    curated_data_shared_central_dwh:
+      OWNER:
+        groupByEmail:
+          - datawarehouse@deliveryhero.com
+
+    # mkt-tech
+    staging_mkt:
+      WRITER:
+        userByEmail:
+          - mkt-tech-datafridge-bq-export@mkt-tech.iam.gserviceaccount.com
+    cl_mkt:
+      WRITER:
+        userByEmail:
+          - mkt-tech-datafridge-bq-export@mkt-tech.iam.gserviceaccount.com
+    dl_mkt:
+      WRITER:
+        userByEmail:
+          - mkt-tech-datafridge-bq-export@mkt-tech.iam.gserviceaccount.com
+    hl_mkt:
+      WRITER:
+        userByEmail:
+          - mkt-tech-datafridge-bq-export@mkt-tech.iam.gserviceaccount.com
+    raw_mkt:
+      WRITER:
+        userByEmail:
+          - mkt-tech-datafridge-bq-export@mkt-tech.iam.gserviceaccount.com
+    acl_mkt:
+      WRITER:
+        userByEmail:
+          - mkt-tech-datafridge-bq-export@mkt-tech.iam.gserviceaccount.com
+    curated_data_filtered_mkt:
+      OWNER:
+        userByEmail:
+          - mkt-tech-datafridge-bq-export@mkt-tech.iam.gserviceaccount.com
+    curated_data_shared_mkt:
+      OWNER:
+        userByEmail:
+          - mkt-tech-datafridge-bq-export@mkt-tech.iam.gserviceaccount.com
+
+    billing:
+      WRITER:
+        userByEmail:
+          # logistics-data-staging logger sink
+          - p513393874787-870718@gcp-sa-logging.iam.gserviceaccount.com
+          # logistics-data-production logger sink
+          - p415591272030-891952@gcp-sa-logging.iam.gserviceaccount.com
+          # logistics-data-staging-flex logger sink
+          - p170440451397-893299@gcp-sa-logging.iam.gserviceaccount.com
+          # logistics-data-production-flex logger sink
+          - p764125646886-081303@gcp-sa-logging.iam.gserviceaccount.com
+          # logistics-data-staging-flat logger sink
+          - p342857929993-212212@gcp-sa-logging.iam.gserviceaccount.com
+          # logistics-data-production-flat logger sink
+          - p680565415170-230793@gcp-sa-logging.iam.gserviceaccount.com
+          # logistics-data-feature-store logger sink
+          - p580234603189-058263@gcp-sa-logging.iam.gserviceaccount.com
+          # Other logger sinks
+          - p259536568814-016585@gcp-sa-logging.iam.gserviceaccount.com
+          - p259536568814-669520@gcp-sa-logging.iam.gserviceaccount.com
+          - p780393426212-573551@gcp-sa-logging.iam.gserviceaccount.com
+          - p780393426212-705108@gcp-sa-logging.iam.gserviceaccount.com
+
+    gcp_audit_logs:
+      WRITER:
+        userByEmail:
+          # DH Organization
+          - o783459142912-136852@gcp-sa-logging.iam.gserviceaccount.com
+
+    # Special case used by Pandora DWH to consume Contact Center forecast produces by the Data science team
+    incident_forecast:
+      READER:
+        groupByEmail:
+          - pandora_dwh@deliveryhero.com
+          - dh_cc_analytics@deliveryhero.com
+        userByEmail:
+          - service-account-3@foodoraanalyticspremium.iam.gserviceaccount.com
+
+  fulfillment-dwh-staging:
+    staging:
+      WRITER:
+        userByEmail:
+          - pd-datahub@dh-pandora-bi.iam.gserviceaccount.com
+
+    # Dmart
+    raw_dmart:
+      READER:
+        userByEmail:
+          - ekin.oecalan@deliveryhero.com
+          - mykyta.liubchych@deliveryhero.com
+          - datamart-bigquery-staging@dh-darkstores-stg.iam.gserviceaccount.com
+          - catperf-bigquery-stg@dh-darkstores-stg.iam.gserviceaccount.com
+        groupByEmail:
+          - dh_nv_catalog_tech@deliveryhero.com
+          - data_insights_qcommerce@deliveryhero.com
+    cl_dmart:
+      WRITER:
+        groupByEmail:
+          - data_insights_qcommerce@deliveryhero.com
+      READER:
+        userByEmail:
+          - ekin.oecalan@deliveryhero.com
+          - mykyta.liubchych@deliveryhero.com
+          - datamart-bigquery-staging@dh-darkstores-stg.iam.gserviceaccount.com
+          - catperf-bigquery-stg@dh-darkstores-stg.iam.gserviceaccount.com
+        groupByEmail:
+          - dh_nv_catalog_tech@deliveryhero.com
+    dl_dmart:
+      READER:
+        userByEmail:
+          - ekin.oecalan@deliveryhero.com
+          - mykyta.liubchych@deliveryhero.com
+          - datamart-bigquery-staging@dh-darkstores-stg.iam.gserviceaccount.com
+          - catperf-bigquery-stg@dh-darkstores-stg.iam.gserviceaccount.com
+        groupByEmail:
+          - dh_nv_catalog_tech@deliveryhero.com
+          - data_insights_qcommerce@deliveryhero.com
+    hl_dmart:
+      READER:
+        userByEmail:
+          - ekin.oecalan@deliveryhero.com
+          - mykyta.liubchych@deliveryhero.com
+          - datamart-bigquery-staging@dh-darkstores-stg.iam.gserviceaccount.com
+          - catperf-bigquery-stg@dh-darkstores-stg.iam.gserviceaccount.com
+        groupByEmail:
+          - dh_nv_catalog_tech@deliveryhero.com
+
+    # Pandora
+    staging_pandora:
+      WRITER:
+        userByEmail:
+          - pd-datahub@dh-pandora-bi.iam.gserviceaccount.com
+    cl_pandora:
+      WRITER:
+        userByEmail:
+          - pd-datahub@dh-pandora-bi.iam.gserviceaccount.com
+    dl_pandora:
+      WRITER:
+        userByEmail:
+          - pd-datahub@dh-pandora-bi.iam.gserviceaccount.com
+    hl_pandora:
+      WRITER:
+        userByEmail:
+          - pd-datahub@dh-pandora-bi.iam.gserviceaccount.com
+    raw_pandora:
+      WRITER:
+        userByEmail:
+          - pd-datahub@dh-pandora-bi.iam.gserviceaccount.com
+    acl_pandora:
+      WRITER:
+        userByEmail:
+          - pd-datahub@dh-pandora-bi.iam.gserviceaccount.com
+    curated_data_filtered_pandora:
+      OWNER:
+        userByEmail:
+          - pd-datahub@dh-pandora-bi.iam.gserviceaccount.com
+
+    curated_data_shared_pandora:
+      OWNER:
+        userByEmail:
+          - pd-datahub@dh-pandora-bi.iam.gserviceaccount.com
+
+    # Global Contact Center service
+    staging_gcc_service:
+      WRITER:
+        userByEmail:
+          - pd-datahub@dh-pandora-bi.iam.gserviceaccount.com
+    raw_gcc_service:
+      WRITER:
+        userByEmail:
+          - pd-datahub@dh-pandora-bi.iam.gserviceaccount.com
+    dl_gcc_service:
+      WRITER:
+        userByEmail:
+          - pd-datahub@dh-pandora-bi.iam.gserviceaccount.com
+    hl_gcc_service:
+      WRITER:
+        userByEmail:
+          - pd-datahub@dh-pandora-bi.iam.gserviceaccount.com
+    cl_gcc_service:
+      WRITER:
+        userByEmail:
+          - pd-datahub@dh-pandora-bi.iam.gserviceaccount.com
+    acl_gcc_service:
+      WRITER:
+        userByEmail:
+          - pd-datahub@dh-pandora-bi.iam.gserviceaccount.com
+    curated_data_filtered_gcc_service:
+      OWNER:
+        userByEmail:
+          - pd-datahub@dh-pandora-bi.iam.gserviceaccount.com
+    curated_data_shared_gcc_service:
+      OWNER:
+        userByEmail:
+          - pd-datahub@dh-pandora-bi.iam.gserviceaccount.com
+
+    # pandata
+    pandata_intermediate:
+      READER:
+        groupByEmail:
+          - data_advanced_users@foodpanda.com
+          - data_members@foodpanda.com
+    pandata_curated:
+      READER:
+        groupByEmail:
+          - data_advanced_users@foodpanda.com
+          - data_members@foodpanda.com
+
+    # PedidosYa
+    staging_peya:
+      WRITER:
+        groupByEmail:
+          - data-origins@pedidosya.com
+        userByEmail:
+          - datahub-airflow-pro@peya-datahub-pro.iam.gserviceaccount.com
+          - datahub-airflow-stg@peya-datahub-stg.iam.gserviceaccount.com
+    cl_peya:
+      WRITER:
+        groupByEmail:
+          - data-origins@pedidosya.com
+        userByEmail:
+          - datahub-airflow-pro@peya-datahub-pro.iam.gserviceaccount.com
+          - datahub-airflow-stg@peya-datahub-stg.iam.gserviceaccount.com
+    dl_peya:
+      WRITER:
+        groupByEmail:
+          - data-origins@pedidosya.com
+        userByEmail:
+          - datahub-airflow-pro@peya-datahub-pro.iam.gserviceaccount.com
+          - datahub-airflow-stg@peya-datahub-stg.iam.gserviceaccount.com
+    hl_peya:
+      WRITER:
+        groupByEmail:
+          - data-origins@pedidosya.com
+        userByEmail:
+          - datahub-airflow-pro@peya-datahub-pro.iam.gserviceaccount.com
+    raw_peya:
+      WRITER:
+        groupByEmail:
+          - data-origins@pedidosya.com
+        userByEmail:
+          - datahub-airflow-pro@peya-datahub-pro.iam.gserviceaccount.com
+          - datahub-airflow-stg@peya-datahub-stg.iam.gserviceaccount.com
+    acl_peya:
+      WRITER:
+        groupByEmail:
+          - data-origins@pedidosya.com
+        userByEmail:
+          - datahub-airflow-pro@peya-datahub-pro.iam.gserviceaccount.com
+          - datahub-airflow-stg@peya-datahub-stg.iam.gserviceaccount.com
+    curated_data_filtered_peya:
+      OWNER:
+        groupByEmail:
+          - data-origins@pedidosya.com
+        userByEmail:
+          - datahub-airflow-pro@peya-datahub-pro.iam.gserviceaccount.com
+          - datahub-airflow-stg@peya-datahub-stg.iam.gserviceaccount.com
+    curated_data_shared_peya:
+      OWNER:
+        groupByEmail:
+          - data-origins@pedidosya.com
+        userByEmail:
+          - datahub-airflow-pro@peya-datahub-pro.iam.gserviceaccount.com
+          - datahub-airflow-stg@peya-datahub-stg.iam.gserviceaccount.com
+
+    # Central DWH
+    staging_central_dwh:
+      WRITER:
+        groupByEmail:
+          - datawarehouse@deliveryhero.com
+    raw_central_dwh:
+      WRITER:
+        groupByEmail:
+          - datawarehouse@deliveryhero.com
+    dl_central_dwh:
+      WRITER:
+        groupByEmail:
+          - datawarehouse@deliveryhero.com
+    hl_central_dwh:
+      WRITER:
+        groupByEmail:
+          - datawarehouse@deliveryhero.com
+    cl_central_dwh:
+      WRITER:
+        groupByEmail:
+          - datawarehouse@deliveryhero.com
+    acl_central_dwh:
+      WRITER:
+        groupByEmail:
+          - datawarehouse@deliveryhero.com
+    curated_data_filtered_central_dwh:
+      OWNER:
+        groupByEmail:
+          - datawarehouse@deliveryhero.com
+    curated_data_shared_central_dwh:
+      OWNER:
+        groupByEmail:
+          - datawarehouse@deliveryhero.com
+
+    # mkt-tech
+    staging_mkt:
+      WRITER:
+        userByEmail:
+          - mkt-tech-datafridge-bq-export@mkt-tech.iam.gserviceaccount.com
+    cl_mkt:
+      WRITER:
+        userByEmail:
+          - mkt-tech-datafridge-bq-export@mkt-tech.iam.gserviceaccount.com
+    dl_mkt:
+      WRITER:
+        userByEmail:
+          - mkt-tech-datafridge-bq-export@mkt-tech.iam.gserviceaccount.com
+    hl_mkt:
+      WRITER:
+        userByEmail:
+          - mkt-tech-datafridge-bq-export@mkt-tech.iam.gserviceaccount.com
+    raw_mkt:
+      WRITER:
+        userByEmail:
+          - mkt-tech-datafridge-bq-export@mkt-tech.iam.gserviceaccount.com
+    acl_mkt:
+      WRITER:
+        userByEmail:
+          - mkt-tech-datafridge-bq-export@mkt-tech.iam.gserviceaccount.com
+    curated_data_filtered_mkt:
+      OWNER:
+        userByEmail:
+          - mkt-tech-datafridge-bq-export@mkt-tech.iam.gserviceaccount.com
+    curated_data_shared_mkt:
+      OWNER:
+        userByEmail:
+          - mkt-tech-datafridge-bq-export@mkt-tech.iam.gserviceaccount.com
+
+    # Special case used by Pandora DWH to consume Contact Center forecast produces by the Data science team
+    incident_forecast:
+      READER:
+        groupByEmail:
+          - pandora_dwh@deliveryhero.com
+          - dh_cc_analytics@deliveryhero.com
+        userByEmail:
+          - service-account-3@foodoraanalyticspremium.iam.gserviceaccount.com

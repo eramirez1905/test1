@@ -1,0 +1,22 @@
+raw_layer_backfill:
+  countries: ~         # List of countries to filter the import.
+                       # Empty array means all countries.
+                       # Null value disable the import for not regional applications.
+  regions: ~           # List of regions to filter the import.
+                       # Empty array means all regions.
+                       # Null value disable the import for regional applications.
+  from_date: ~         # Datetime format: %Y-%m-%d %H:%M:%S
+  to_date: ~           # Datetime format: %Y-%m-%d %H:%M:%S
+
+dwh_merge_layer_databases:
+  app_name:
+    is_regional: true
+    source: RDS
+    opsgenie:
+      enabled: true
+      priority: P3
+    credentials:
+      username: user
+      password: JDBC_LOG_PASSWORD
+    tables:
+      - name: test_table
