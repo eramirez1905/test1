@@ -25,7 +25,7 @@ RUN set -ex \
         /usr/share/doc \
         /usr/share/doc-base
 
-RUN pip install --user ${ADDITIONAL_PYTHON_DEPS} 
+# RUN pip install --user ${ADDITIONAL_PYTHON_DEPS} 
 
 # RUN curl -o /tmp/aws-iam-authenticator https://amazon-eks.s3.us-west-2.amazonaws.com/1.18.8/2020-09-18/bin/linux/amd64/aws-iam-authenticator \
 #     && chmod +x /tmp/aws-iam-authenticator \
