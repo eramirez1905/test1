@@ -35,7 +35,7 @@ ARG AIRFLOW_CONSTRAINTS_URL="https://raw.githubusercontent.com/apache/airflow/${
 
 
 RUN pip install --user ${ADDITIONAL_PYTHON_DEPS} \
-     --constraint "${AIRFLOW_CONSTRAINTS_URL}"; fi && \
+     --constraint "${AIRFLOW_CONSTRAINTS_URL}" && \
      find /root/.local/ -name '*.pyc' -print0 | xargs -0 rm -r && \
      find /root/.local/ -type d -name '__pycache__' -print0 | xargs -0 rm -r
 
