@@ -1,0 +1,5 @@
+[flake8]
+# E402: Module level import not at top of file
+# E501: Line too long
+# W503: Line break occurred before a binary operator (changed to opposite W504 in 2016: https://lintlyci.github.io/Flake8Rules/rules/W503.html)
+ignore = E402,E501,W503
