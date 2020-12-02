@@ -14,7 +14,7 @@ RUN set -ex \
       $packages \
       jq procps \
     # https://airflow.readthedocs.io/en/latest/installation.html
-    && su airflow -l -c "$(which pip) install --user apache-airflow[emr,s3,kubernetes,gcp_api,google_auth,statsd]==$AIRFLOW_VERSION \
+    && su airflow -l -c "$(which pip) install --user apache-airflow[gcp,emr,s3,kubernetes,gcp_api,google_auth,statsd]==$AIRFLOW_VERSION \
       --constraint https://raw.githubusercontent.com/apache/airflow/$AIRFLOW_VERSION/requirements/requirements-python3.7.txt" \
     && apt-get purge --auto-remove -yqq $packages \
     && apt-get autoremove -yqq --purge \
