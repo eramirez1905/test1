@@ -3,7 +3,7 @@ FROM apache/airflow:1.10.10-python3.7
 USER root
 
 RUN python -m pip install --upgrade pip
-
+ARG AIRFLOW_VERSION=1.10.10
 RUN set -ex \
     && packages=' \
         build-essential \
@@ -14,8 +14,8 @@ RUN set -ex \
       $packages \
       jq procps \
     # https://airflow.readthedocs.io/en/latest/installation.html
-    && su airflow -l -c "$(which pip) install --user apache-airflow[gcp,emr,s3,kubernetes,statsd]==$AIRFLOW_VERSION \
-      --constraint https://raw.githubusercontent.com/apache/airflow/$AIRFLOW_VERSION/requirements/requirements-python3.7.txt" \
+    && su airflow -l -c "$(which pip) install --user apache-airflow[gcp,emr,s3,kubernetes,statsd]==1.10.10 \
+      --constraint https://raw.githubusercontent.com/apache/airflow/1.10.10/requirements/requirements-python3.7.txt" \
     && apt-get purge --auto-remove -yqq $packages \
     && apt-get autoremove -yqq --purge \
     && apt-get clean \
