@@ -1,16 +1,16 @@
-tenacity
-freezegun
-scikit-learn
-HiYaPyCo
+tenacity==6.2.0
+freezegun==1.0.0
+scikit-learn==0.23.2
+HiYaPyCo==0.4.16
 slackclient==2.0.0
-gspread
-tabulate
-cerberus
+gspread==3.6.0
+tabulate==0.8.7
+cerberus==1.3.2
 flake8==3.7.8
 simple_salesforce==0.75.3
 jira==2.0.1.0rc1
-pytest
-dataclasses  # remove when Python >= 3.7
+pytest==6.1.2
+dataclasses==0.8  # remove when Python >= 3.7
 yamllint==1.23.0
 oauthlib==2.1.0
 requests-oauthlib==1.1.0
