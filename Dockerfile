@@ -2,18 +2,20 @@ FROM apache/airflow:1.10.12-python3.7
 
 USER root
 
+
+
 ARG AIRFLOW_VERSION="1.10.12"
-ARG AIRFLOW_EXTRAS="async,aws,gcp,kubernetes,mysql,postgres,redis,slack,ssh,statsd,virtualenv"
+ARG AIRFLOW_EXTRAS="async,aws,gcp,kubernetes,mysql,postgres,redis,slack,ssh,statsd,virtualenv,emr,s3,gcp_api,google_auth"
 #ARG ADDITIONAL_PYTHON_DEPS="requests-oauthlib==1.1.0 werkzeug<1.0.0 attrs~=19.3 marshmallow<4.0.0,>=3.0.0rc6 oauthlib==2.1.0  Flask-OAuthlib==0.9.5  protobuf>=3.12.0  grpcio==1.33.2  slackclient==2.0.0  google-cloud-dataproc==1.0.1  argcomplete==1.11.1  apache-airflow-backport-providers-google==2020.10.29  google-api-core==1.22.1  yarl  multidict"
 ARG AIRFLOW_HOME=/opt/airflow
 ARG PIP_VERSION="20.2.4"
 ENV PIP_VERSION=${PIP_VERSION}
 
-RUN pip install --upgrade pip==${PIP_VERSION}
+RUN pip install --upgrade pip
 
 RUN set -ex \
     # https://airflow.readthedocs.io/en/latest/installation.html
-    && su airflow -l -c "$(which pip) install --user apache-airflow[async,aws,gcp,kubernetes,mysql,postgres,redis,slack,ssh,statsd,virtualenv]==$AIRFLOW_VERSION \
+    && su airflow -l -c "$(which pip) install --user apache-airflow[async,aws,gcp,kubernetes,mysql,postgres,redis,slack,ssh,statsd,virtualenv,emr,s3,gcp_api,google_auth]==$AIRFLOW_VERSION \
       --constraint https://raw.githubusercontent.com/apache/airflow/1.10.12/requirements/requirements-python3.7.txt" \
     && curl -L https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -o /usr/local/bin/jq \
     && chmod +x /usr/local/bin/jq \
