@@ -2,10 +2,10 @@ FROM apache/airflow:1.10.12-python3.6
 
 USER root
 
-
+COPY requirements.txt ${AIRFLOW_HOME}/requirements.txt
 RUN pip install --user -r "${AIRFLOW_HOME}/requirements.txt" \
   && rm -rf /opt/airflow/.cache
-  
+
 ARG AIRFLOW_VERSION="1.10.12"
 ARG AIRFLOW_EXTRAS="async,aws,gcp,kubernetes,mysql,postgres,redis,slack,ssh,statsd,virtualenv,emr,s3,gcp_api,google_auth"
 #ARG ADDITIONAL_PYTHON_DEPS="requests-oauthlib==1.1.0 werkzeug<1.0.0 attrs~=19.3 marshmallow<4.0.0,>=3.0.0rc6 oauthlib==2.1.0  Flask-OAuthlib==0.9.5  protobuf>=3.12.0  grpcio==1.33.2  slackclient==2.0.0  google-cloud-dataproc==1.0.1  argcomplete==1.11.1  apache-airflow-backport-providers-google==2020.10.29  google-api-core==1.22.1  yarl  multidict"
