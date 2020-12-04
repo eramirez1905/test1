@@ -1,3 +1,4 @@
+gcc
 python-dev 
 tenacity==4.12.0
 freezegun==1.0.0
