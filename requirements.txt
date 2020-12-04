@@ -30,9 +30,8 @@ oauthlib==3.0.0
 google-cloud-container==2.2.0
 attrs==19.3
 flask-caching<1.4.0
-flask-appbuilder==2.2
 markdown==2.5.2
-
+flask-appbuilder~=2.2
 ######################################################################################
 # Editable install with no version control (apache-airflow==1.10.11)
 # Babel==2.8.0
