@@ -10,7 +10,7 @@ ARG PIP_VERSION="20.2.4"
 ENV PIP_VERSION=${PIP_VERSION}
 
 # RUN sudo apt-get install python-dev -y
-# RUN sudo apt-get install gcc -y
+RUN sudo apt-get install gcc -y
 
 RUN pip install --upgrade pip
 
