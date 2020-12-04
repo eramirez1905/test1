@@ -18,7 +18,7 @@ httplib2==0.18.0
 werkzeug==0.16.1
 attrs~=19.3
 marshmallow==2.18.0
-Flask-OAuthlib==0.9.5
+Flask-OAuthlib
 protobuf>=3.12.0
 grpcio==1.33.2
 google-cloud-dataproc==1.0.1
