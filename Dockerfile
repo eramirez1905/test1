@@ -9,7 +9,9 @@ ARG AIRFLOW_HOME=/opt/airflow
 ARG PIP_VERSION="20.2.4"
 ENV PIP_VERSION=${PIP_VERSION}
 
-RUN apt-get intall gcc python-dev -y
+RUN sudo apt-get install python-dev -y
+RUN sudo apt-get install gcc -y
+
 RUN pip install --upgrade pip
 
 COPY requirements.txt /opt/airflow/requirements.txt
