@@ -12,8 +12,9 @@ ENV PIP_VERSION=${PIP_VERSION}
 RUN pip install --upgrade pip
 
 COPY requirements.txt ${AIRFLOW_HOME}/requirements.txt
-RUN pip install --user -r "${AIRFLOW_HOME}/requirements.txt" 
-
+RUN pip install --user -r "${AIRFLOW_HOME}/requirements.txt" \
+  && rm -rf /opt/airflow/.cache
+  
 RUN set -ex \
     # https://airflow.readthedocs.io/en/latest/installation.html
     && su airflow -l -c "$(which pip) install --user apache-airflow[async,aws,gcp,kubernetes,mysql,postgres,redis,slack,ssh,statsd,virtualenv,emr,s3]==$AIRFLOW_VERSION \
