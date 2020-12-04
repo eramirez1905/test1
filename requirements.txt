@@ -28,7 +28,6 @@ docutils==0.10
 google-cloud-translate==1.7.0
 oauthlib==3.0.0
 google-cloud-container==2.2.0
-attrs==19.3
 # flask-caching<1.4.0
 markdown==2.5.2
 flask-appbuilder~=2.2
