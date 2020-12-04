@@ -9,14 +9,14 @@ ARG AIRFLOW_HOME=/opt/airflow
 ARG PIP_VERSION="20.2.4"
 ENV PIP_VERSION=${PIP_VERSION}
 
-RUN sudo apt-get install python-dev -y
-RUN sudo apt-get install gcc -y
+# RUN sudo apt-get install python-dev -y
+# RUN sudo apt-get install gcc -y
 
 RUN pip install --upgrade pip
 
 COPY requirements.txt /opt/airflow/requirements.txt
-RUN pip install --user -r "/opt/airflow/requirements.txt" \
-  && rm -rf /opt/airflow/.cache
+RUN pip install --user -r "/opt/airflow/requirements.txt" 
+  # && rm -rf /opt/airflow/.cache
   
 RUN set -ex \
     # https://airflow.readthedocs.io/en/latest/installation.html
@@ -46,7 +46,7 @@ COPY requirements.txt /opt/airflow/requirements.txt
 RUN pip install --user -r "/opt/airflow/requirements.txt" \
   && rm -rf /opt/airflow/.cache
 
-RUN mkdir /opt/airflow/
+# RUN mkdir /opt/airflow/
 COPY --chown=airflow docker/airflow /opt/airflow/
 COPY --chown=airflow dags /opt/airflow/dags
 COPY --chown=airflow src/datahub /opt/airflow/src/datahub
