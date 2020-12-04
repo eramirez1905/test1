@@ -1,4 +1,4 @@
-FROM apache/airflow:1.10.12-python3.7
+FROM apache/airflow:1.10.12-python3.6
 
 USER root
 
@@ -9,19 +9,16 @@ ARG AIRFLOW_HOME=/opt/airflow
 ARG PIP_VERSION="20.2.4"
 ENV PIP_VERSION=${PIP_VERSION}
 
-# RUN sudo apt-get install python-dev -y
-RUN sudo apt-get install gcc -y
-
 RUN pip install --upgrade pip
 
 COPY requirements.txt /opt/airflow/requirements.txt
-RUN pip install --user -r "/opt/airflow/requirements.txt" 
-  # && rm -rf /opt/airflow/.cache
+RUN pip install --user -r "/opt/airflow/requirements.txt" \
+  && rm -rf /opt/airflow/.cache
   
 RUN set -ex \
     # https://airflow.readthedocs.io/en/latest/installation.html
     && su airflow -l -c "$(which pip) install --user apache-airflow[async,aws,gcp,kubernetes,mysql,postgres,redis,slack,ssh,statsd,virtualenv,emr,s3]==$AIRFLOW_VERSION" \
-     # --constraint https://raw.githubusercontent.com/apache/airflow/constraints-master/constraints-3.7.txt" \
+     # --constraint https://raw.githubusercontent.com/apache/airflow/constraints-master/constraints-3.6.txt" \
     && curl -L https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -o /usr/local/bin/jq \
     && chmod +x /usr/local/bin/jq \
     && rm -rf \
@@ -32,7 +29,7 @@ RUN set -ex \
         /usr/share/doc \
         /usr/share/doc-base
 
-###https://raw.githubusercontent.com/apache/airflow/1.10.12/requirements/requirements-python3.7.txt
+###https://raw.githubusercontent.com/apache/airflow/1.10.12/requirements/requirements-python3.6.txt
 # 
 # RUN pip install --user ${ADDITIONAL_PYTHON_DEPS} 
 
@@ -46,7 +43,6 @@ COPY requirements.txt /opt/airflow/requirements.txt
 RUN pip install --user -r "/opt/airflow/requirements.txt" \
   && rm -rf /opt/airflow/.cache
 
-# RUN mkdir /opt/airflow/
 COPY --chown=airflow docker/airflow /opt/airflow/
 COPY --chown=airflow dags /opt/airflow/dags
 COPY --chown=airflow src/datahub /opt/airflow/src/datahub
