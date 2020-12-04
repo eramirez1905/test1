@@ -1,4 +1,4 @@
-FROM apache/airflow:1.10.12-python3.7
+FROM apache/airflow:1.10.12-python3.6
 
 USER root
 
@@ -16,7 +16,7 @@ RUN pip install --upgrade pip
 RUN set -ex \
     # https://airflow.readthedocs.io/en/latest/installation.html
     && su airflow -l -c "$(which pip) install --user apache-airflow[async,aws,gcp,kubernetes,mysql,postgres,redis,slack,ssh,statsd,virtualenv,emr,s3]==$AIRFLOW_VERSION \
-      --constraint https://raw.githubusercontent.com/apache/airflow/constraints-master/constraints-3.7.txt" \
+      --constraint https://raw.githubusercontent.com/apache/airflow/constraints-master/constraints-3.6.txt" \
     && curl -L https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 -o /usr/local/bin/jq \
     && chmod +x /usr/local/bin/jq \
     && rm -rf \
@@ -27,7 +27,7 @@ RUN set -ex \
         /usr/share/doc \
         /usr/share/doc-base
 
-###https://raw.githubusercontent.com/apache/airflow/1.10.12/requirements/requirements-python3.7.txt
+###https://raw.githubusercontent.com/apache/airflow/1.10.12/requirements/requirements-python3.6.txt
 # 
 # RUN pip install --user ${ADDITIONAL_PYTHON_DEPS} 
 
