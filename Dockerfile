@@ -408,9 +408,9 @@ COPY --chown=airflow dags ${AIRFLOW_HOME}/dags
 COPY --chown=airflow src/datahub ${AIRFLOW_HOME}/src/datahub
 RUN chmod a+x /entrypoint /clean-logs
 
-RUN curl -o /tmp/aws-iam-authenticator https://amazon-eks.s3.us-west-2.amazonaws.com/1.18.8/2020-09-18/bin/linux/amd64/aws-iam-authenticator \
-    && chmod +x /tmp/aws-iam-authenticator \
-    && mv /tmp/aws-iam-authenticator /usr/local/bin
+# RUN curl -o /tmp/aws-iam-authenticator https://amazon-eks.s3.us-west-2.amazonaws.com/1.18.8/2020-09-18/bin/linux/amd64/aws-iam-authenticator \
+#     && chmod +x /tmp/aws-iam-authenticator \
+#     && mv /tmp/aws-iam-authenticator /usr/local/bin
 
 RUN pip install --upgrade "pip==${PIP_VERSION}"
 
