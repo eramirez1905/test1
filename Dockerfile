@@ -33,7 +33,7 @@
 #                        all the build essentials. This makes the image
 #                        much smaller.
 #
-ARG AIRFLOW_VERSION="1.10.12"
+ARG AIRFLOW_VERSION=1.10.12
 ARG AIRFLOW_EXTRAS="async,aws,celery,dask,elasticsearch,gcp,kubernetes,mysql,postgres,redis,slack,ssh,statsd,virtualenv"
 ARG ADDITIONAL_AIRFLOW_EXTRAS=""
 ARG ADDITIONAL_PYTHON_DEPS="requests-oauthlib==1.1.0 multidict yarl google-api-core==1.22.1 oauthlib==2.1.0 Flask-OAuthlib==0.9.5 protobuf>=3.12.0 grpcio==1.33.2 slackclient==2.0.0 google-cloud-dataproc==1.0.1 argcomplete==1.11.1"
@@ -207,7 +207,7 @@ ENV ADDITIONAL_PYTHON_DEPS=${ADDITIONAL_PYTHON_DEPS}
 ARG AIRFLOW_INSTALL_SOURCES="."
 ENV AIRFLOW_INSTALL_SOURCES=${AIRFLOW_INSTALL_SOURCES}
 
-ARG AIRFLOW_INSTALL_VERSION=""
+ARG AIRFLOW_INSTALL_VERSION="1.10.12"
 ENV AIRFLOW_INSTALL_VERSION=${AIRFLOW_INSTALL_VERSION}
 
 ARG AIRFLOW_LOCAL_PIP_WHEELS=""
@@ -408,9 +408,9 @@ COPY --chown=airflow dags ${AIRFLOW_HOME}/dags
 COPY --chown=airflow src/datahub ${AIRFLOW_HOME}/src/datahub
 RUN chmod a+x /entrypoint /clean-logs
 
-# RUN curl -o /tmp/aws-iam-authenticator https://amazon-eks.s3.us-west-2.amazonaws.com/1.18.8/2020-09-18/bin/linux/amd64/aws-iam-authenticator \
-#     && chmod +x /tmp/aws-iam-authenticator \
-#     && mv /tmp/aws-iam-authenticator /usr/local/bin
+RUN curl -o /tmp/aws-iam-authenticator https://amazon-eks.s3.us-west-2.amazonaws.com/1.18.8/2020-09-18/bin/linux/amd64/aws-iam-authenticator \
+    && chmod +x /tmp/aws-iam-authenticator \
+    && mv /tmp/aws-iam-authenticator /usr/local/bin
 
 RUN pip install --upgrade "pip==${PIP_VERSION}"
 
