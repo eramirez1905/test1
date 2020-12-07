@@ -87,7 +87,7 @@
 #                        much smaller.
 #
 ARG AIRFLOW_VERSION="1.10.12"
-ARG AIRFLOW_EXTRAS="async,aws,gcp,kubernetes,mysql,postgres,redis,slack,ssh,statsd,virtualenv,emr,s3,gcp_api,google_auth"
+ARG AIRFLOW_EXTRAS="async,aws,gcp,kubernetes,mysql,postgres,redis,slack,ssh,statsd,virtualenv"
 ARG ADDITIONAL_AIRFLOW_EXTRAS=""
 ARG ADDITIONAL_PYTHON_DEPS="requests-oauthlib==1.1.0 multidict yarl google-api-core==1.22.1 oauthlib==2.1.0 Flask-OAuthlib==0.9.5 protobuf>=3.12.0 grpcio==1.33.2 slackclient==2.0.0 google-cloud-dataproc==1.0.1 argcomplete==1.11.1 apache-airflow-backport-providers-google apache-airflow-backport-providers-amazon apache-airflow-backport-providers-slack "
 ARG AIRFLOW_HOME=/opt/airflow
