@@ -37,10 +37,10 @@ INSTALL_HEADER = '# START EXTRAS HERE'
 INSTALL_FOOTER = '# END EXTRAS HERE'
 
 
-def insert_documentation(file_path: str, content: List[str], header: str, footer: str):
+def insert_documentation(file_path, content, header, footer):
     with open(file_path, "r") as documentation_file:
         replacing = False
-        result: List[str] = []
+        result = []
         text = documentation_file.readlines()
         for line in text:
             if line.startswith(header):
@@ -60,7 +60,7 @@ def insert_documentation(file_path: str, content: List[str], header: str, footer
 if __name__ == '__main__':
     install_file_path = os.path.join(AIRFLOW_SOURCES_DIR, 'INSTALL')
     contributing_file_path = os.path.join(AIRFLOW_SOURCES_DIR, 'CONTRIBUTING.rst')
-    extras = wrap(", ".join(EXTRAS_REQUIREMENTS.keys()), 100)
+    extras = wrap(", ".join(sorted(EXTRAS_REQUIREMENTS.keys())) , 100)
     extras = [line + "\n" for line in extras]
     insert_documentation(install_file_path, extras, INSTALL_HEADER, INSTALL_FOOTER)
     insert_documentation(contributing_file_path, extras, RST_HEADER, RST_FOOTER)

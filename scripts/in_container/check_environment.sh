@@ -17,20 +17,19 @@
 # under the License.
 # Script to check licences for all code. Can be started from any working directory
 # shellcheck source=scripts/in_container/_in_container_script_init.sh
-. "$( dirname "${BASH_SOURCE[0]}" )/_in_container_script_init.sh"
+. "$(dirname "${BASH_SOURCE[0]}")/_in_container_script_init.sh"
 
 EXIT_CODE=0
 
 DISABLED_INTEGRATIONS=""
 
-function check_service {
+function check_service() {
     INTEGRATION_NAME=$1
     CALL=$2
     MAX_CHECK=${3:=1}
 
     echo -n "${INTEGRATION_NAME}: "
-    while true
-    do
+    while true; do
         set +e
         LAST_CHECK_RESULT=$(eval "${CALL}" 2>&1)
         RES=$?
@@ -40,7 +39,7 @@ function check_service {
             break
         else
             echo -n "."
-            MAX_CHECK=$((MAX_CHECK-1))
+            MAX_CHECK=$((MAX_CHECK - 1))
         fi
         if [[ ${MAX_CHECK} == 0 ]]; then
             echo -e " \e[31mERROR!\e[0m"
@@ -60,18 +59,20 @@ function check_service {
     fi
 }
 
-function check_integration {
+function check_integration() {
     INTEGRATION_NAME=$1
 
     ENV_VAR_NAME=INTEGRATION_${INTEGRATION_NAME^^}
     if [[ ${!ENV_VAR_NAME:=} != "true" ]]; then
-        DISABLED_INTEGRATIONS="${DISABLED_INTEGRATIONS} ${INTEGRATION_NAME}"
+        if [[ ! ${DISABLED_INTEGRATIONS} == *" ${INTEGRATION_NAME}"* ]]; then
+            DISABLED_INTEGRATIONS="${DISABLED_INTEGRATIONS} ${INTEGRATION_NAME}"
+        fi
         return
     fi
     check_service "${@}"
 }
 
-function check_db_backend {
+function check_db_backend() {
     MAX_CHECK=${1:=1}
 
     if [[ ${BACKEND} == "postgres" ]]; then
@@ -88,54 +89,47 @@ function check_db_backend {
 
 function resetdb_if_requested() {
     if [[ ${DB_RESET:="false"} == "true" ]]; then
+        echo
+        echo "Resetting the DB"
+        echo
         if [[ ${RUN_AIRFLOW_1_10} == "true" ]]; then
             airflow resetdb -y
         else
             airflow db reset -y
         fi
+        echo
+        echo "Database has been reset"
+        echo
     fi
     return $?
 }
 
+function enable_rbacui_if_requested() {
+    if [[ ${RBAC_UI:="false"} == "true" ]]; then
+        export AIRFLOW__WEBSERVER__RBAC="True"
+    fi
+}
+
 function startairflow_if_requested() {
     if [[ ${START_AIRFLOW:="false"} == "true" ]]; then
+        echo
+        echo "Starting Airflow"
+        echo
+        export AIRFLOW__CORE__LOAD_DEFAULT_CONNECTIONS=${LOAD_DEFAULT_CONNECTIONS}
+        export AIRFLOW__CORE__LOAD_EXAMPLES=${LOAD_EXAMPLES}
 
         . "$( dirname "${BASH_SOURCE[0]}" )/configure_environment.sh"
 
         # initialize db and create the admin user if it's a new run
-        airflow db init
-        airflow users create -u admin -p admin -f Thor -l Adminstra -r Admin -e dummy@dummy.email
+        if [[ ${RUN_AIRFLOW_1_10} == "true" ]]; then
+            airflow initdb
+            airflow create_user -u admin -p admin -f Thor -l Adminstra -r Admin -e dummy@dummy.email || true
+        else
+            airflow create_user -u admin -p admin -f Thor -l Adminstra -r Admin -e dummy@dummy.email
+        fi
 
         . "$( dirname "${BASH_SOURCE[0]}" )/run_init_script.sh"
 
-        #this is because I run docker in WSL - Hi Bill!
-        export TMUX_TMPDIR=~/.tmux/tmp
-        mkdir -p ~/.tmux/tmp
-        chmod 777 -R ~/.tmux/tmp
-
-        # Set Session Name
-        SESSION="Airflow"
-
-        # Start New Session with our name
-        tmux new-session -d -s $SESSION
-
-        # Name first Pane and start bash
-        tmux rename-window -t 0 'Main'
-        tmux send-keys -t 'Main' 'bash' C-m 'clear' C-m
-
-        tmux split-window -v
-        tmux select-pane -t 1
-        tmux send-keys 'airflow scheduler' C-m
-
-        tmux split-window -h
-        tmux select-pane -t 2
-        tmux send-keys 'airflow webserver' C-m
-
-        # Attach Session, on the Main window
-        tmux select-pane -t 0
-        tmux send-keys 'cd /opt/airflow/' C-m 'clear' C-m
-
-        tmux attach-session -t $SESSION:0
     fi
     return $?
 }
@@ -166,6 +160,7 @@ if [[ ${EXIT_CODE} != 0 ]]; then
 fi
 
 resetdb_if_requested
+enable_rbacui_if_requested
 startairflow_if_requested
 
 if [[ -n ${DISABLED_INTEGRATIONS=} ]]; then

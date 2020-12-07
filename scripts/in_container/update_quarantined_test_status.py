@@ -88,10 +88,11 @@ def parse_test_history(line: str) -> Optional[TestHistory]:
         http_url = match_url.group(2)
         parsed_url = urlsplit(http_url)
         the_id = parsed_url[3].split("=")[1]
-        comment = values[5] if len(values) >= 6 else ""
+        comment = values[4] if len(values) >= 5 else ""
+        # noinspection PyBroadException
         try:
             states = parse_state_history(values[3])
-        except Exception:  # noqa
+        except Exception:
             states = []
         return TestHistory(
             test_id=the_id,
@@ -113,9 +114,10 @@ def parse_body(body: str) -> Dict[str, TestHistory]:
         if parse:
             if not line.startswith("|"):
                 break
+            # noinspection PyBroadException
             try:
                 status = parse_test_history(line)
-            except Exception:  # noqa
+            except Exception:
                 continue
             if status:
                 test_history_map[status.test_id] = status

@@ -19,8 +19,22 @@ if [[ ${VERBOSE_COMMANDS:="false"} == "true" ]]; then
     set -x
 fi
 
+function disable_rbac_if_requested() {
+    if [[ ${DISABLE_RBAC:="false"} == "true" ]]; then
+        export AIRFLOW__WEBSERVER__RBAC="False"
+    else
+        export AIRFLOW__WEBSERVER__RBAC="True"
+    fi
+}
+
+
 # shellcheck source=scripts/in_container/_in_container_script_init.sh
 . /opt/airflow/scripts/in_container/_in_container_script_init.sh
+
+# Add "other" and "group" write permission to the tmp folder
+# Note that it will also change permissions in the /tmp folder on the host
+# but this is necessary to enable some of our CLI tools to work without errors
+chmod 1777 /tmp
 
 AIRFLOW_SOURCES=$(cd "${IN_CONTAINER_DIR}/../.." || exit 1; pwd)
 
@@ -58,17 +72,17 @@ else
 fi
 
 if [[ -z ${INSTALL_AIRFLOW_VERSION=} ]]; then
-    if [[ ! -d "${AIRFLOW_SOURCES}/airflow/www/node_modules" ]]; then
+    if [[ ! -d "${AIRFLOW_SOURCES}/airflow/www_rbac/node_modules" ]]; then
         echo
         echo "Installing node modules as they are not yet installed (Sources mounted from Host)"
         echo
-        pushd "${AIRFLOW_SOURCES}/airflow/www/" &>/dev/null || exit 1
+        pushd "${AIRFLOW_SOURCES}/airflow/www_rbac/" &>/dev/null || exit 1
         yarn install --frozen-lockfile
         echo
         popd &>/dev/null || exit 1
     fi
-    if [[ ! -d "${AIRFLOW_SOURCES}/airflow/www/static/dist" ]]; then
-        pushd "${AIRFLOW_SOURCES}/airflow/www/" &>/dev/null || exit 1
+    if [[ ! -d "${AIRFLOW_SOURCES}/airflow/www_rbac/static/dist" ]]; then
+        pushd "${AIRFLOW_SOURCES}/airflow/www_rbac/" &>/dev/null || exit 1
         echo
         echo "Building production version of javascript files (Sources mounted from Host)"
         echo
@@ -88,6 +102,9 @@ else
     install_released_airflow_version "${INSTALL_AIRFLOW_VERSION}"
 fi
 
+if [[ ${INSTALL_WHEELS=} == "true" ]]; then
+  pip install /dist/*.whl || true
+fi
 
 export RUN_AIRFLOW_1_10=${RUN_AIRFLOW_1_10:="false"}
 
@@ -159,6 +176,9 @@ ssh-keyscan -H localhost >> ~/.ssh/known_hosts 2>/dev/null
 # shellcheck source=scripts/in_container/run_init_script.sh
 . "${IN_CONTAINER_DIR}/run_init_script.sh"
 
+# shellcheck source=scripts/in_container/run_tmux.sh
+. "${IN_CONTAINER_DIR}/run_tmux.sh"
+
 cd "${AIRFLOW_SOURCES}"
 
 set +u
@@ -183,17 +203,61 @@ if [[ "${GITHUB_ACTIONS}" == "true" ]]; then
         "--pythonwarnings=ignore::DeprecationWarning"
         "--pythonwarnings=ignore::PendingDeprecationWarning"
         "--junitxml=${RESULT_LOG_FILE}"
+        # timeouts in seconds for individual tests
+        "--setup-timeout=20"
+        "--execution-timeout=60"
+        "--teardown-timeout=20"
+        # Only display summary for non-expected case
+        # f - failed
+        # E - error
+        # X - xpassed (passed even if expected to fail)
+        # The following cases are not displayed:
+        # s - skipped
+        # x - xfailed (expected to fail and failed)
+        # p - passed
+        # P - passed with output
+        "-rfEX"
+    )
+    if [[ "${TEST_TYPE}" != "Helm" ]]; then
+        EXTRA_PYTEST_ARGS+=(
+        "--with-db-init"
         )
+    fi
 else
-    EXTRA_PYTEST_ARGS=()
+    EXTRA_PYTEST_ARGS=(
+        "-rfEX"
+    )
 fi
 
-declare -a TESTS_TO_RUN
-TESTS_TO_RUN=("tests")
+declare -a SELECTED_TESTS CORE_TESTS ALL_TESTS
 
 if [[ ${#@} -gt 0 && -n "$1" ]]; then
-    TESTS_TO_RUN=("${@}")
+    SELECTED_TESTS=("${@}")
+else
+    CORE_TESTS=(
+        "tests"
+    )
+    ALL_TESTS=("${CORE_TESTS[@]}")
+    HELM_CHART_TESTS=("chart/tests")
+
+    if [[ ${TEST_TYPE:=""} == "Core" ]]; then
+        SELECTED_TESTS=("${CORE_TESTS[@]}")
+    elif [[ ${TEST_TYPE:=""} == "Helm" ]]; then
+        SELECTED_TESTS=("${HELM_CHART_TESTS[@]}")
+    elif [[ ${TEST_TYPE:=""} == "All" || ${TEST_TYPE} == "Quarantined" || \
+            ${TEST_TYPE} == "Postgres" || ${TEST_TYPE} == "MySQL" || \
+            ${TEST_TYPE} == "Heisentests" || ${TEST_TYPE} == "Long" || \
+            ${TEST_TYPE} == "Integration" ]]; then
+        SELECTED_TESTS=("${ALL_TESTS[@]}")
+    else
+        >&2 echo
+        >&2 echo "Wrong test type ${TEST_TYPE}"
+        >&2 echo
+        exit 1
+    fi
+
 fi
+readonly SELECTED_TESTS CORE_TESTS ALL_TESTS
 
 if [[ -n ${RUN_INTEGRATION_TESTS=} ]]; then
     # Integration tests
@@ -201,52 +265,38 @@ if [[ -n ${RUN_INTEGRATION_TESTS=} ]]; then
     do
         EXTRA_PYTEST_ARGS+=("--integration" "${INT}")
     done
-    EXTRA_PYTEST_ARGS+=(
-        # timeouts in seconds for individual tests
-        "--setup-timeout=20"
-        "--execution-timeout=60"
-        "--teardown-timeout=20"
-        # Do not display skipped tests
-        "-rfExFpP"
-    )
-
-elif [[ ${ONLY_RUN_LONG_RUNNING_TESTS:=""} == "true" ]]; then
+elif [[ ${TEST_TYPE:=""} == "Long" ]]; then
     EXTRA_PYTEST_ARGS+=(
         "-m" "long_running"
         "--include-long-running"
-        "--verbosity=1"
-        "--setup-timeout=30"
-        "--execution-timeout=120"
-        "--teardown-timeout=30"
     )
-elif [[ ${ONLY_RUN_HEISEN_TESTS:=""} == "true" ]]; then
+elif [[ ${TEST_TYPE:=""} == "Heisentests" ]]; then
     EXTRA_PYTEST_ARGS+=(
         "-m" "heisentests"
         "--include-heisentests"
-        "--verbosity=1"
-        "--setup-timeout=20"
-        "--execution-timeout=50"
-        "--teardown-timeout=20"
     )
-elif [[ ${ONLY_RUN_QUARANTINED_TESTS:=""} == "true" ]]; then
+elif [[ ${TEST_TYPE:=""} == "Postgres" ]]; then
+    EXTRA_PYTEST_ARGS+=(
+        "--backend"
+        "postgres"
+    )
+elif [[ ${TEST_TYPE:=""} == "MySQL" ]]; then
+    EXTRA_PYTEST_ARGS+=(
+        "--backend"
+        "mysql"
+    )
+elif [[ ${TEST_TYPE:=""} == "Quarantined" ]]; then
     EXTRA_PYTEST_ARGS+=(
         "-m" "quarantined"
         "--include-quarantined"
-        "--verbosity=1"
-        "--setup-timeout=10"
-        "--execution-timeout=50"
-        "--teardown-timeout=10"
-    )
-else
-    # Core tests
-    EXTRA_PYTEST_ARGS+=(
-        "--setup-timeout=10"
-        "--execution-timeout=30"
-        "--teardown-timeout=10"
     )
 fi
 
-ARGS=("${EXTRA_PYTEST_ARGS[@]}" "${TESTS_TO_RUN[@]}")
+echo
+echo "Running tests ${SELECTED_TESTS[*]}"
+echo
+
+ARGS=("${EXTRA_PYTEST_ARGS[@]}" "${SELECTED_TESTS[@]}")
 
 if [[ ${RUN_SYSTEM_TESTS:="false"} == "true" ]]; then
     "${IN_CONTAINER_DIR}/run_system_tests.sh" "${ARGS[@]}"
