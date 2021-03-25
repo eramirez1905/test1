@@ -30,7 +30,7 @@ jobs:
     steps:
       # Upload file to gcs
       - id: upload-file
-        uses: dgarcia-peya/test1e@airflow
+        uses: ./
         with:
           credentials: ${{ secrets.gcp_credentials }}
           path: airflow-7.16.0.tgz
@@ -38,7 +38,7 @@ jobs:
 
       # Example of using the output
       - id: uploaded-files
-        uses: dgarcia-peya/test1e@airflow
+        uses: ./
         env:
           file: ${{steps.upload-file.outputs.uploaded}}
           
