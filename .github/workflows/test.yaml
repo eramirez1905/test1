@@ -17,13 +17,13 @@ on:
     branches:
       - airflow
 jobs:
-  setup-build-publish-deploy:
-    name: Setup, Build, Publish, and Deploy
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout
-      uses: actions/checkout@master
-
+  # setup-build-publish-deploy:
+  #   name: Setup, Build, Publish, and Deploy
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - name: Checkout
+  #     uses: actions/checkout@master
+  steps:
     # Upload file to gcs
     - id: upload-file
       uses: google-github-actions/upload-cloud-storage@main
