@@ -1,0 +1,59 @@
+# name: Github Actions test
+
+# on:
+#   pull_request:
+#   push:
+#     branches:
+#       - airflow
+
+# jobs:
+#   test:
+#     name: Running Units Tests
+#     runs-on: ubuntu-latest
+
+name: cloudrun-deploy
+on:
+  push:
+    branches:
+      - airflow
+jobs:
+  setup-build-publish-deploy:
+    name: Setup, Build, Publish, and Deploy
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@master
+
+    # Upload file to gcs
+    - id: upload-file
+      uses: google-github-actions/upload-cloud-storage@main
+      with:
+        credentials: ${{ secrets.gcp_credentials }}
+        path: ./airflow-7.16.0.tgz
+        destination: us-peya-data-ops-pro-airflow
+
+    # Example of using the output
+    - id: uploaded-files
+      uses: google-github-actions/upload-cloud-storage@main
+      env:
+        file: ${{steps.upload-file.outputs.uploaded}}
+        
+    # # Configure Docker with Credentials
+    # - name: Configure Docker
+    #   run: |
+    #     gcloud auth configure-docker
+      
+    # # Build the Docker image
+    # - name: Build & Publish
+    #   run: |
+    #     gcloud config set project ${{ secrets.GCP_PROJECT }}
+    #     gcloud builds submit --tag gcr.io/${{ secrets.GCP_PROJECT }}/${{ secrets.GCP_APPLICATION }}
+    #     gcloud config set run/region us-central1
+      
+    # # Deploy the Docker image to the GKE cluster
+    # - name: Deploy
+    #   run: |
+    #     gcloud run deploy ${{ secrets.GCP_APPLICATION }} --image gcr.io/${{ secrets.GCP_PROJECT }}/${{ secrets.GCP_APPLICATION }} \
+    #     --platform managed \
+    #     --allow-unauthenticated \
+    #     --memory 512M
