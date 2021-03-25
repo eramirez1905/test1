@@ -25,23 +25,23 @@ jobs:
   #   - name: Checkout
   #     uses: actions/checkout@master
   test:
-    name: upload_files
     runs-on: ubuntu-latest
     steps:
       # Upload file to gcs
-      - id: upload-file
+      - name: upload_files
+        if: success()
         uses: ./
-        with:
+        with: 
           credentials: ${{ secrets.gcp_credentials }}
           path: airflow-7.16.0.tgz
           destination: us-peya-data-ops-pro-airflow
-
       # Example of using the output
-      - id: uploaded-files
+      - name: uploaded-files
+        if: success()
         uses: ./
         env:
           file: ${{steps.upload-file.outputs.uploaded}}
-          
+
     # # Configure Docker with Credentials
     # - name: Configure Docker
     #   run: |
