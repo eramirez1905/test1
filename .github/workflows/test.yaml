@@ -33,7 +33,7 @@ jobs:
         uses: google-github-actions/upload-cloud-storage@main
         with:
           credentials: ${{ secrets.gcp_credentials }}
-          path: airflow-7.16.0.tgz
+          path: /airflow-7.16.0.tgz
           destination: us-peya-data-ops-pro-airflow
 
       # Example of using the output
