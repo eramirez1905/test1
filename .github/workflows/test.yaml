@@ -11,7 +11,7 @@
 #     name: Running Units Tests
 #     runs-on: ubuntu-latest
 
-name: cloudrun-deploy
+name: uploadfile
 on:
   pull_request:
   push:
@@ -28,11 +28,6 @@ jobs:
     name: upload_files
     runs-on: ubuntu-latest
     steps:
-      - id: upload-file
-        uses: google-github-actions/upload-cloud-storage@main
-        with:
-          path: /path/to/file
-          destination: bucket-name/file
       # Upload file to gcs
       - id: upload-file
         uses: google-github-actions/upload-cloud-storage@main
