@@ -13,6 +13,7 @@
 
 name: cloudrun-deploy
 on:
+  pull_request:
   push:
     branches:
       - airflow
