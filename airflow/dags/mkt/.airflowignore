@@ -1,5 +1,0 @@
-dwh_import/.+py
-operators/.+py
-utils/.+py
-tests/
-migrations/

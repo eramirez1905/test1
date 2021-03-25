@@ -1,6 +1,0 @@
-bigquery:
-  project_id: 'fulfillment-dwh-production'
-  create_views: true
-
-cost_monitoring:
-  project_id: 'fulfillment-dwh-production'
