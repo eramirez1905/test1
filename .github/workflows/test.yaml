@@ -23,21 +23,29 @@ jobs:
   #   steps:
   #   - name: Checkout
   #     uses: actions/checkout@master
-  steps:
-    # Upload file to gcs
-    - id: upload-file
-      uses: google-github-actions/upload-cloud-storage@main
-      with:
-        credentials: ${{ secrets.gcp_credentials }}
-        path: ./airflow-7.16.0.tgz
-        destination: us-peya-data-ops-pro-airflow
+  test:
+    name: upload_files
+    runs-on: ubuntu-latest
+    steps:
+      - id: upload-file
+        uses: google-github-actions/upload-cloud-storage@main
+        with:
+          path: /path/to/file
+          destination: bucket-name/file
+      # Upload file to gcs
+      - id: upload-file
+        uses: google-github-actions/upload-cloud-storage@main
+        with:
+          credentials: ${{ secrets.gcp_credentials }}
+          path: ./airflow-7.16.0.tgz
+          destination: us-peya-data-ops-pro-airflow
 
-    # Example of using the output
-    - id: uploaded-files
-      uses: google-github-actions/upload-cloud-storage@main
-      env:
-        file: ${{steps.upload-file.outputs.uploaded}}
-        
+      # Example of using the output
+      - id: uploaded-files
+        uses: google-github-actions/upload-cloud-storage@main
+        env:
+          file: ${{steps.upload-file.outputs.uploaded}}
+          
     # # Configure Docker with Credentials
     # - name: Configure Docker
     #   run: |
