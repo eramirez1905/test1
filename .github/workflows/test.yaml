@@ -36,11 +36,11 @@ jobs:
           path: airflow-7.16.0.tgz
           destination: us-peya-data-ops-pro-airflow
       # Example of using the output
-      - name: uploaded-files
-        if: success()
-        uses: ./
-        env:
-          file: ${{steps.upload-file.outputs.uploaded}}
+      # - name: uploaded-files
+      #   if: success()
+      #   uses: ./
+      #   env:
+      #     file: ${{steps.upload-file.outputs.uploaded}}
 
     # # Configure Docker with Credentials
     # - name: Configure Docker
