@@ -11,11 +11,11 @@
 #     name: Running Units Tests
 #     runs-on: ubuntu-latest
 
-# name: Testing Airflow workflow
-# on:
-#   push:
-#     branches:
-#       - airflow
+name: Testing Airflow workflow
+on:
+  push:
+    branches:
+      - airflow
 # jobs:
 #   checkout:
 #     runs-on: ubuntu-latest
