@@ -1,2 +1,10 @@
-pip
-lint
+apache-airflow-backport-providers-google
+apache-airflow-backport-providers-amazon
+apache-airflow-backport-providers-slack
+argcomplete==1.11.1
+flask-oauthlib==0.9.5
+grpcio==1.29.0
+oauthlib==2.1.0
+protobuf>=3.12.0
+requests-oauthlib==1.1.0
+slackclient==2.0.0
