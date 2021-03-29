@@ -11,30 +11,66 @@
 #     name: Running Units Tests
 #     runs-on: ubuntu-latest
 
-name: uploadfile
+
+name: Testing Airflow workflow
 on:
-  pull_request:
   push:
     branches:
       - airflow
+
 jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [2.7, 3.5, 3.6, 3.7, 3.8]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8 pytest
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    - name: Lint with flake8
+      run: |
+        # stop the build if there are Python syntax errors or undefined names
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    - name: Test with pytest
+      run: |
+        pytest
+  
+  # create_PR:
+  #   needs: styles
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@master
+  #     - name: upload_files to gcs
+  #       uses: ./.github/actions/upload_file
+  # upload_file:
+  #   needs: styles
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@master
+  #     - name: upload_files to gcs
+  #       uses: ./.github/actions/upload_file
   # setup-build-publish-deploy:
   #   name: Setup, Build, Publish, and Deploy
   #   runs-on: ubuntu-latest
   #   steps:
   #   - name: Checkout
   #     uses: actions/checkout@master
-  test:
-    runs-on: ubuntu-latest
-    steps:
+  
       # Upload file to gcs
-      - name: upload_files
-        if: success()
-        uses: ./
-        with: 
-          credentials: ${{ secrets.gcp_credentials }}
-          path: airflow-7.16.0.tgz
-          destination: us-peya-data-ops-pro-airflow
+
+
       # Example of using the output
       # - name: uploaded-files
       #   if: success()
@@ -61,3 +97,24 @@ jobs:
     #     --platform managed \
     #     --allow-unauthenticated \
     #     --memory 512M
+
+# Using databases and service containers
+# If your job requires a database or cache service, you can use the services keyword to create an ephemeral container to host the service; the resulting container is then available to all steps in that job and is removed when the job has completed. This example demonstrates how a job can use services to create a postgres container, and then use node to connect to the service.
+
+# jobs:
+#   container-job:
+#     runs-on: ubuntu-latest
+#     container: node:10.18-jessie
+#     services:
+#       postgres:
+#         image: postgres
+#     steps:
+#       - name: Check out repository code
+#         uses: actions/checkout@v2
+#       - name: Install dependencies
+#         run: npm ci
+#       - name: Connect to PostgreSQL
+#         run: node client.js
+#         env:
+#           POSTGRES_HOST: postgres
+#           POSTGRES_PORT: 5432

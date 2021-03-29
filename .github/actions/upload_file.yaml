@@ -1,0 +1,7 @@
+      - name: upload_files
+        if: success()
+        uses: ./.github/actions/upload_file
+        with: 
+          credentials: ${{ secrets.gcp_credentials }}
+          path: airflow-7.16.0.tgz
+          destination: us-peya-data-ops-pro-airflow
