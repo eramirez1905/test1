@@ -54,7 +54,7 @@ jobs:
   build-ci-images:
     timeout-minutes: 80
     name: "Build CI images 3.8"
-    runs-on: ${{ fromJson(needs.cancel-workflow-runs.outputs.runsOn) }}
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         # We need to attempt to build all possible versions here because workflow_run
@@ -66,7 +66,6 @@ jobs:
           Checkout 
         uses: actions/checkout@v2
         with:
-          ref: ${{ needs.cancel-workflow-runs.outputs.targetCommitSha }}
           persist-credentials: false
           submodules: recursive
       - name: "Retrieve DEFAULTS from the _initialization.sh"
