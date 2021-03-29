@@ -11,37 +11,37 @@
 #     name: Running Units Tests
 #     runs-on: ubuntu-latest
 
-name: Testing Airflow workflow
-on:
-  push:
-    branches:
-      - airflow
-jobs:
-  checkout:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@master
-  python_lint:
-    needs: checkout
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@master
-      - uses: actions/setup-python@v2
-        with:
-          python-version: '3.8'
-      - name: Test
-        uses: onichandame/python-test-action@master
-        with:
-          deps_list: 'requirement'
-  styles:
-    needs: python_lint
-    runs-on: ubuntu-18.04
-    name: Linting
-    steps:
-      - uses: actions/checkout@master
-      - uses: actions/setup-python@v1
-      - uses: whynothugo/python-linting@master
+# name: Testing Airflow workflow
+# on:
+#   push:
+#     branches:
+#       - airflow
+# jobs:
+#   checkout:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@master
+#   python_lint:
+#     needs: checkout
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@master
+#       - uses: actions/setup-python@v2
+#         with:
+#           python-version: '3.8'
+#       - name: Test
+#         uses: onichandame/python-test-action@master
+#         with:
+#           deps_list: 'requirements'
+#   styles:
+#     needs: python_lint
+#     runs-on: ubuntu-18.04
+#     name: Linting
+#     steps:
+#       - uses: actions/checkout@master
+#       - uses: actions/setup-python@v1
+#       - uses: whynothugo/python-linting@master
   
 # name: Testing Airflow workflow
 # on:
@@ -49,34 +49,34 @@ jobs:
 #     branches:
 #       - airflow
 
-# jobs:
-#   build:
+jobs:
+  build:
 
-#     runs-on: ubuntu-latest
-#     strategy:
-#       matrix:
-#         python-version: [2.7, 3.5, 3.6, 3.7, 3.8]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [2.7, 3.5, 3.6, 3.7, 3.8]
 
-#     steps:
-#     - uses: actions/checkout@v2
-#     - name: Set up Python ${{ matrix.python-version }}
-#       uses: actions/setup-python@v2
-#       with:
-#         python-version: ${{ matrix.python-version }}
-#     - name: Install dependencies
-#       run: |
-#         python -m pip install --upgrade pip
-#         pip install flake8 pytest
-#         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-#     - name: Lint with flake8
-#       run: |
-#         # stop the build if there are Python syntax errors or undefined names
-#         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-#         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-#         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-#     - name: Test with pytest
-#       run: |
-#         pytest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8 pytest
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    - name: Lint with flake8
+      run: |
+        # stop the build if there are Python syntax errors or undefined names
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    - name: Test with pytest
+      run: |
+        pytest ./airflow/dags/test.py
   
   # create_PR:
   #   needs: styles
