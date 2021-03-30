@@ -51,20 +51,21 @@ jobs:
         extra-mypy-options: ""
         extra-isort-options: ""
 
-  dagValidation:
-    needs: python_lint
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: 'Validate DAGs'
-        uses: ./.github/actions/dag_validation
-        with:
-          requirementsFile: airflow/requirements.txt
-          dagPaths: airflow/dags
+  # dagValidation:
+  #   needs: python_lint
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v2
+  #     - name: 'Validate DAGs'
+  #       uses: ./.github/actions/dag_validation
+  #       with:
+  #         requirementsFile: airflow/requirements.txt
+  #         dagPaths: airflow/dags
 
   createPullRequest:
-    needs: dagValidation
+    # needs: dagValidation
+    needs: python_lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
