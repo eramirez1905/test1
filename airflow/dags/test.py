@@ -60,6 +60,7 @@ slack_user_name_daf_airflow = "slack_user_name_to_users"
 slack_channel_daf_airflow = "slack_channel_daf_airflow"
 
 github_auth = Variable.get("github_auth", deserialize_json=True)
+
 #  ----------------------------------------------------------------------------
 #  HOOKS - VARIABLES
 #  ----------------------------------------------------------------------------
