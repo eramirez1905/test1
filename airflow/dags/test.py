@@ -52,7 +52,7 @@ default_args = {
 #  ----------------------------------------------------------------------------
 
 conn_id_gcp = 'conn_id_gcp'
-conn_id_gcp_cros = 'conn_id_gcp_cros'
+conn_id_gcp_cross = 'conn_id_gcp_cross'
 sa_cross = Variable.get("config_sa-cross")
 
 slack_token_variable_name = "slack_token"
@@ -64,7 +64,7 @@ github_auth = Variable.get("github_auth", deserialize_json=True)
 #  HOOKS - VARIABLES
 #  ----------------------------------------------------------------------------
 
-bq_hook = BigQueryHook(bigquery_conn_id=conn_id_gcp_cros, use_legacy_sql=False)
+bq_hook = BigQueryHook(bigquery_conn_id=conn_id_gcp_cross, use_legacy_sql=False)
 
 #  ----------------------------------------------------------------------------
 #  DATE - VARIABLES
@@ -333,7 +333,7 @@ with DAG(
         task_id="bq_delete_current_execution",
         sql=delete_current_daily_execution,
         use_legacy_sql=False,
-        bigquery_conn_id=conn_id_gcp_cros,
+        bigquery_conn_id=conn_id_gcp_cross,
     )
 
     pyspark_job_task_predict = DataprocSubmitJobOperator(
@@ -366,14 +366,14 @@ with DAG(
         task_id="delete_record_of_execution_date",
         sql=delete_query,
         use_legacy_sql=False,
-        bigquery_conn_id=conn_id_gcp_cros,
+        bigquery_conn_id=conn_id_gcp_cross,
     )
 
     bq_insert = BigQueryOperator(
         task_id="insert_record_of_execution_date",
         sql=insert_query,
         use_legacy_sql=False,
-        bigquery_conn_id=conn_id_gcp_cros,
+        bigquery_conn_id=conn_id_gcp_cross,
     )
 
     task_slack_message_fail_to_us = SlackAPIPostOperator(
