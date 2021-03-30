@@ -65,7 +65,6 @@ jobs:
 
   createPullRequest:
     # needs: dagValidation
-    needs: python_lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -79,7 +78,7 @@ jobs:
         with:
           token: ${{ secrets.PAT }}
           commit-message: Update report
-          committer: PedidosYa
+          committer: PedidosYa diego.garcia@pedidosya.com
           author: ${{ github.actor }} <${{ github.actor }}@pedidosya.com>
           signoff: false
           branch: master
