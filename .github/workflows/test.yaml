@@ -58,7 +58,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: 'Validate DAGs'
-        uses: ./.github/actions/dag_validation
+        uses: ./
         with:
           requirementsFile: airflow/requirements.txt
           dagPaths: airflow/dags
