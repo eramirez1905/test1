@@ -77,7 +77,7 @@ jobs:
   #       pytest ./airflow/dags/test.py
 
   dagValidation:
-    needs: styles
+    needs: python_lint
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
