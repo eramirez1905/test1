@@ -92,10 +92,10 @@ jobs:
           labels: |
             report
             automated pr
-          assignees: diego-garcia
-          reviewers: estefano-ramirez
-          team-reviewers: |
-            dataops
+          assignees: dgarcia-peya
+          # reviewers: estefano-ramirez
+          # team-reviewers: |
+          #   dataops
           draft: false
 
       - name: Check outputs
