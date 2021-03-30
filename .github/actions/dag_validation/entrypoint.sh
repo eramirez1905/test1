@@ -17,4 +17,4 @@ airflow initdb > /dev/null
 
 airflow variables --import $3
 
-pytest ./github/actions/dag_validation/dag_validation.py
+pytest dag_validation.py
