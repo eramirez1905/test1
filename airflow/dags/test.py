@@ -64,7 +64,8 @@ github_auth = Variable.get("github_auth", deserialize_json=True)
 #  HOOKS - VARIABLES
 #  ----------------------------------------------------------------------------
 
-bq_hook = BigQueryHook(bigquery_conn_id=conn_id_gcp_cross, use_legacy_sql=False)
+bq_hook = BigQueryHook(bigquery_conn_id=conn_id_gcp_cross,
+                        use_legacy_sql=False)
 
 #  ----------------------------------------------------------------------------
 #  DATE - VARIABLES
