@@ -78,7 +78,7 @@ jobs:
         with:
           token: ${{ secrets.PAT }}
           commit-message: Update report
-          committer: PedidosYa diego.garcia@pedidosya.com
+          committer: PedidosYa <noreply@pedidosya.com>
           author: ${{ github.actor }} <${{ github.actor }}@pedidosya.com>
           signoff: false
           branch: master
