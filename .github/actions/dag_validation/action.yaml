@@ -22,7 +22,7 @@ inputs:
 outputs:
   validator-result:
     description: 'DAGs validator result'
-    value: ${{ steps.run }}
+    #value: ${{ steps.run }}
 
 runs:
   using: 'docker'
