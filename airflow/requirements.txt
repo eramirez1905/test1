@@ -8,4 +8,4 @@ oauthlib==2.1.0
 protobuf>=3.12.0
 requests-oauthlib==1.1.0
 slackclient==2.0.0
-airflow==1.10.12
+pytest
