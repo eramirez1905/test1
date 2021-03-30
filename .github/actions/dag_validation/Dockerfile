@@ -1,6 +1,6 @@
 FROM python:3.6
 
-ADD ./.github/actions/entrypoint.sh /entrypoint.sh
+ADD entrypoint.sh /entrypoint.sh
 
 RUN pip install apache-airflow==1.10.12
 RUN pip install google-cloud-storage
