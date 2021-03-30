@@ -32,7 +32,6 @@ on:
 
 jobs:
   python_lint:
-    needs: checkout
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
