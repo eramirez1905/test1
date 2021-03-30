@@ -26,7 +26,7 @@ outputs:
 
 runs:
   using: 'docker'
-  image: 'Dockerfile'
+  image: './.github/actions/dag_validation/Dockerfile'
   args:
     - ${{ inputs.requirementsFile }}
     - ${{ inputs.dagPaths }}

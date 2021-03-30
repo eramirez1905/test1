@@ -56,7 +56,7 @@ inputs:
 
 runs:
   using: "docker"
-  image: "Dockerfile"
+  image: "./.github/actions/python_lint/Dockerfile"
   args:
     - ${{ inputs.python-root-list }}
     - ${{ inputs.use-pylint }}
