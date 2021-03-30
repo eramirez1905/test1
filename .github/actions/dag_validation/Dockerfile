@@ -1,6 +1,7 @@
 FROM python:3.6
 
 ADD entrypoint.sh /entrypoint.sh
+ADD dag_validation.py /dag_validation.py
 
 RUN pip install apache-airflow==1.10.12
 RUN pip install google-cloud-storage
