@@ -78,7 +78,7 @@ jobs:
         with:
           token: ${{ secrets.PAT }}
           commit-message: Update report
-          committer: GitHub <noreply@github.com>
+          committer: PedidosYa
           author: ${{ github.actor }} <${{ github.actor }}@pedidosya.com>
           signoff: false
           branch: master
@@ -96,7 +96,6 @@ jobs:
           reviewers: estefano-ramirez
           team-reviewers: |
             dataops
-          milestone: 1
           draft: false
 
       - name: Check outputs
