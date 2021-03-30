@@ -81,8 +81,8 @@ jobs:
           committer: GitHub <noreply@github.com>
           author: ${{ github.actor }} <${{ github.actor }}@pedidosya.com>
           signoff: false
-          branch: example-patches
-          delete-branch: true
+          branch: airflow
+          delete-branch: false
           title: '[DTDO] Update report'
           body: |
             Update report
