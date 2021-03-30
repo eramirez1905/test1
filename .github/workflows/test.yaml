@@ -34,22 +34,22 @@ jobs:
   python_lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
-      - uses: actions/setup-python@v2
-        with:
-          python-version: '3.8'
-      - name: Test
-        uses: onichandame/python-test-action@master
-        with:
-          deps_list: 'requirements'
-  styles:
-    needs: python_lint
-    runs-on: ubuntu-18.04
-    name: Linting
-    steps:
-      - uses: actions/checkout@master
-      - uses: actions/setup-python@v1
-      - uses: whynothugo/python-linting@master
+    - uses: actions/checkout@v1
+    - uses: ricardochaves/python-lint@v1.3.0
+      with:
+        python-root-list: "./airflow/dags/"
+        use-pylint: false
+        use-pycodestyle: false
+        use-flake8: true
+        use-black: false
+        use-mypy: false
+        use-isort: false
+        extra-pylint-options: ""
+        extra-pycodestyle-options: ""
+        extra-flake8-options: ""
+        extra-black-options: ""
+        extra-mypy-options: ""
+        extra-isort-options: ""
   # pytest:
   #   runs-on: ubuntu-latest
   #   strategy:
