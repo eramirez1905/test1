@@ -1,5 +1,4 @@
 name: 'Airflow DAGs Validation'
-author: jayamanikharyono
 description: 'Validate DAGs, var and dependencies.'
 branding:
   icon: check
@@ -22,7 +21,6 @@ inputs:
 outputs:
   validator-result:
     description: 'DAGs validator result'
-    #value: ${{ steps.run }}
 
 runs:
   using: 'docker'
