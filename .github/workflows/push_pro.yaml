@@ -1,4 +1,4 @@
-name: Testing Airflow workflow
+name: Push to Pro
 on:
   push:
     branches:

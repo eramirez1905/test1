@@ -1,4 +1,4 @@
-name: Testing Airflow workflow
+name: push and PR Stg
 on:
   push:
     branches:
