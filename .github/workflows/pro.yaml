@@ -1,10 +1,10 @@
 name: Testing Airflow workflow
+# Only trigger, when the build workflow succeeded
 on:
-  pull_request:
-    branches:
-      - pro
-    tags-ignore:        
-      - stg
+  workflow_run:
+    workflows: ["push_pro"]
+    types:
+      - completed
 
 jobs:
   createPullRequest:
