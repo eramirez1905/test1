@@ -2,7 +2,7 @@ name: Testing Airflow workflow
 on:
   push:
     branches:
-      - airflow
+      - stg
 
 jobs:
   python_lint:
@@ -25,18 +25,6 @@ jobs:
         extra-mypy-options: ""
         extra-isort-options: ""
 
-  dagValidation:
-    needs: python_lint
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: 'Validate DAGs'
-        uses: ./.github/actions/dag_validation
-        with:
-          requirementsFile: airflow/requirements.txt
-          dagPaths: airflow/dags
-
   createPullRequest:
     needs: dagValidation
     runs-on: ubuntu-latest
@@ -53,7 +41,7 @@ jobs:
           signoff: false
           branch: master
           delete-branch: false
-          title: '[DTDO] Airflow Dags Automated'
+          title: '[DTDO] Airflow Dags Automated to STG'
           body: |
             Update report
             - Updated dags with *today's* date
