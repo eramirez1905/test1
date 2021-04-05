@@ -1,6 +1,7 @@
 name: PR Pro
 on:
   pull_request:
+  push:
     branches:
       - pro    
 
