@@ -1,8 +1,8 @@
 name: PR Pro
 on:
-  push:
+  pull_request:
     branches:
-      - pro
+      - pro    
 
 jobs:
   python_lint:
@@ -38,6 +38,7 @@ jobs:
           dagPaths: pro/airflow/dags
 
   createPullRequest:
+    needs: dagValidation
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -52,7 +53,7 @@ jobs:
           signoff: false
           branch: master
           delete-branch: false
-          title: '[DTDO] Airflow Dags Automated to STG'
+          title: '[DTDO] Airflow Dags Automated to Pro'
           body: |
             Update report
             - Updated dags with *today's* date
@@ -61,17 +62,13 @@ jobs:
           labels: |
             airflow dags
             automated pr
-            pro
           assignees: dgarcia-peya
           # reviewers: estefano-ramirez
           # team-reviewers: |
           #   dataops
           draft: false
 
-
       - name: Check outputs
         run: |
           echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
           echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
-
-          
