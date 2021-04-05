@@ -3,8 +3,8 @@ on:
   push:
     branches:
       - stg
-    tags-ignore:
-      - pro
+    # tags:        
+    #   - stg
 
 jobs:
   python_lint:
