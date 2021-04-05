@@ -3,8 +3,8 @@ on:
   push:
     branches:
       - stg
-    tags:        
-      - stg
+    tags-ignore:
+      - pro
 
 jobs:
   python_lint:
@@ -52,6 +52,7 @@ jobs:
           labels: |
             airflow dags
             automated pr
+            stg
           assignees: dgarcia-peya
           # reviewers: estefano-ramirez
           # team-reviewers: |

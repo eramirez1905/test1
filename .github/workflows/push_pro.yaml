@@ -1,0 +1,22 @@
+name: Testing Airflow workflow
+on:
+  push:
+    branches:
+      - pro
+    tags-ignore:
+      - stg
+
+jobs:
+
+  dagValidation:
+    # needs: python_lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: 'Validate DAGs'
+        uses: ./.github/actions/dag_validation
+        with:
+          requirementsFile: pro/airflow/requirements.txt
+          dagPaths: pro/airflow/dags
+          

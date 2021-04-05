@@ -3,44 +3,11 @@ on:
   pull_request:
     branches:
       - pro
-    tags:        
-      - pro
+    tags-ignore:        
+      - stg
 
 jobs:
-#   python_lint:
-#     runs-on: ubuntu-latest
-#     steps:
-#     - uses: actions/checkout@v1
-#     - uses: ./.github/actions/python_lint
-#       with:
-#         python-root-list: "./airflow/dags/"
-#         use-pylint: false
-#         use-pycodestyle: false
-#         use-flake8: true
-#         use-black: false
-#         use-mypy: false
-#         use-isort: false
-#         extra-pylint-options: ""
-#         extra-pycodestyle-options: ""
-#         extra-flake8-options: ""
-#         extra-black-options: ""
-#         extra-mypy-options: ""
-#         extra-isort-options: ""
-
-  dagValidation:
-    # needs: python_lint
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: 'Validate DAGs'
-        uses: ./.github/actions/dag_validation
-        with:
-          requirementsFile: pro/airflow/requirements.txt
-          dagPaths: pro/airflow/dags
-
   createPullRequest:
-    needs: dagValidation
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -64,6 +31,7 @@ jobs:
           labels: |
             airflow dags
             automated pr
+            pro
           assignees: dgarcia-peya
           # reviewers: estefano-ramirez
           # team-reviewers: |
