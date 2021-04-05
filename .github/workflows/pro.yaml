@@ -1,34 +1,34 @@
 name: Testing Airflow workflow
 on:
-  pull_request:
+  push:
     branches:
       - pro
-    tags:        
-      - pro
+    # tags:        
+    #   - stg
 
 jobs:
-#   python_lint:
-#     runs-on: ubuntu-latest
-#     steps:
-#     - uses: actions/checkout@v1
-#     - uses: ./.github/actions/python_lint
-#       with:
-#         python-root-list: "./airflow/dags/"
-#         use-pylint: false
-#         use-pycodestyle: false
-#         use-flake8: true
-#         use-black: false
-#         use-mypy: false
-#         use-isort: false
-#         extra-pylint-options: ""
-#         extra-pycodestyle-options: ""
-#         extra-flake8-options: ""
-#         extra-black-options: ""
-#         extra-mypy-options: ""
-#         extra-isort-options: ""
+  python_lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - uses: ./.github/actions/python_lint
+      with:
+        python-root-list: "./stg/airflow/dags/"
+        use-pylint: false
+        use-pycodestyle: false
+        use-flake8: true
+        use-black: false
+        use-mypy: false
+        use-isort: false
+        extra-pylint-options: ""
+        extra-pycodestyle-options: ""
+        extra-flake8-options: ""
+        extra-black-options: ""
+        extra-mypy-options: ""
+        extra-isort-options: ""
 
   dagValidation:
-    # needs: python_lint
+    needs: python_lint
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -55,7 +55,7 @@ jobs:
           signoff: false
           branch: master
           delete-branch: false
-          title: '[DTDO] Airflow Dags Automated to Pro'
+          title: '[DTDO] Airflow Dags Automated to STG'
           body: |
             Update report
             - Updated dags with *today's* date
@@ -69,6 +69,7 @@ jobs:
           # team-reviewers: |
           #   dataops
           draft: false
+
 
       - name: Check outputs
         run: |
