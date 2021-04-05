@@ -1,4 +1,4 @@
-name: push and PR Stg
+name: push and PR
 on:
   push:
     branches:
@@ -26,6 +26,18 @@ jobs:
         extra-black-options: ""
         extra-mypy-options: ""
         extra-isort-options: ""
+
+  dagValidation:
+    needs: python_lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: 'Validate DAGs'
+        uses: ./.github/actions/dag_validation
+        with:
+          requirementsFile: pro/airflow/requirements.txt
+          dagPaths: pro/airflow/dags
 
   createPullRequest:
     needs: python_lint
