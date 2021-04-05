@@ -402,7 +402,7 @@ with DAG(
     )
 
 with DAG(
-        dag_id="DAF_PIPELINE_FOOD_ONTOLOGY_PREDICT_INITIAL_LOAD_DAG",
+        dag_id="STG_DAF_PIPELINE_FOOD_ONTOLOGY_PREDICT_INITIAL_LOAD_DAG",
         max_active_runs=1,
         schedule_interval=None,
         default_args=default_args
