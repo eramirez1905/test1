@@ -39,7 +39,7 @@ jobs:
           dagPaths: pro/airflow/dags
 
   createPullRequest:
-    needs: python_lint
+    needs: dagValidation
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
