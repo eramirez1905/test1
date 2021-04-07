@@ -28,7 +28,6 @@ DataprocDeleteClusterOperator.template_fields = ['cluster_name',
                                                  'region',
                                                  'impersonation_chain']
 
-###############################################################################
 # VARIABLES
 ###############################################################################
 
