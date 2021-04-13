@@ -2,5 +2,5 @@
 ---
 steps:
   - name: 'gcr.io/${PROJECT_ID}/pylint'
-    args: [ 'pro/airflow/dags/', "--ignore-patterns=pro/airflow/dags/__init__.py"]
+    args: [ 'pro/airflow/dags/']
 tags: ['test-pylint-cb']
