@@ -1,6 +1,15 @@
 # gcloud builds submit . --config=cloudbuild.yaml
 ---
 steps:
-  - name: 'gcr.io/${PROJECT_ID}/pylint'
-    args: [ 'pro/airflow/dags/']
-tags: ['test-pylint-cb']
+  # - name: 'gcr.io/${PROJECT_ID}/pylint'
+  #   args: [ 'pro/airflow/dags/']
+  #   id: 'test-pylint-cb'
+
+  # build the docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/${PROJECT_ID}/cicd:${SHORT_SHA}', '.'] # tag docker image with commit sha
+    id: 'docker build'
+  # run the dag tests
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['run', 'gcr.io/${PROJECT_ID}/cicd:${SHORT_SHA}']
+    id: 'test-dags'
