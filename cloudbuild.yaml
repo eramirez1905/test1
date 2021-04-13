@@ -2,5 +2,5 @@
 ---
 steps:
   - name: 'gcr.io/${PROJECT_ID}/pylint'
-    args: ['pro/airflow/dags']
+    args: ['pro/airflow/dags/*.py']
 tags: ['test-pylint-cb']
