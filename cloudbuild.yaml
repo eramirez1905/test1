@@ -2,14 +2,17 @@
 ---
 steps:
   # - name: 'gcr.io/${PROJECT_ID}/pylint'
-  #   args: [ 'pro/airflow/dags/']
   #   id: 'test-pylint-cb'
+  #   args: [ 'pro/airflow/dags/']
 
   # build the docker image
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/${PROJECT_ID}/cicd:${SHORT_SHA}', '.'] # tag docker image with commit sha
     id: 'docker build'
+    args: ['build', '-t', 'gcr.io/${PROJECT_ID}/peya-data-ops-airflow-cicd:${SHORT_SHA}', '.'] # tag docker image with commit sha
+  - name: 'gcr.io/cloud-builders/docker'
+    id: Push container
+    args: ['push', 'us.gcr.io/$PROJECT_ID/peya-data-ops-airflow-cicd:${SHORT_SHA}']
   # run the dag tests
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['run', 'gcr.io/${PROJECT_ID}/cicd:${SHORT_SHA}']
     id: 'test-dags'
+    args: ['run', 'gcr.io/${PROJECT_ID}/peya-data-ops-airflow-cicd:${SHORT_SHA}']
