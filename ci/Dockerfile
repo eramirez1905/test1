@@ -31,3 +31,5 @@ WORKDIR $DAGS
 
 #ADD DAG VALIDATE TO AIRFLOW
 ADD dag_validation.py /dags/dag_validation.py
+CMD ["/usr/bin/gh.bash"]
+
