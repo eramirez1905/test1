@@ -5,9 +5,13 @@ ENV PYTHONUNBUFFERED True
 ENV CLI_VERSION=1.4.0
 ENV DAGS /dags
 
+# WORKDIR AIRFLOW
+WORKDIR $DAGS
+
 COPY requirements.txt ./
 COPY CICD_GITHUB.txt ./
 RUN ls
+RUN pwd
 
 # INSTALL REQUIREMENT AIRFLOW
 RUN pip install --no-cache-dir -r requirements.txt
@@ -28,11 +32,9 @@ RUN wget -O- https://github.com/cli/cli/releases/download/v${CLI_VERSION}/gh_${C
 ADD gh.bash /usr/bin
 RUN chmod +x /usr/bin/gh.bash
 
-# WORKDIR AIRFLOW
-WORKDIR $DAGS
-
 #ADD DAG VALIDATE TO AIRFLOW
 ADD dag_validation.py /dags/dag_validation.py
 RUN ls
+RUN pwd
 CMD ["/usr/bin/gh.bash"]
 
