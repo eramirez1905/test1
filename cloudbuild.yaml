@@ -15,8 +15,8 @@ steps:
   args: ['push', 'us.gcr.io/${PROJECT_ID}/peya-data-ops-airflow-cicd:${SHORT_SHA}']
   # run pylint tests
 images:
-- 'us.gcr.io/$PROJECT_ID/peya-analysts-toolkits-api:$COMMIT_SHA'
-- 'us.gcr.io/$PROJECT_ID/peya-analysts-toolkits-api:latest'
+- 'us.gcr.io/$PROJECT_ID/peya-data-ops-airflow-cicd:$COMMIT_SHA'
+- 'us.gcr.io/$PROJECT_ID/peya-data-ops-airflow-cicd:latest'
 
 # RUN AIRLFOW TEST
 # steps:
