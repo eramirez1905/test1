@@ -3,7 +3,7 @@ FROM python:3.8
 # Allow statements and log messages to immediately appear in the Cloud Run logs
 ENV PYTHONUNBUFFERED True
 
-COPY pro/airflow/requirements.txt ./
+COPY requirements.txt ./
 COPY requirements-test.txt ./
 
 RUN pip install --no-cache-dir -r requirements.txt
