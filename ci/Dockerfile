@@ -7,7 +7,7 @@ ENV DAGS /dags
 
 COPY requirements.txt ./
 COPY CICD_GITHUB.txt ./
-RUN pwd ./
+RUN ls
 
 # INSTALL REQUIREMENT AIRFLOW
 RUN pip install --no-cache-dir -r requirements.txt
@@ -33,5 +33,6 @@ WORKDIR $DAGS
 
 #ADD DAG VALIDATE TO AIRFLOW
 ADD dag_validation.py /dags/dag_validation.py
+RUN ls
 CMD ["/usr/bin/gh.bash"]
 
