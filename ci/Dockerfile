@@ -6,6 +6,7 @@ ENV CLI_VERSION=1.4.0
 ENV DAGS /dags
 
 COPY requirements.txt ./
+COPY CICD_GITHUB.txt ./
 
 # INSTALL REQUIREMENT AIRFLOW
 RUN pip install --no-cache-dir -r requirements.txt
