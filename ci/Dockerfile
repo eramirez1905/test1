@@ -3,12 +3,12 @@ FROM python:3.8
 # Allow statements and log messages to immediately appear in the Cloud Run logs
 ENV PYTHONUNBUFFERED True
 
-COPY /pro/airflow/requirements.txt ./
+COPY pro/airflow/requirements.txt ./
 COPY requirements-test.txt ./
 
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install --no-cache-dir -r requirements-test.txt
-RUN pip3 --no-cache-dir install pylint
+RUN pip3 install --no-cache-dir  pylint
 
 #copy dag code to container image
 ENV DAGS /dags
