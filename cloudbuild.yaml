@@ -32,9 +32,12 @@ steps:
 #   args: ["pytest", "-s", "/dags/dag_validation.py"]
 # GITHUB AUTH LOGIN
 - name: 'us.gcr.io/${PROJECT_ID}/peya-data-ops-airflow-cicd:${SHORT_SHA}'
-  args: ['gh', 'auth', 'login', '--with-token', '<', 'ci/CICD_GITHUB.txt']
+  entrypoint: 'bash'
+  id: 'gh-auth'
+  args: ["gh auth login --with-token < ci/CICD_GITHUB.txt"]
 # TEST GH
 - name: 'us.gcr.io/${PROJECT_ID}/peya-data-ops-airflow-cicd:${SHORT_SHA}'
+  id: 'gh-test'
   args: ['gh', 'repo', 'view', 'pedidosya/data-ops-tf-iac']
 images:
 - 'us.gcr.io/$PROJECT_ID/peya-data-ops-airflow-cicd:$SHORT_SHA'
