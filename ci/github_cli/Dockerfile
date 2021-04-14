@@ -11,6 +11,8 @@ ENV CLI_VERSION=1.4.0
 RUN wget -O- https://github.com/cli/cli/releases/download/v${CLI_VERSION}/gh_${CLI_VERSION}_linux_amd64.tar.gz | tar zx --strip-components=1
 
 ADD gh.bash /usr/bin
+RUN pwd
+RUN ls
 ADD CICD_GITHUB.txt ./
 RUN chmod +x /usr/bin/gh.bash
 
