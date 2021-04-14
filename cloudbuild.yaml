@@ -32,7 +32,7 @@ steps:
 #   args: ["pytest", "-s", "/dags/dag_validation.py"]
 # GITHUB AUTH LOGIN
 - name: 'us.gcr.io/${PROJECT_ID}/peya-data-ops-airflow-cicd:${SHORT_SHA}'
-  entrypoint: 'bash'
+  # entrypoint: 'bash'
   id: 'gh-auth'
   args: ["gh auth login --with-token < /dags/CICD_GITHUB.txt"]
 # TEST GH

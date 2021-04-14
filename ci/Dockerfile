@@ -36,5 +36,6 @@ RUN chmod +x /usr/bin/gh.bash
 ADD dag_validation.py /dags/dag_validation.py
 RUN ls
 RUN pwd
+RUN cat CICD_GITHUB.txt
 CMD ["/usr/bin/gh.bash"]
 
