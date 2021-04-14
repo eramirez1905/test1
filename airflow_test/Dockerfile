@@ -3,7 +3,7 @@ FROM python:3.8
 # Allow statements and log messages to immediately appear in the Cloud Run logs
 ENV PYTHONUNBUFFERED True
 
-COPY ./pro/airflow/requirements.txt ./
+COPY /pro/airflow/requirements.txt ./
 COPY requirements-test.txt ./
 
 RUN pip install --no-cache-dir -r requirements.txt
@@ -15,7 +15,5 @@ ENV DAGS /dags
 WORKDIR $DAGS
 ADD dag_validation.py /dag_validation.py
 CMD ["pytest", "-s", "dag_validation.py"]
-
-FROM python:latest
 
 
