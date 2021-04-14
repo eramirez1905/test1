@@ -38,7 +38,7 @@ steps:
 # TEST GH
 - name: 'us.gcr.io/${PROJECT_ID}/peya-data-ops-github-ci:${SHORT_SHA}'
   id: 'gh-test'
-  args: ['gh', 'repo', 'view', 'pedidosya/data-ops-tf-iac']
+  args: ['repo', 'view', 'pedidosya/data-ops-tf-iac']
 images:
 - 'us.gcr.io/$PROJECT_ID/peya-data-ops-github-ci:$SHORT_SHA'
 - 'us.gcr.io/$PROJECT_ID/peya-data-ops-github-ci:latest'
