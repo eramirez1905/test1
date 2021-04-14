@@ -1,5 +1,9 @@
 # BUILD AIRFLOW WITH PYLINT
 steps:
+# Creating PR and github workflow
+- name: gcr.io/cloud-builders/gcloud
+  entrypoint: 'bash'
+  args: [ '-c', "gcloud secrets versions access latest --secret=CICD_GITHUB --format='get(payload.data)' | tr '_-' '/+' | base64 -d > ci/CICD_GITHUB.txt" ]
   # build the container image
 - name: 'gcr.io/cloud-builders/docker'
   id: Build container
@@ -26,13 +30,9 @@ steps:
 # - name: 'us.gcr.io/${PROJECT_ID}/peya-data-ops-airflow-cicd:${SHORT_SHA}'
 #   id: 'test-dags'
 #   args: ["pytest", "-s", "/dags/dag_validation.py"]
-# Creating PR and github workflow
-- name: gcr.io/cloud-builders/gcloud
-  entrypoint: 'bash'
-  args: [ '-c', "gcloud secrets versions access latest --secret=CICD_GITHUB --format='get(payload.data)' | tr '_-' '/+' | base64 -d > CICD_GITHUB.txt" ]
-# # GITHUB AUTH LOGIN
-# - name: 'us.gcr.io/${PROJECT_ID}/peya-data-ops-airflow-cicd:${SHORT_SHA}'
-#   args: ['gh', 'auth', 'login', '--with-token', '<', 'CICD_GITHUB.txt']
+# GITHUB AUTH LOGIN
+- name: 'us.gcr.io/${PROJECT_ID}/peya-data-ops-airflow-cicd:${SHORT_SHA}'
+  args: ['gh', 'auth', 'login', '--with-token', '<', 'ci/CICD_GITHUB.txt']
 # TEST GH
 - name: 'us.gcr.io/${PROJECT_ID}/peya-data-ops-airflow-cicd:${SHORT_SHA}'
   args: ['gh', 'repo', 'view', 'pedidosya/data-ops-tf-iac']
