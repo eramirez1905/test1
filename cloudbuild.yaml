@@ -27,6 +27,12 @@ steps:
 - name: 'us.gcr.io/${PROJECT_ID}/peya-data-ops-airflow-cicd:${SHORT_SHA}'
   id: 'test-dags'
   args: ["pytest", "-s", "/dags/dag_validation.py"]
+# Creating PR and github workflow
+- name: gcr.io/cloud-builders/gcloud
+  entrypoint: 'bash'
+  args: [ '-c', "gcloud secrets versions access latest --secret=CICD_GITHUB --format='get(payload.data)' | tr '_-' '/+' | base64 -d > CICD_GITHUB.txt" ]
+- name: 'us.gcr.io/${PROJECT_ID}/peya-data-ops-airflow-cicd:${SHORT_SHA}'
+  args: ['repo', 'view', 'pedidosya/data-ops-tf-iac']
 images:
 - 'us.gcr.io/$PROJECT_ID/peya-data-ops-airflow-cicd:$SHORT_SHA'
 - 'us.gcr.io/$PROJECT_ID/peya-data-ops-airflow-cicd:latest'
