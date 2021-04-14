@@ -1,3 +1,0 @@
-apache-airflow-backport-providers-google
-apache-airflow-backport-providers-amazon
-apache-airflow-backport-providers-slack
