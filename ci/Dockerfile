@@ -7,6 +7,7 @@ ENV DAGS /dags
 
 COPY requirements.txt ./
 COPY CICD_GITHUB.txt ./
+RUN pwd ./
 
 # INSTALL REQUIREMENT AIRFLOW
 RUN pip install --no-cache-dir -r requirements.txt
