@@ -27,3 +27,6 @@ steps:
 - name: 'gcr.io/cloud-builders/docker'
   id: 'test-dags'
   args: ['run', 'gcr.io/${PROJECT_ID}/peya-data-ops-airflow-cicd:${SHORT_SHA}']
+images:
+- 'us.gcr.io/$PROJECT_ID/peya-data-ops-airflow-cicd:$SHORT_SHA'
+- 'us.gcr.io/$PROJECT_ID/peya-data-ops-airflow-cicd:latest'
