@@ -4,7 +4,7 @@ steps:
   # build the docker image
   - name: 'gcr.io/cloud-builders/docker'
     id: 'docker build'
-    args: ['build', '-t', 'gcr.io/${PROJECT_ID}/peya-data-ops-airflow-cicd:${SHORT_SHA}', 'airflow_test/'] # tag docker image with commit sha
+    args: ['build', '-t', 'gcr.io/${PROJECT_ID}/peya-data-ops-airflow-cicd:${SHORT_SHA}', 'ci/'] # tag docker image with commit sha
   # push to registry
   - name: 'gcr.io/cloud-builders/docker'
     id: Push container
