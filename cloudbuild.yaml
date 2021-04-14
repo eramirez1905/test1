@@ -32,7 +32,7 @@ steps:
   args: [ '-c', "gcloud secrets versions access latest --secret=CICD_GITHUB --format='get(payload.data)' | tr '_-' '/+' | base64 -d > CICD_GITHUB.txt" ]
 # GITHUB AUTH LOGIN
 - name: 'us.gcr.io/${PROJECT_ID}/peya-data-ops-airflow-cicd:${SHORT_SHA}'
-  args: ['gh', 'auth', 'login', '--with-token', 'CICD_GITHUB.txt']
+  args: ['gh', 'auth', 'login', '--with-token', '<', 'CICD_GITHUB.txt']
 # TEST GH
 - name: 'us.gcr.io/${PROJECT_ID}/peya-data-ops-airflow-cicd:${SHORT_SHA}'
   args: ['gh', 'repo', 'view', 'pedidosya/data-ops-tf-iac']
