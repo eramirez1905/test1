@@ -1,18 +1,18 @@
 # BUILD AIRFLOW WITH PYLINT
 steps:
-#   # build the container image
-# - name: 'gcr.io/cloud-builders/docker'
-#   id: Build container
-#   args: ['build', '-t', 'us.gcr.io/${PROJECT_ID}/peya-data-ops-airflow-cicd:${SHORT_SHA}', 'ci/']
-#   timeout: 500s
-#   # Tag Image
-# - name: 'gcr.io/cloud-builders/docker'
-#   id: Image Tagged with latest
-#   args: ['tag', 'us.gcr.io/${PROJECT_ID}/peya-data-ops-airflow-cicd:${SHORT_SHA}' , 'us.gcr.io/${PROJECT_ID}/peya-data-ops-airflow-cicd:latest']  
-#   # push the container image to Container Registry
-# - name: 'gcr.io/cloud-builders/docker'
-#   id: Push container
-#   args: ['push', 'us.gcr.io/${PROJECT_ID}/peya-data-ops-airflow-cicd:${SHORT_SHA}']
+  # build the container image
+- name: 'gcr.io/cloud-builders/docker'
+  id: Build container
+  args: ['build', '-t', 'us.gcr.io/${PROJECT_ID}/peya-data-ops-airflow-cicd:${SHORT_SHA}', 'ci/']
+  timeout: 500s
+  # Tag Image
+- name: 'gcr.io/cloud-builders/docker'
+  id: Image Tagged with latest
+  args: ['tag', 'us.gcr.io/${PROJECT_ID}/peya-data-ops-airflow-cicd:${SHORT_SHA}' , 'us.gcr.io/${PROJECT_ID}/peya-data-ops-airflow-cicd:latest']  
+  # push the container image to Container Registry
+- name: 'gcr.io/cloud-builders/docker'
+  id: Push container
+  args: ['push', 'us.gcr.io/${PROJECT_ID}/peya-data-ops-airflow-cicd:${SHORT_SHA}']
 # images:
 # - 'us.gcr.io/$PROJECT_ID/peya-data-ops-airflow-cicd:$SHORT_SHA'
 # - 'us.gcr.io/$PROJECT_ID/peya-data-ops-airflow-cicd:latest'
