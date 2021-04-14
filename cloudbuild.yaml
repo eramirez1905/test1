@@ -3,7 +3,7 @@ steps:
 # Creating PR and github workflow
 - name: gcr.io/cloud-builders/gcloud
   entrypoint: 'bash'
-  args: [ '-c', "gcloud secrets versions access latest --secret=CICD_GITHUB --format='get(payload.data)' | tr '_-' '/+' | base64 -d > ci/CICD_GITHUB.txt" ]
+  args: [ '-c', "gcloud secrets versions access latest --secret=CICD_GITHUB --format='get(payload.data)' | tr '_-' '/+' | base64 -d > CICD_GITHUB.txt" ]
   # build the container image
 - name: 'gcr.io/cloud-builders/docker'
   id: Build container
@@ -34,7 +34,7 @@ steps:
 - name: 'us.gcr.io/${PROJECT_ID}/peya-data-ops-airflow-cicd:${SHORT_SHA}'
   entrypoint: 'bash'
   id: 'gh-auth'
-  args: ["gh auth login --with-token < CICD_GITHUB.txt"]
+  args: ["gh auth login --with-token < /dags/CICD_GITHUB.txt"]
 # TEST GH
 - name: 'us.gcr.io/${PROJECT_ID}/peya-data-ops-airflow-cicd:${SHORT_SHA}'
   id: 'gh-test'
