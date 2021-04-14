@@ -20,13 +20,13 @@
 
 # RUN AIRLFOW TEST
 steps:
-- name: 'gcr.io/${PROJECT_ID}/peya-data-ops-airflow-cicd:${SHORT_SHA}'
+- name: 'us.gcr.io/${PROJECT_ID}/peya-data-ops-airflow-cicd:${SHORT_SHA}'
   id: 'test-pylint-cb'
   args: [ 'pro/airflow/dags/']
 # run the dag tests
 - name: 'gcr.io/cloud-builders/docker'
   id: 'test-dags'
-  args: ['run', 'gcr.io/${PROJECT_ID}/peya-data-ops-airflow-cicd:${SHORT_SHA}']
+  args: ['run', 'us.gcr.io/${PROJECT_ID}/peya-data-ops-airflow-cicd:${SHORT_SHA}']
 images:
 - 'us.gcr.io/$PROJECT_ID/peya-data-ops-airflow-cicd:$SHORT_SHA'
 - 'us.gcr.io/$PROJECT_ID/peya-data-ops-airflow-cicd:latest'
