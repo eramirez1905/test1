@@ -1,29 +1,29 @@
 # BUILD AIRFLOW WITH PYLINT
-steps:
-  # build the container image
-- name: 'gcr.io/cloud-builders/docker'
-  id: Build container
-  args: ['build', '-t', 'us.gcr.io/${PROJECT_ID}/peya-data-ops-airflow-cicd:${SHORT_SHA}', 'ci/']
-  timeout: 500s
-  # Tag Image
-- name: 'gcr.io/cloud-builders/docker'
-  id: Image Tagged with latest
-  args: ['tag', 'us.gcr.io/${PROJECT_ID}/peya-data-ops-airflow-cicd:${SHORT_SHA}' , 'us.gcr.io/${PROJECT_ID}/peya-data-ops-airflow-cicd:latest']  
-  # push the container image to Container Registry
-- name: 'gcr.io/cloud-builders/docker'
-  id: Push container
-  args: ['push', 'us.gcr.io/${PROJECT_ID}/peya-data-ops-airflow-cicd:${SHORT_SHA}']
-  # run pylint tests
-images:
-- 'us.gcr.io/$PROJECT_ID/peya-data-ops-airflow-cicd:$SHORT_SHA'
-- 'us.gcr.io/$PROJECT_ID/peya-data-ops-airflow-cicd:latest'
+# steps:
+#   # build the container image
+# - name: 'gcr.io/cloud-builders/docker'
+#   id: Build container
+#   args: ['build', '-t', 'us.gcr.io/${PROJECT_ID}/peya-data-ops-airflow-cicd:${SHORT_SHA}', 'ci/']
+#   timeout: 500s
+#   # Tag Image
+# - name: 'gcr.io/cloud-builders/docker'
+#   id: Image Tagged with latest
+#   args: ['tag', 'us.gcr.io/${PROJECT_ID}/peya-data-ops-airflow-cicd:${SHORT_SHA}' , 'us.gcr.io/${PROJECT_ID}/peya-data-ops-airflow-cicd:latest']  
+#   # push the container image to Container Registry
+# - name: 'gcr.io/cloud-builders/docker'
+#   id: Push container
+#   args: ['push', 'us.gcr.io/${PROJECT_ID}/peya-data-ops-airflow-cicd:${SHORT_SHA}']
+#   # run pylint tests
+# images:
+# - 'us.gcr.io/$PROJECT_ID/peya-data-ops-airflow-cicd:$SHORT_SHA'
+# - 'us.gcr.io/$PROJECT_ID/peya-data-ops-airflow-cicd:latest'
 
 # RUN AIRLFOW TEST
-# steps:
-# - name: 'gcr.io/${PROJECT_ID}/peya-data-ops-airflow-cicd:${SHORT_SHA}'
-#   id: 'test-pylint-cb'
-#   args: [ 'pro/airflow/dags/']
-# # run the dag tests
-# - name: 'gcr.io/cloud-builders/docker'
-#   id: 'test-dags'
-#   args: ['run', 'gcr.io/${PROJECT_ID}/peya-data-ops-airflow-cicd:${SHORT_SHA}']
+steps:
+- name: 'gcr.io/${PROJECT_ID}/peya-data-ops-airflow-cicd:${SHORT_SHA}'
+  id: 'test-pylint-cb'
+  args: [ 'pro/airflow/dags/']
+# run the dag tests
+- name: 'gcr.io/cloud-builders/docker'
+  id: 'test-dags'
+  args: ['run', 'gcr.io/${PROJECT_ID}/peya-data-ops-airflow-cicd:${SHORT_SHA}']
