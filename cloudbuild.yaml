@@ -34,7 +34,7 @@ steps:
 - name: 'us.gcr.io/${PROJECT_ID}/peya-data-ops-github-ci:${SHORT_SHA}'
   # entrypoint: 'bash'
   id: 'gh-auth'
-  args: ["auth login --with-token < CICD_GITHUB.txt"]
+  args: ['auth', 'login', '--with-token', '<', 'CICD_GITHUB.txt']
 # TEST GH
 - name: 'us.gcr.io/${PROJECT_ID}/peya-data-ops-github-ci:${SHORT_SHA}'
   id: 'gh-test'
