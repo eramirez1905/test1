@@ -1,0 +1,31 @@
+# BUILD AIRFLOW WITH PYLINT
+steps:
+# Creating PR and github workflow
+- name: gcr.io/cloud-builders/gcloud
+  entrypoint: 'bash'
+  args: [ '-c', "gcloud secrets versions access latest --secret=CICD_GITHUB --format='get(payload.data)' | tr '_-' '/+' | base64 -d > ci/github_cli/CICD_GITHUB.txt" ]
+  # build the container image
+- name: 'gcr.io/cloud-builders/docker'
+  id: Build Github Container
+  args: ['build', '-t', 'us.gcr.io/${PROJECT_ID}/peya-data-ops-github-ci:${SHORT_SHA}', 'ci/github_cli']
+  timeout: 500s
+  # Tag Image
+- name: 'gcr.io/cloud-builders/docker'
+  id: Github Image Tagged with latest
+  args: ['tag', 'us.gcr.io/${PROJECT_ID}/peya-data-ops-github-ci:${SHORT_SHA}' , 'us.gcr.io/${PROJECT_ID}/peya-data-ops-github-ci:latest']  
+  # push the container image to Container Registry
+- name: 'gcr.io/cloud-builders/docker'
+  id: Push Github Container
+  args: ['push', 'us.gcr.io/${PROJECT_ID}/peya-data-ops-github-ci:${SHORT_SHA}']
+# GITHUB AUTH LOGIN
+- name: 'us.gcr.io/${PROJECT_ID}/peya-data-ops-github-ci:${SHORT_SHA}'
+  # entrypoint: 'bash'
+  id: 'gh-auth'
+  args: ['auth', 'login', '--with-token', '<', 'CICD_GITHUB.txt']
+# TEST GH
+- name: 'us.gcr.io/${PROJECT_ID}/peya-data-ops-github-ci:${SHORT_SHA}'
+  id: 'gh-test'
+  args: ['repo', 'view', 'pedidosya/data-ops-tf-iac']
+images:
+- 'us.gcr.io/$PROJECT_ID/peya-data-ops-github-ci:$SHORT_SHA'
+- 'us.gcr.io/$PROJECT_ID/peya-data-ops-github-ci:latest'
