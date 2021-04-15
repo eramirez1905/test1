@@ -3,7 +3,7 @@ steps:
 # Creating PR and github workflow
 - name: gcr.io/cloud-builders/gcloud
   entrypoint: 'bash'
-  args: [ '-c', "gcloud secrets versions access latest --secret=CICD_GITHUB --format='get(payload.data)' | tr '_-' '/+' | base64 -d > CICD_GITHUB.txt" ]
+  args: [ '-c', "gcloud secrets versions access latest --secret=CICD_GITHUB --format='get(payload.data)' | tr '_-' '/+' | base64 -d > ci/github_cli/CICD_GITHUB.txt" ]
   # build the container image
 - name: 'gcr.io/cloud-builders/docker'
   id: Build Github Container
