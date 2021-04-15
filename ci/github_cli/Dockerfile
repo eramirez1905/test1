@@ -16,5 +16,5 @@ ADD gh.bash /usr/bin
 RUN pwd
 RUN ls
 RUN chmod +x /usr/bin/gh.bash
-
+RUN cat CICD_GITHUB.txt
 ENTRYPOINT ["/usr/bin/gh.bash"]
