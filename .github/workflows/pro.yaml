@@ -35,7 +35,7 @@ jobs:
       - name: 'Validate DAGs'
         uses: ./.github/actions/dag_validation
         with:
-          requirementsFile: airflow/requirements.txt
+          requirementsFile: airflow/dags/requirements.txt
           dagPaths: airflow/dags
 
   createPullRequest:
