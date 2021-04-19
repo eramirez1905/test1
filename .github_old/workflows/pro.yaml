@@ -12,7 +12,7 @@ jobs:
     - uses: actions/checkout@v1
     - uses: ./.github/actions/python_lint
       with:
-        python-root-list: "./stg/airflow/dags/"
+        python-root-list: "./airflow/dags/"
         use-pylint: false
         use-pycodestyle: false
         use-flake8: true
@@ -35,8 +35,8 @@ jobs:
       - name: 'Validate DAGs'
         uses: ./.github/actions/dag_validation
         with:
-          requirementsFile: pro/airflow/requirements.txt
-          dagPaths: pro/airflow/dags
+          requirementsFile: airflow/requirements.txt
+          dagPaths: airflow/dags
 
   createPullRequest:
     needs: dagValidation
