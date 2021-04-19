@@ -1,9 +1,9 @@
-name: PR Pro
+name: PR testing
 on:
   pull_request:
   push:
     branches:
-      - pro    
+      - testing    
 
 jobs:
   python_lint:
